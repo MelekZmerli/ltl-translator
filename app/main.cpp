@@ -1,5 +1,4 @@
 #include <CLI11.hpp>
-#include <Helena.hpp>
 #include <fstream>
 #include <iostream>
 #include <json.hpp>
@@ -9,6 +8,7 @@
 #include <vector>
 
 #include "DCR.hpp"
+#include "Helena.hpp"
 #include "dcr2cpn.hpp"
 #include "unfolder.hpp"
 
