@@ -1,0 +1,55 @@
+# Setup different operating systems
+image:
+  - macOS
+  - Ubuntu2004
+  - Visual Studio 2019
+
+# Target x86_64
+platform: x64
+
+for:
+  - # Windows setup
+    matrix:
+      only:
+        - image: Visual Studio 2019
+    after_build:
+      - cd %APPVEYOR_BUILD_FOLDER%
+      - 7z a windows-x86_64.zip bin/unfolding.exe LICENSE README.md
+    artifacts:
+      - path: windows-x86_64.zip
+        name: Windows-Release
+
+  - # MacOS setup
+    matrix:
+      only:
+        - image: macOS
+    after_build:
+      - cd $APPVEYOR_BUILD_FOLDER
+      - zip macos-x86_64.zip bin/unfolding LICENSE README.md
+    artifacts:
+      - path: macos-x86_64.zip
+        name: MacOS-Release
+
+  - # Linux setup
+    matrix:
+      only:
+        - image: Ubuntu2004
+    install:
+      - sudo apt-get update
+      - sudo apt-get install -y build-essential cmake libclang1-9 libclang-9-dev
+    after_build:
+      - cd $APPVEYOR_BUILD_FOLDER
+      - zip linux-x86_64.zip bin/unfolding LICENSE README.md
+    artifacts:
+      - path: linux-x86_64.zip
+        name: Linux-Release
+
+# Create build directory and run CMake
+before_build:
+  - mkdir build
+  - cd build
+  - cmake -DBUILD_DOCS=ON ..
+
+# Build program
+build_script:
+  - cmake --build . --target install
