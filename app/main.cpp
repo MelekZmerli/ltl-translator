@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
                  "CONTEXT file (.xml), context of model")
       ->required()
       ->check(CLI::ExistingFile);
-  app.add_option("--context-type", CONTEXT_TYPE, "Context type (DCR,CPN,...)")
+  app.add_option("--context-type", CONTEXT_TYPE, "Context type (DCR,CPN, FREE)")
       ->required();
   app.add_option("--ltl", LTL_FILE_PATH,
                  "LTL file (.json), Vulnerabilities to check")
