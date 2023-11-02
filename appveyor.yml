@@ -1,7 +1,7 @@
 # Setup different operating systems
 image:
   - macOS
-  - Ubuntu2204
+  - Ubuntu2004
   - Visual Studio 2019
 
 # Target x86_64
@@ -33,7 +33,7 @@ for:
   - # Linux setup
     matrix:
       only:
-        - image: Ubuntu2204
+        - image: Ubuntu2004
     install:
       - sudo apt-get update
       - sudo apt-get install -y build-essential cmake libclang1-9 libclang-9-dev
