@@ -48,7 +48,7 @@ for:
 before_build:
   - mkdir build
   - cd build
-  - cmake -DBUILD_DOCS=ON ..
+  - cmake ..
 
 # Build program
 build_script:
