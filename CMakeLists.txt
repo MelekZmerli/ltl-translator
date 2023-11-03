@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# installation folder
+set(INSTALL_FOLDER ${CMAKE_SOURCE_DIR}/bin)
+
 # project information
 project(unfolding CXX)
 
@@ -17,5 +20,5 @@ add_subdirectory(src)
 # The executable code
 add_subdirectory(app)
 
-# installation
-install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+# documentation
+add_subdirectory(docs)
