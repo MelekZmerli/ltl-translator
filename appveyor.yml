@@ -12,9 +12,11 @@ for:
     matrix:
       only:
         - image: Visual Studio 2019
+    install:
+      - cinst doxygen.install graphviz
     after_build:
       - cd %APPVEYOR_BUILD_FOLDER%
-      - 7z a windows-x86_64.zip bin/unfolding.exe LICENSE README.md
+      - 7z a windows-x86_64.zip bin/unfolding.exe assets/html LICENSE README.md
     artifacts:
       - path: windows-x86_64.zip
         name: Windows-Release
@@ -23,9 +25,15 @@ for:
     matrix:
       only:
         - image: macOS
+    install:
+      - brew upgrade gnupg mercurial subversion git
+      - brew install doxygen
+      - rm -rf /usr/local/include/X11
+      - brew unlink subversion
+      - brew install graphviz
     after_build:
       - cd $APPVEYOR_BUILD_FOLDER
-      - zip macos-x86_64.zip bin/unfolding LICENSE README.md
+      - zip macos-x86_64.zip bin/unfolding assets/html LICENSE README.md
     artifacts:
       - path: macos-x86_64.zip
         name: MacOS-Release
@@ -36,10 +44,10 @@ for:
         - image: Ubuntu2004
     install:
       - sudo apt-get update
-      - sudo apt-get install -y build-essential cmake libclang1-9 libclang-9-dev
+      - sudo apt-get install -y build-essential cmake doxygen graphviz libclang1-9 libclang-9-dev
     after_build:
       - cd $APPVEYOR_BUILD_FOLDER
-      - zip linux-x86_64.zip bin/unfolding LICENSE README.md
+      - zip linux-x86_64.zip bin/unfolding assets/html LICENSE README.md
     artifacts:
       - path: linux-x86_64.zip
         name: Linux-Release
@@ -52,4 +60,5 @@ before_build:
 
 # Build program
 build_script:
+  - cmake --build . --target doxygen
   - cmake --build . --target install
