@@ -1,9 +1,8 @@
 #include <CLI11.hpp>
 #include <fstream>
-#include <iostream>
 #include <json.hpp>
-#include <list>
-#include <sstream>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,32 +11,50 @@
 #include "dcr2cpn.hpp"
 #include "unfolder.hpp"
 
-stringstream read_file(std::string filename) {
+/**
+ * Read a file from the filesystem
+ *
+ * @param filename path to the file to be read
+ * @return string buffer
+ */
+std::stringstream read_file(std::string filename) {
   std::string new_line;
-  stringstream text_stream;
-  ifstream file_stream(filename);
+  std::stringstream text_stream;
+  std::ifstream file_stream(filename);
 
-  while (getline(file_stream, new_line)) {
+  while (std::getline(file_stream, new_line)) {
     text_stream << new_line << "\n";
   }
 
   return text_stream;
 }
 
+/**
+ * Read a file and parse it into a JSON file
+ *
+ * @param filename path to the file to be read
+ * @return deserialized json object
+ */
 nlohmann::json parse_json_file(std::string filename) {
-  string content;
+  std::string content;
   std::string new_line;
-  ifstream file_stream(filename);
+  std::ifstream file_stream(filename);
 
-  while (getline(file_stream, new_line)) {
+  while (std::getline(file_stream, new_line)) {
     content = content + new_line + "\n";
   }
 
   return nlohmann::json::parse(content);
 }
 
+/**
+ * Save a content into a file
+ *
+ * @param filename path to the output file
+ * @param content string to the be saved
+ */
 void save_content(std::string filename, std::string content) {
-  ofstream output_file;
+  std::ofstream output_file;
   output_file.open(filename);
   output_file << content;
   output_file.close();

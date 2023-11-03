@@ -26,11 +26,8 @@ for:
       only:
         - image: macOS
     install:
-      - brew upgrade gnupg mercurial subversion git
-      - brew install doxygen
-      - rm -rf /usr/local/include/X11
-      - brew unlink subversion
-      - brew install graphviz
+      - brew update
+      - brew install doxygen graphviz
     after_build:
       - cd $APPVEYOR_BUILD_FOLDER
       - zip macos-x86_64.zip bin/unfolding assets/html LICENSE README.md
