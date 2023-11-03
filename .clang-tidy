@@ -1,0 +1,4 @@
+Checks: 'cppcoreguidelines-*,google-*,modernize-use-nullptr,performance-*,portability-*,readability-*'
+WarningsAsErrors: true
+AnalyzeTemporaryDtors: false
+FormatStyle: google
