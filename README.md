@@ -23,6 +23,22 @@ Options:
   --output_name TEXT          Output file name
 ```
 
+## Build
+
+The dependencies for this tool are:
+
+- `cmake >= 3.13`
+- `doxygen`
+- `g++`
+- `graphviz`
+
+The tool can be compiled as follows:
+
+```
+cmake -S . -B build
+cmake --build build --target doxygen --target install
+```
+
 ## Running
 
 An example of execution is
