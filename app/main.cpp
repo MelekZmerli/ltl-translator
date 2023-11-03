@@ -60,7 +60,7 @@ void save_content(std::string filename, std::string content) {
   output_file.close();
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   CLI::App app{"Unfolding tool"};
 
   std::string MODEL_LNA_FILE_PATH;
