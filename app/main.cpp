@@ -36,6 +36,13 @@ nlohmann::json parse_json_file(std::string filename) {
   return nlohmann::json::parse(content);
 }
 
+void save_content(std::string filename, std::string content) {
+  ofstream output_file;
+  output_file.open(filename);
+  output_file << content;
+  output_file.close();
+}
+
 int main(int argc, char** argv) {
   CLI::App app{"Unfolding tool"};
 
@@ -83,7 +90,7 @@ int main(int argc, char** argv) {
 
   string OUT_FILE_PATH;
   app.add_option("--output_path", OUT_FILE_PATH, "Output file path")
-      ->default_val(".")
+      ->default_val("./")
       ->check(CLI::ExistingFile);
 
   string OUT_FILE_NAME;
@@ -92,9 +99,12 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
-  /**
-   * Process .lna file
-   */
+  // full output path
+  std::string full_outpath = OUT_FILE_PATH + OUT_FILE_NAME;
+
+  /****************************************************************************
+   * READ FILES
+   ****************************************************************************/
   stringstream model_lna_text_stream = read_file(MODEL_LNA_FILE_PATH);
   stringstream ast_text_stream = read_file(AST_FILE_PATH);
 
@@ -102,30 +112,10 @@ int main(int argc, char** argv) {
   nlohmann::json sol_json = parse_json_file(LNA_JSON_FILE_PATH);
   nlohmann::json im_json = parse_json_file(IM_JSON_FILE_PATH);
 
-  /**
-   * name
-   */
-  std::string outfile_name;
-  if (OUT_FILE_NAME.compare("") == 0) {
-    std::vector<std::string> t = split(MODEL_LNA_FILE_PATH, "/");
-    outfile_name = split_ex(t[t.size() - 1], ".", 2)[0];
-  } else {
-    outfile_name = OUT_FILE_NAME;
-  }
-
-  std::string outfile_path;
-  if (OUT_FILE_NAME.compare("") == 0) {
-    outfile_path = "./";
-  } else {
-    outfile_path = OUT_FILE_PATH;
-  }
-
-  std::string full_outpath = outfile_path + outfile_name;
-
-  /**
-   * run
-   */
-  StructuredNetNodePtr context_net;
+  /****************************************************************************
+   * PROCESS CONTEXT
+   ****************************************************************************/
+  HELENA::StructuredNetNodePtr context_net;
   if (CONTEXT_TYPE == "DCR") {
     DCR2CPN::DCRClass dcrClass = DCR2CPN::readDCRFromXML(CONTEXT_FILE_PATH);
     DCR2CPN::Dcr2CpnTranslator contextTranslator =
@@ -134,31 +124,23 @@ int main(int argc, char** argv) {
   } else if (CONTEXT_TYPE == "CPN") {
     stringstream context_text_stream = read_file(CONTEXT_FILE_PATH);
     context_net = Unfolder::analyseLnaFile(context_text_stream);
-  } else if (CONTEXT_TYPE == "FREE") {
-    context_net = std::make_shared<StructuredNetNode>();
   } else {
+    // free context by default
     context_net = std::make_shared<StructuredNetNode>();
   }
 
-  ofstream context_file;
-  context_file.open(full_outpath + ".context.lna");
-  context_file << context_net->source_code();
-  context_file.close();
+  save_content(full_outpath + ".context.lna", context_net->source_code());
 
+  /****************************************************************************
+   * UNFOLD CPN MODEL AND PROPERTY
+   ****************************************************************************/
   Unfolder unfolder =
       Unfolder(context_net, model_lna_text_stream, sol_json, ltl_json, im_json);
   std::map<std::string, std::string> unfold_model =
       unfolder.UnfoldModel(CONTEXT_TYPE);
 
-  ofstream lna_file;
-  lna_file.open(full_outpath + ".lna");
-  lna_file << unfold_model["lna"];
-  lna_file.close();
-
-  ofstream prop_file;
-  prop_file.open(full_outpath + ".prop.lna");
-  prop_file << unfold_model["prop"];
-  prop_file.close();
+  save_content(full_outpath + ".lna", unfold_model["lna"]);
+  save_content(full_outpath + ".prop.lna", unfold_model["prop"]);
 
   return 0;
 }
