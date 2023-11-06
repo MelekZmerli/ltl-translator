@@ -17,7 +17,7 @@
  * @param filename path to the file to be read
  * @return string buffer
  */
-std::stringstream read_file(std::string filename) {
+std::stringstream read_file(const std::string &filename) {
   std::string new_line;
   std::stringstream text_stream;
   std::ifstream file_stream(filename);
@@ -35,7 +35,7 @@ std::stringstream read_file(std::string filename) {
  * @param filename path to the file to be read
  * @return deserialized json object
  */
-nlohmann::json parse_json_file(std::string filename) {
+nlohmann::json parse_json_file(const std::string &filename) {
   std::string content;
   std::string new_line;
   std::ifstream file_stream(filename);
@@ -53,7 +53,7 @@ nlohmann::json parse_json_file(std::string filename) {
  * @param filename path to the output file
  * @param content string to the be saved
  */
-void save_content(std::string filename, std::string content) {
+void save_content(const std::string &filename, const std::string &content) {
   std::ofstream output_file;
   output_file.open(filename);
   output_file << content;
