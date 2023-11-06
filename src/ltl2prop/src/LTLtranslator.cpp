@@ -1,7 +1,5 @@
 #include "LTLtranslator.hpp"
 
-#include "utils.hpp"
-
 int precedence_of_op(std::string _op) {
   if (_op == NOT_OP || _op == GLOBAL_OP || _op == FINNALY_OP || _op == RUN_OP ||
       _op == EXEC_OP) {
@@ -151,7 +149,8 @@ std::map<std::string, std::string> LTLTranslator::createVulFileFromFormula(
     if (!line.empty()) {
       std::string temp = std::string(line);
       trim_ex(temp);
-      if (temp.length() > 0) ltl_lines.emplace_back(line);
+      if (temp.length() > 0)
+        ltl_lines.emplace_back(line);
     }
   }
   ptr_ltl_line = ltl_lines.begin();
@@ -192,7 +191,8 @@ std::vector<std::string> LTLTranslator::getListVariableFromFormula(
     if (!line.empty()) {
       std::string temp = std::string(line);
       trim_ex(temp);
-      if (temp.length() > 0) temp_ltl_lines.emplace_back(line);
+      if (temp.length() > 0)
+        temp_ltl_lines.emplace_back(line);
     }
   }
   std::list<std::string>::iterator temp_ptr_ltl_line = temp_ltl_lines.begin();

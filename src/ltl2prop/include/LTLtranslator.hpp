@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "utils.hpp"
+
 const std::string CONST_STRING = "const";
 const std::string PROPOSITION_STRING = "proposition";
 const std::string PROPERTY_STRING = "property";

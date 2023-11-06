@@ -1,7 +1,5 @@
 #include "LNAAnalyser.hpp"
 
-#include "utils.hpp"
-
 namespace HELENA {
 
 /** Get substrings blocked by '{' and '}' characters in multilines
