@@ -2,7 +2,7 @@ BasedOnStyle: Google
 
 UseTab: Never
 IndentWidth: 2
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 Standard: c++14
