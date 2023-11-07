@@ -400,9 +400,15 @@ class LnaNode {
   LnaNodePtr get_sub_node(const unsigned int& x) const;
 
   // type of the node
+
+  /**
+   * type of the node
+   */
   LnaNodeType node_type;
 
-  // list of subnodes
+  /**
+   * list of subnodes
+   */
   std::vector<LnaNodePtr> lna_nodes;
 };
 
