@@ -115,20 +115,25 @@ size_t NetNode::num_members() const {
   return size();
 }
 
-/** Design the interface for the output lna file of Structured Net
- */
+/******************************************************************************
+ * Implementation of the NetNode Class
+ *****************************************************************************/
+
 std::string StructuredNetNode::source_code() {
   std::stringstream result;
   result << name;
-  if (param_nodes.size() != 0) {
+
+  if (!param_nodes.empty()) {
     result << "(";
     for (auto it = param_nodes.begin(); it != param_nodes.end(); ++it) {
       result << (*it)->source_code();
-      if (it != param_nodes.end() - 1)
+      if (it != param_nodes.end() - 1) {
         result << ", ";
+      }
     }
     result << ")";
   }
+
   result << " {\n";
   result << "\n/**************************\n"
          << " *** Colour Definitions ***\n"
@@ -136,114 +141,97 @@ std::string StructuredNetNode::source_code() {
   for (auto it = color_nodes.begin(); it != color_nodes.end(); ++it) {
     result << (*it)->source_code();
   }
+
   result << "\n/****************************\n"
          << " *** Function Definitions ***\n"
          << " ****************************/\n";
   for (auto it = function_nodes.begin(); it != function_nodes.end(); ++it) {
     result << (*it)->source_code();
   }
+
   result << "\n/*************************\n"
          << " *** Place Definitions ***\n"
          << " *************************/\n";
   for (auto it = place_nodes.begin(); it != place_nodes.end(); ++it) {
     result << (*it)->source_code();
   }
+
   result << "\n/******************************\n"
          << " *** Transition Definitions ***\n"
          << " ******************************/\n";
   for (auto it = transition_nodes.begin(); it != transition_nodes.end(); ++it) {
     result << (*it)->source_code();
   }
+
   result << "\n}";
   return result.str();
 }
 
-/** Set name for the node
- */
 void StructuredNetNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the node
- */
+
 std::string StructuredNetNode::get_name() const {
   return name;
 }
-/** Add parametters to the collection
- */
+
 void StructuredNetNode::add_parameter(const ParameterNodePtr& _node) {
   param_nodes.push_back(_node);
 }
-/** Get a parameter of the net
- */
+
 ParameterNodePtr StructuredNetNode::get_parameter(const unsigned int& x) {
   return param_nodes[x];
 }
-/** Get the number of parameter in net
- */
-size_t StructuredNetNode::num_parameters() {
+
+size_t StructuredNetNode::num_parameters() const {
   return param_nodes.size();
 }
-/** Add color to the net
- */
+
 void StructuredNetNode::add_color(const LnaNodePtr& _color) {
   color_nodes.push_back(_color);
 }
-/** Get a color of the net
- */
+
 LnaNodePtr StructuredNetNode::get_color(const unsigned int& x) {
   return color_nodes[x];
 }
-/** Get the number of color in net
- */
-size_t StructuredNetNode::num_colors() {
+
+size_t StructuredNetNode::num_colors() const {
   return color_nodes.size();
 }
 
-/** Add place to the net
- */
 void StructuredNetNode::add_place(const LnaNodePtr& _place) {
   place_nodes.push_back(_place);
 }
-/** Get a place of the net
- */
+
 LnaNodePtr StructuredNetNode::get_place(const unsigned int& x) {
   return place_nodes[x];
 }
-/** Get the number of place in net
- */
-size_t StructuredNetNode::num_places() {
+
+size_t StructuredNetNode::num_places() const {
   return place_nodes.size();
 }
 
-/** Add function to the net
- */
 void StructuredNetNode::add_function(const LnaNodePtr& _function) {
   function_nodes.push_back(_function);
 }
-/** Get a function of the net
- */
+
 LnaNodePtr StructuredNetNode::get_function(const unsigned int& x) {
   return function_nodes[x];
 }
-/** Get the number of function in net
- */
-size_t StructuredNetNode::num_functions() {
+
+size_t StructuredNetNode::num_functions() const {
   return function_nodes.size();
 }
 
-/** Add transition to the net
- */
 void StructuredNetNode::add_transition(const LnaNodePtr& _transition) {
   transition_nodes.push_back(_transition);
 }
-/** Get a transition of the net
- */
+
 LnaNodePtr StructuredNetNode::get_transition(const unsigned int& x) {
   return transition_nodes[x];
 }
-/** Get the number of transition in net
- */
-size_t StructuredNetNode::num_transitions() {
+
+size_t StructuredNetNode::num_transitions() const {
   return transition_nodes.size();
 }
 

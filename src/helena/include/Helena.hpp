@@ -576,44 +576,192 @@ class NetNode : public LnaNode {
  */
 typedef std::shared_ptr<NetNode> NetNodePtr;
 
+/**
+ * Class representing a StructuredNet node
+ *
+ */
 class StructuredNetNode : public LnaNode {
  public:
+  /**
+   * Create a structured net node
+   */
   StructuredNetNode() : LnaNode(LnaNodeTypeStructuredNet) {}
+
+  /**
+   * Create a structured net node
+   *
+   * @param _name  name of the node
+   */
   StructuredNetNode(std::string _name)
       : LnaNode(LnaNodeTypeStructuredNet), name(_name) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the node
+   *
+   * @param _name new name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the node
+   *
+   * @return
+   */
   std::string get_name() const;
 
+  /**
+   * Add a parameter node to the collection
+   *
+   * @param _node new parameter node
+   */
   void add_parameter(const ParameterNodePtr& _node);
+
+  /**
+   * Get a parameter node
+   *
+   * @param x identifier of the parameter node
+   *
+   * @return parameter node
+   */
   ParameterNodePtr get_parameter(const unsigned int& x);
-  size_t num_parameters();
 
+  /**
+   * Get the number of parameter nodes in the net
+   *
+   * @return  number of parameter nodes
+   */
+  size_t num_parameters() const;
+
+  /**
+   * Add color node to the net
+   *
+   * @param _color color node to be added
+   */
   void add_color(const LnaNodePtr& _color);
+
+  /**
+   * Get a color node
+   *
+   * @param x identifier of the color node
+   * @return color node
+   */
   LnaNodePtr get_color(const unsigned int& x);
-  size_t num_colors();
 
+  /**
+   * Get the number of colors in the net
+   *
+   * @return number of colors
+   */
+  size_t num_colors() const;
+
+  /**
+   * Add a place node to the net
+   *
+   * @param _place place node to be added
+   */
   void add_place(const LnaNodePtr& _place);
+
+  /**
+   * Get a place from the net
+   *
+   * @param x  identifier of the place
+   * @return place pointer
+   */
   LnaNodePtr get_place(const unsigned int& x);
-  size_t num_places();
 
+  /**
+   * Get the number of places in the net
+   *
+   * @return  number of places
+   */
+  size_t num_places() const;
+
+  /**
+   * Add a function node to the net
+   *
+   * @param _function new function node
+   */
   void add_function(const LnaNodePtr& _function);
-  LnaNodePtr get_function(const unsigned int& x);
-  size_t num_functions();
 
+  /**
+   * Get a function node
+   *
+   * @param x identifier of the node
+   * @return function node
+   */
+  LnaNodePtr get_function(const unsigned int& x);
+
+  /**
+   * Get the number of functions in the net
+   *
+   * @return  number of functions
+   */
+  size_t num_functions() const;
+
+  /**
+   * Add a transition node to the net
+   *
+   * @param _transition transition to be added
+   */
   void add_transition(const LnaNodePtr& _transition);
+
+  /**
+   * Get a transition from the net
+   *
+   * @param x identifier of the transition
+   * @return transition
+   */
   LnaNodePtr get_transition(const unsigned int& x);
-  size_t num_transitions();
+
+  /**
+   * Get the number of transitions in the net
+   *
+   * @return number of transitions
+   */
+  size_t num_transitions() const;
 
  private:
+  /**
+   * Name of the net
+   */
   std::string name;
+
+  /**
+   * Collection of parameters nodes
+   */
   std::vector<ParameterNodePtr> param_nodes;
+
+  /**
+   * Collection of color nodes
+   */
   std::vector<LnaNodePtr> color_nodes;
+
+  /**
+   * Collection of place nodes
+   */
   std::vector<LnaNodePtr> place_nodes;
+
+  /**
+   * Collection of function nodes
+   */
   std::vector<LnaNodePtr> function_nodes;
+
+  /**
+   * Collection of transitions nodes
+   */
   std::vector<LnaNodePtr> transition_nodes;
 };
+
+/**
+ * Type of pointers for StructuredNetNodes
+ */
 typedef std::shared_ptr<StructuredNetNode> StructuredNetNodePtr;
 
 class CommentNode : public LnaNode {
