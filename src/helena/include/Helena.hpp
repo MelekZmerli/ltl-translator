@@ -339,7 +339,6 @@ typedef shared_ptr<LnaNode> LnaNodePtr;
 
 /**
  * Class defining a Lna node
- *
  */
 class LnaNode {
  public:
@@ -361,8 +360,13 @@ class LnaNode {
    *
    * @return size
    */
-  size_t size();
+  size_t size() const;
 
+  /**
+   * Return the Helena code of the node
+   *
+   * @return Helena code
+   */
   virtual std::string source_code() = 0;
 
  protected:
@@ -379,7 +383,7 @@ class LnaNode {
   /**
    * Delete subnode from the collection
    *
-   * @param x  identifier of the subnode
+   * @param x identifier of the subnode
    */
   void delete_sub_node(const unsigned int& x);
 
@@ -399,8 +403,6 @@ class LnaNode {
    */
   LnaNodePtr get_sub_node(const unsigned int& x) const;
 
-  // type of the node
-
   /**
    * type of the node
    */
@@ -412,43 +414,166 @@ class LnaNode {
   std::vector<LnaNodePtr> lna_nodes;
 };
 
+/**
+ * Class defining a parameter node
+ */
 class ParameterNode : public LnaNode {
  public:
+  /**
+   * Create a new parameter node
+   */
   ParameterNode() : LnaNode(LnaNodeTypeNet_Param) {}
+
+  /**
+   * Return the Helena code of a parameter node
+   *
+   * @return Helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the parameter node
+   *
+   * @param _name new name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the parameter node
+   *
+   * @return name
+   */
   std::string get_name() const;
+
+  /**
+   * Set the number of the parameter node
+   *
+   * @param _number new number
+   */
   void set_number(const std::string& _number);
+
+  /**
+   * Get the number of the parameter node
+   *
+   * @return number of the node
+   */
   std::string get_number() const;
 
  private:
+  /**
+   * name of the parameter node
+   */
   std::string name;
+
+  /**
+   * number of the parameter node
+   */
   std::string number;
 };
+
+/**
+ * Type of pointers for ParameterNodes
+ */
 typedef std::shared_ptr<ParameterNode> ParameterNodePtr;
 
+/**
+ * Class representing a Net node
+ *
+ */
 class NetNode : public LnaNode {
  public:
+  /**
+   * Create a new Net node
+   */
   NetNode() : LnaNode(LnaNodeTypeNet) {}
+
+  /**
+   * Create a new Net node
+   *
+   * @param _name  name of the node
+   */
   NetNode(std::string _name) : LnaNode(LnaNodeTypeNet), name(_name) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the node
+   *
+   * @param _name new name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the node
+   *
+   * @return node's name
+   */
   std::string get_name() const;
 
+  /**
+   * Add parameter nodes to the collection
+   *
+   * @param _node  new parameter node
+   */
   void add_parameter(const ParameterNodePtr& _node);
 
+  /**
+   * Add subnode to the collection
+   *
+   * @param _node  new subnode
+   */
   void add_member(const LnaNodePtr& _node);
+
+  /**
+   * Delete a submodel from the collection
+   *
+   * @param x submodel to be deleted
+   */
   void delete_member(const unsigned int& x);
+
+  /**
+   * Update a submodel
+   *
+   * @param x submodel to be modified
+   * @param _node new submodel
+   */
   void update_member(const unsigned int& x, const LnaNodePtr& _node);
-  LnaNodePtr get_member(const unsigned int& x);
-  size_t num_members();
+
+  /**
+   * Get submodel from the collection
+   *
+   * @param x  identifier of the submodel
+   * @return a subdomel
+   */
+  LnaNodePtr get_member(const unsigned int& x) const;
+
+  /**
+   * Get the size of the net
+   *
+   * @return size
+   */
+  size_t num_members() const;
 
  private:
+  /**
+   * Name of the net
+   */
   std::string name;
+
+  /**
+   * Collection of parameter nodes
+   */
   std::vector<ParameterNodePtr> param_nodes;
 };
+
+/**
+ * Type of pointers for NetNodes
+ */
 typedef std::shared_ptr<NetNode> NetNodePtr;
 
 class StructuredNetNode : public LnaNode {

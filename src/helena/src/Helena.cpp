@@ -2,8 +2,16 @@
 
 namespace HELENA {
 
+/******************************************************************************
+ * Implementation of the LnaNode Class
+ *****************************************************************************/
+
 LnaNodeType LnaNode::get_node_type() const {
   return node_type;
+}
+
+size_t LnaNode::size() const {
+  return lna_nodes.size();
 }
 
 void LnaNode::append_sub_node(const LnaNodePtr& _node) {
@@ -22,72 +30,88 @@ LnaNodePtr LnaNode::get_sub_node(const unsigned int& x) const {
   return lna_nodes[x];
 }
 
-size_t LnaNode::size() {
-  return lna_nodes.size();
+/******************************************************************************
+ * Implementation of the ParameterNode Class
+ *****************************************************************************/
+
+std::string ParameterNode::source_code() {
+  std::string result = name + " := " + number;
+  return result;
 }
 
-/** Design the interface for the output lna file for Net
- */
+void ParameterNode::set_name(const std::string& _name) {
+  name = _name;
+}
+
+std::string ParameterNode::get_name() const {
+  return name;
+}
+
+void ParameterNode::set_number(const std::string& _number) {
+  number = _number;
+}
+
+std::string ParameterNode::get_number() const {
+  return number;
+}
+
+/******************************************************************************
+ * Implementation of the NetNode Class
+ *****************************************************************************/
+
 std::string NetNode::source_code() {
   std::stringstream result;
   result << name;
-  if (param_nodes.size() != 0) {
+
+  if (!param_nodes.empty()) {
     result << "(";
     for (auto it = param_nodes.begin(); it != param_nodes.end(); ++it) {
       result << (*it)->source_code();
-      if (it != param_nodes.end() - 1)
+      if (it != param_nodes.end() - 1) {
         result << ", ";
+      }
     }
     result << ")";
   }
+
   result << " {\n";
   for (auto it = lna_nodes.begin(); it != lna_nodes.end(); ++it) {
     result << (*it)->source_code();
   }
+
   result << "\n}";
   return result.str();
 }
 
-/** Set name for the node
- */
 void NetNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the node
- */
+
 std::string NetNode::get_name() const {
   return name;
 }
 
-/** Add parametters to the collection
- */
 void NetNode::add_parameter(const ParameterNodePtr& _node) {
   param_nodes.push_back(_node);
 }
-/** Add member to the node
- */
+
 void NetNode::add_member(const LnaNodePtr& _node) {
   append_sub_node(_node);
 }
 
-/** Delete the member of the node
- */
 void NetNode::delete_member(const unsigned int& x) {
   delete_sub_node(x);
 }
-/** Update the member of the node
- */
+
 void NetNode::update_member(const unsigned int& x, const LnaNodePtr& _node) {
   update_sub_node(x, _node);
 }
-/** Get a member of the node
- */
-LnaNodePtr NetNode::get_member(const unsigned int& x) {
+
+LnaNodePtr NetNode::get_member(const unsigned int& x) const {
   return get_sub_node(x);
 }
-/** Get the size of the net
- */
-size_t NetNode::num_members() {
+
+size_t NetNode::num_members() const {
   return size();
 }
 
@@ -221,33 +245,6 @@ LnaNodePtr StructuredNetNode::get_transition(const unsigned int& x) {
  */
 size_t StructuredNetNode::num_transitions() {
   return transition_nodes.size();
-}
-
-/** Connect the name and number
- */
-std::string ParameterNode::source_code() {
-  std::string result = name + " := " + number;
-  return result;
-}
-/** Set name to the parameter node
- */
-void ParameterNode::set_name(const std::string& _name) {
-  name = _name;
-}
-/** Get name of the parameter node
- */
-std::string ParameterNode::get_name() const {
-  return name;
-}
-/** Set number for the parameter node
- */
-void ParameterNode::set_number(const std::string& _number) {
-  number = _number;
-}
-/** Get number of the parameter node
- */
-std::string ParameterNode::get_number() const {
-  return number;
 }
 
 /** Return comment
