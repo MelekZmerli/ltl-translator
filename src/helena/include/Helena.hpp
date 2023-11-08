@@ -1141,17 +1141,21 @@ class ListColorNode : public ColorNode {
 typedef std::shared_ptr<ListColorNode> ListColorNodePtr;
 
 /**
- * Class representing constant nodes
+ * @brief Class representing a constant value
+ *
+ * As in programming languages, constants may be defined at the net level. A
+ * constant is defined by using the keyword `constant`. It must necessarily be
+ * assigned a value which must have the type of the constant.
  */
 class ConstantNode : public LnaNode {
  public:
   /**
-   * Create a new constant node
+   * Create a new constant
    */
   ConstantNode() : LnaNode(LnaNodeTypeConstant) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the constant
    *
    * @return helena code
    */
@@ -1181,12 +1185,12 @@ class ConstantNode : public LnaNode {
   /**
    * Get the type of the constant
    *
-   * @return type
+   * @return constant's type
    */
   std::string get_type() const;
 
   /**
-   * Set expression for the constant
+   * Set the expression of the constant
    *
    * @param _expression new expression
    */
