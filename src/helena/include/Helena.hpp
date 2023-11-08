@@ -1287,12 +1287,17 @@ class ParamNode : public LnaNode {
 
 /**
  * Type of pointers for ParamNode
- *
  */
 typedef std::shared_ptr<ParamNode> ParamNodePtr;
 
+/**
+ * Class representing a Function node
+ */
 class FunctionNode : public LnaNode {
  public:
+  /**
+   * Create a new node
+   */
   FunctionNode() : LnaNode(LnaNodeTypeFunc) {}
 
   /**
@@ -1302,16 +1307,60 @@ class FunctionNode : public LnaNode {
    */
   std::string source_code();
 
+  /**
+   * Set the name of the function
+   *
+   * @param _name function's name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the function
+   *
+   * @return function's name
+   */
   std::string get_name() const;
 
-  void set_returnType(const std::string& _returnType);
-  std::string get_returnType() const;
-
+  /**
+   * Add a parameter to the function
+   *
+   * @param _node new parameter
+   */
   void add_parameter(const ParamNodePtr& _node);
+
+  /**
+   * Get parameter of the function
+   *
+   * @param x identifier of the parameter
+   * @return parameter
+   */
   ParamNodePtr get_parameter(const unsigned int& x);
 
+  /**
+   * Set the return type of the function node
+   *
+   * @param _returnType return type
+   */
+  void set_returnType(const std::string& _returnType);
+
+  /**
+   * Get the return type of the function
+   * @return type
+   */
+  std::string get_returnType() const;
+
+  /**
+   * Set the body of the function
+   *
+   * @param _body body of the function
+   */
   void set_body(const std::string& _body);
+
+  /**
+   * Get the body of the function
+   *
+   * @return body of the function
+   */
   std::string get_body() const;
 
  private:
@@ -1320,10 +1369,22 @@ class FunctionNode : public LnaNode {
   std::vector<ParamNodePtr> parameters_spec;
   std::string body;
 };
+
+/**
+ * Type of pointers for FunctionNode
+ */
 typedef std::shared_ptr<FunctionNode> FunctionNodePtr;
 
+/**
+ * The state of a system modeled by a Petri net is given by the distribution
+ * (or marking) of items called tokens upon the places of the net. In high-level
+ * nets, these tokens are typed (i.e. the domain of the place).
+ */
 class PlaceNode : public LnaNode {
  public:
+  /**
+   * Create a new place
+   */
   PlaceNode() : LnaNode(LnaNodeTypePlace) {}
 
   /**
@@ -1333,19 +1394,74 @@ class PlaceNode : public LnaNode {
    */
   std::string source_code();
 
+  /**
+   * Set the name of the place
+   *
+   * @param _name place's name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the place
+   *
+   * @return  place's name
+   */
   std::string get_name() const;
 
+  /**
+   * Set the domain of the place
+   *
+   * @param _domain place's domain
+   */
   void set_domain(const std::string& _domain);
+
+  /**
+   * Get the domain of the place
+   *
+   * @return domain
+   */
   std::string get_domain() const;
 
+  /**
+   * Set the initialization of the place
+   *
+   * @param _init initialization
+   */
   void set_init(const std::string& _init);
+
+  /**
+   * Get the initialization of the place
+   *
+   * @return initialization
+   */
   std::string get_init() const;
 
+  /**
+   * Set the capacity of the place
+   *
+   * @param _capacity new capacity value
+   */
   void set_capacity(const std::string& _capacity);
+
+  /**
+   * Get the capacity of the place
+   *
+   * @return capacity value
+   */
   std::string get_capacity() const;
 
+  /**
+   * Set the type of the place
+   *
+   * @param _type place's type
+   */
   void set_type(const std::string& _type);
+
+  /**
+   * Get the type of the place
+   *
+   * @return place's type
+   */
   std::string get_type() const;
 
  private:
@@ -1355,10 +1471,20 @@ class PlaceNode : public LnaNode {
   std::string capacity;
   std::string type;
 };
+
+/**
+ * Type of pointers for PlaceNode
+ */
 typedef std::shared_ptr<PlaceNode> PlaceNodePtr;
 
+/**
+ * Class representing an arc in the net
+ */
 class ArcNode : public LnaNode {
  public:
+  /**
+   * Create a new arc
+   */
   ArcNode() : LnaNode(LnaNodeTypeArc) {}
 
   /**
@@ -1368,16 +1494,42 @@ class ArcNode : public LnaNode {
    */
   std::string source_code();
 
+  /**
+   * Set the place of the arc
+   *
+   * @param _placeName place name
+   */
   void set_placeName(const std::string& _placeName);
+
+  /**
+   * Get the place of the arc
+   *
+   * @return  place's name
+   */
   std::string get_placeName() const;
 
+  /**
+   * Set the label of the arc
+   *
+   * @param _label arc label
+   */
   void set_label(const std::string& _label);
+
+  /**
+   * Get the label of the arc
+   *
+   * @return label
+   */
   std::string get_label() const;
 
  private:
   std::string placeName;
   std::string label;
 };
+
+/**
+ * Type of pointers for ArcNode
+ */
 typedef std::shared_ptr<ArcNode> ArcNodePtr;
 
 class TransitionNode : public LnaNode {

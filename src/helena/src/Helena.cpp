@@ -464,149 +464,142 @@ std::string FunctionNode::source_code() {
   std::string result = "function " + name + " (";
   for (auto it = parameters_spec.begin(); it != parameters_spec.end(); ++it) {
     result += (*it)->source_code();
-    if (it != parameters_spec.end() - 1)
+    if (it != parameters_spec.end() - 1) {
       result += ", ";
+    }
   }
+
   result += ")";
-  if (returnType != "")
+  if (!returnType.empty()) {
     result += " -> " + returnType;
-  if (body != "")
-    result += "{\n" + body + "\n}\n";
-  else
-    result += ";\n";
+  }
+
+  result += (!body.empty()) ? "{\n" + body + "\n}\n" : ";\n";
   return result;
 }
-/** Set name of the Function node
- */
+
 void FunctionNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the Function node
- */
+
 std::string FunctionNode::get_name() const {
   return name;
 }
-/** Get parameter of the function node
- */
-ParamNodePtr FunctionNode::get_parameter(const unsigned int& x) {
-  if (x < parameters_spec.size())
-    return parameters_spec[x];
-}
-/** Set return type of the Function node
- */
-void FunctionNode::set_returnType(const std::string& _returnType) {
-  returnType = _returnType;
-}
-/** Get the return type
- */
-std::string FunctionNode::get_returnType() const {
-  return returnType;
-}
-/** Add the parameter of the fucntion
- */
+
 void FunctionNode::add_parameter(const ParamNodePtr& _node) {
   parameters_spec.push_back(_node);
 }
-/** Set body for the function
- */
+
+ParamNodePtr FunctionNode::get_parameter(const unsigned int& x) {
+  return (x < parameters_spec.size()) ? parameters_spec[x] : nullptr;
+}
+
+void FunctionNode::set_returnType(const std::string& _returnType) {
+  returnType = _returnType;
+}
+
+std::string FunctionNode::get_returnType() const {
+  return returnType;
+}
+
 void FunctionNode::set_body(const std::string& _body) {
   body = _body;
 }
-/** Get the body of the fucntion
- */
+
 std::string FunctionNode::get_body() const {
   return body;
 }
-/** Processing the Place node
- */
+
+/******************************************************************************
+ * Implementation of the PlaceNode Class
+ *****************************************************************************/
+
 std::string PlaceNode::source_code() {
   std::string result = "place " + name + " {\n\tdom : " + domain + ";";
-  if (init != "")
+
+  if (!init.empty()) {
     result += "\n\tinit : " + init + ";";
-  if (capacity != "")
-    if (capacity != "")
-      result += "\n\tcapacity : " + capacity + ";";
-  if (type != "")
+  }
+
+  if (!capacity.empty()) {
+    result += "\n\tcapacity : " + capacity + ";";
+  }
+
+  if (!type.empty()) {
     result += "\n\ttype : " + type + ";";
+  }
+
   result += "\n}\n";
   return result;
 }
-/** Set name of the place node
- */
+
 void PlaceNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the place node
- */
+
 std::string PlaceNode::get_name() const {
   return name;
 }
-/** Set domain of the place node
- */
+
 void PlaceNode::set_domain(const std::string& _domain) {
   domain = _domain;
 }
-/** Get domain of the place node
- */
+
 std::string PlaceNode::get_domain() const {
   return domain;
 }
-/** Set initilize for the place node
- */
+
 void PlaceNode::set_init(const std::string& _init) {
   init = _init;
 }
-/** Get initialize of the place node
- */
+
 std::string PlaceNode::get_init() const {
   return init;
 }
-/** Set the capacity of the place node
- */
+
 void PlaceNode::set_capacity(const std::string& _capacity) {
   capacity = _capacity;
 }
-/** Get capacity of the place node
- */
+
 std::string PlaceNode::get_capacity() const {
   return capacity;
 }
-/** Set type of the place node
- */
+
 void PlaceNode::set_type(const std::string& _type) {
   type = _type;
 }
-/** Get type of the place node
- */
 std::string PlaceNode::get_type() const {
   return type;
 }
-/** Processing for the Arc node
- */
+
 std::string ArcNode::source_code() {
   std::string result = placeName + " : " + label + ";";
   return result;
 }
-/** Set place name
- */
+
+/******************************************************************************
+ * Implementation of the ArcNode Class
+ *****************************************************************************/
 void ArcNode::set_placeName(const std::string& _placeName) {
   placeName = _placeName;
 }
-/** Get place name
- */
+
 std::string ArcNode::get_placeName() const {
   return placeName;
 }
-/** Set label for the Arc node
- */
+
 void ArcNode::set_label(const std::string& _label) {
   label = _label;
 }
-/** Get label for the Arc node
- */
+
 std::string ArcNode::get_label() const {
   return label;
 }
+
+/******************************************************************************
+ * Implementation of the TransitionNode Class
+ *****************************************************************************/
+
 /** Processing for the Transition node
  */
 std::string TransitionNode::source_code() {
