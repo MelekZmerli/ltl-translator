@@ -1483,7 +1483,7 @@ class ArcNode : public LnaNode {
   ArcNode() : LnaNode(LnaNodeTypeArc) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the arc
    *
    * @return helena code
    */
@@ -1492,7 +1492,7 @@ class ArcNode : public LnaNode {
   /**
    * Set the place of the arc
    *
-   * @param _placeName place name
+   * @param _placeName place's name
    */
   void set_placeName(const std::string& _placeName);
 
@@ -1506,14 +1506,14 @@ class ArcNode : public LnaNode {
   /**
    * Set the label of the arc
    *
-   * @param _label arc label
+   * @param _label arc's label
    */
   void set_label(const std::string& _label);
 
   /**
    * Get the label of the arc
    *
-   * @return label
+   * @return arc's label
    */
   std::string get_label() const;
 
