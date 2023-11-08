@@ -1215,46 +1215,48 @@ class ConstantNode : public LnaNode {
 typedef std::shared_ptr<ConstantNode> ConstantNodePtr;
 
 /**
- * Class representing a Param node
+ * @brief Class representing a function parameter
+ *
+ * Functions take some parameters.
  */
 class ParamNode : public LnaNode {
  public:
   /**
-   * Create a new node
+   * Create a new function parameter
    */
   ParamNode() : LnaNode(LnaNodeTypeParam) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the function parameter
    *
    * @return helena code
    */
   std::string source_code();
 
   /**
-   * Set the name of the node
+   * Set the name of the parameter
    * @param _name new name
    */
   void set_name(const std::string& _name);
 
   /**
-   * Get the name of the node
+   * Get the name of the parameter
    *
-   * @return name
+   * @return parameter's name
    */
   std::string get_name() const;
 
   /**
-   * Set the type of the node
+   * Set the type of the parameter
    *
    * @param _type new type
    */
   void set_type(const std::string& _type);
 
   /**
-   * Get the type of the node
+   * Get the type of the parameter
    *
-   * @return type
+   * @return parameter's type
    */
   std::string get_type() const;
 
