@@ -1065,47 +1065,53 @@ class StructColorNode : public ColorNode {
 typedef std::shared_ptr<StructColorNode> StructColorNodePtr;
 
 /**
- * Class representing a list color node
+ * @brief Class representing a list type
+ *
+ * An element of a list type is a list which is defined as a finite sequence of
+ * elements of the same type. The same item may appear several times in a list.
+ * The elements in a list can be directly accessed via indexes. The capacity of
+ * a list type is the maximal length of any list of this type. The expression
+ * provided must be statically evaluable and strictly positive.
  */
 class ListColorNode : public ColorNode {
  public:
   /**
-   * Create a new list color node
+   * Create a new list type
    */
   ListColorNode() : ColorNode(LnaNodeTypeListColor) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the list type
    *
    * @return helena code
    */
   std::string source_code();
 
   /**
-   * Set the index type
+   * Set the type of the index of the list
    *
-   * @param _index_type new type
+   * @param _index_type index's type
    */
   void set_index_type(const std::string& _index_type);
 
   /**
-   * Get the index type
+   * Get the type of the index of the list
    *
-   * @return type
+   * @return index's type
    */
   std::string get_index_type() const;
 
   /**
-   * Set the element type
+   * Set the type of the elements of the list
    *
-   * @param _element_type
+   * @param _element_type element's type
    */
   void set_element_type(const std::string& _element_type);
 
   /**
-   * Get the element type
+   * Get the type of the elements of the list
    *
-   * @return type
+   * @return element's type
    */
   std::string get_element_type() const;
 
@@ -1124,19 +1130,8 @@ class ListColorNode : public ColorNode {
   std::string get_capacity() const;
 
  private:
-  /**
-   * Index type
-   */
   std::string index_type;
-
-  /**
-   * Element type
-   */
   std::string element_type;
-
-  /**
-   * Capacity
-   */
   std::string capacity;
 };
 
