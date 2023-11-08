@@ -409,6 +409,8 @@ class LnaNode {
 };
 
 /**
+ * @brief Class representing a net parameter
+ *
  * A net may have parameters such as e.g., a number of processes. They are
  * interpreted as constants of the predefined int type. The advantage of using
  * parameters is that their values can be changed via the command line when
@@ -417,7 +419,7 @@ class LnaNode {
 class ParameterNode : public LnaNode {
  public:
   /**
-   * Create a new parameter node
+   * Create a new net parameter
    */
   ParameterNode() : LnaNode(LnaNodeTypeNet_Param) {}
 
@@ -474,20 +476,23 @@ class ParameterNode : public LnaNode {
 typedef std::shared_ptr<ParameterNode> ParameterNodePtr;
 
 /**
- * Class representing a Net node
+ * @brief Class representing a net
  *
+ * A net is described by a list of definitions that are the components of the
+ * net. Elements that may be defined in a net are date types, constants,
+ * functions, places, transitions, and state propositions
  */
 class NetNode : public LnaNode {
  public:
   /**
-   * Create a new Net node
+   * Create a new net
    */
   NetNode() : LnaNode(LnaNodeTypeNet) {}
 
   /**
-   * Create a new Net node
+   * Create a new net
    *
-   * @param _name  name of the node
+   * @param _name  name of the net
    */
   NetNode(std::string _name) : LnaNode(LnaNodeTypeNet), name(_name) {}
 
@@ -499,72 +504,65 @@ class NetNode : public LnaNode {
   std::string source_code();
 
   /**
-   * Set the name of the node
+   * Set the name of the net
    *
    * @param _name new name
    */
   void set_name(const std::string& _name);
 
   /**
-   * Get the name of the node
+   * Get the name of the net
    *
-   * @return node's name
+   * @return net's name
    */
   std::string get_name() const;
 
   /**
-   * Add parameter nodes to the collection
+   * Add a net parameter
    *
-   * @param _node  new parameter node
+   * @param _node new net parameter
    */
   void add_parameter(const ParameterNodePtr& _node);
 
   /**
-   * Add subnode to the collection
+   * Add a definition to the net
    *
-   * @param _node  new subnode
+   * @param _node new definition
    */
   void add_member(const LnaNodePtr& _node);
 
   /**
-   * Delete a submodel from the collection
+   * Delete a definition from the net
    *
-   * @param x submodel to be deleted
+   * @param x definition to be deleted
    */
   void delete_member(const unsigned int& x);
 
   /**
-   * Update a submodel
+   * Update a definition
    *
-   * @param x submodel to be modified
-   * @param _node new submodel
+   * @param x definition to be modified
+   * @param _node new definition
    */
   void update_member(const unsigned int& x, const LnaNodePtr& _node);
 
   /**
-   * Get submodel from the collection
+   * Get definition from the net
    *
-   * @param x  identifier of the submodel
-   * @return a subdomel
+   * @param x identifier of the definition
+   * @return definition
    */
   LnaNodePtr get_member(const unsigned int& x) const;
 
   /**
-   * Get the size of the net
+   * Get the number of definitions
    *
    * @return size
    */
   size_t num_members() const;
 
  private:
-  /**
-   * Name of the net
-   */
   std::string name;
-
-  /**
-   * Collection of parameter nodes
-   */
   std::vector<ParameterNodePtr> param_nodes;
 };
 
