@@ -1,6 +1,7 @@
 #ifndef DCR2CPN_TRANSLATOR_H_
 #define DCR2CPN_TRANSLATOR_H_
 
+#include <map>
 #include <string>
 
 #include "DCR.hpp"

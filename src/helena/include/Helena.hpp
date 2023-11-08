@@ -1,11 +1,12 @@
 #ifndef HELENA_HELENA_H_
 #define HELENA_HELENA_H_
 
-#include <algorithm>
+#include <stddef.h>
+
 #include <list>
-#include <map>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <vector>
 
 using namespace std;

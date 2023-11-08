@@ -1,5 +1,7 @@
 #include "Helena.hpp"
 
+#include <algorithm>
+
 namespace HELENA {
 
 /******************************************************************************
