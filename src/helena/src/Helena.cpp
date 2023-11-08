@@ -283,6 +283,29 @@ void ColorNode::set_init_value(const std::string& _value) {
 std::string ColorNode::get_init_value() const {
   return init_value;
 }
+
+/******************************************************************************
+ * Implementation of the SubColorNode Class
+ *****************************************************************************/
+
+std::string SubColorNode::source_code() {
+  std::string result =
+      "subtype " + name + " : " + subColor->get_name() + " " + typeDef + ";\n";
+  return result;
+}
+
+void SubColorNode::set_subColor(const ColorNodePtr _subcolor) {
+  subColor = _subcolor;
+}
+
+ColorNodePtr SubColorNode::get_subColor() const {
+  return subColor;
+}
+
+/******************************************************************************
+ * Implementation of the Component Class
+ *****************************************************************************/
+
 /** Connect the information for the Component node
  */
 std::string ComponentNode::source_code() {
@@ -309,23 +332,7 @@ void ComponentNode::set_type(const std::string& _type) {
 std::string ComponentNode::get_type() const {
   return type;
 }
-/** Process the Sub colour node
- */
-std::string SubColorNode::source_code() {
-  std::string result =
-      "subtype " + name + " : " + supColor->get_name() + " " + typeDef + ";\n";
-  return result;
-}
-/** Set sub color node
- */
-void SubColorNode::set_supColor(const ColorNodePtr _supColor) {
-  supColor = _supColor;
-}
-/** Get sub colo node
- */
-ColorNodePtr SubColorNode::get_supColor() const {
-  return supColor;
-}
+
 /** Process for the struct color node
  */
 std::string StructColorNode::source_code() {

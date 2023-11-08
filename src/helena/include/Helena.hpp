@@ -904,19 +904,55 @@ class ColorNode : public LnaNode {
  */
 typedef std::shared_ptr<ColorNode> ColorNodePtr;
 
+/**
+ * Class representing a SubColor node
+ */
 class SubColorNode : public ColorNode {
  public:
+  /**
+   * Create a new subcolor node
+   */
   SubColorNode() : ColorNode(LnaNodeTypeSub_Color) {}
-  SubColorNode(ColorNodePtr _supColor)
-      : ColorNode(LnaNodeTypeSub_Color), supColor(_supColor) {}
+
+  /**
+   * Create a new subcolor node
+   *
+   * @param _sub_color subcolor
+   */
+  SubColorNode(ColorNodePtr _sub_color)
+      : ColorNode(LnaNodeTypeSub_Color), subColor(_sub_color) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
-  void set_supColor(const ColorNodePtr _supColor);
-  ColorNodePtr get_supColor() const;
+  /**
+   * Set the subcolor of the node
+   *
+   * @param _subcolor  subcolor
+   */
+  void set_subColor(const ColorNodePtr _subcolor);
+
+  /**
+   * Get subcolor of the node
+   *
+   * @return  subcolor
+   */
+  ColorNodePtr get_subColor() const;
 
  private:
-  ColorNodePtr supColor;
+  /**
+   * subcolor node
+   */
+  ColorNodePtr subColor;
 };
+
+/**
+ * Type of pointers for SubColorNodes
+ */
 typedef std::shared_ptr<SubColorNode> SubColorNodePtr;
 
 class ComponentNode : public LnaNode {

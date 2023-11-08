@@ -257,7 +257,7 @@ ColorNodePtr handleColor(list<string>::iterator& _iter,
           color_typedef.end());
       sub_color->set_typeDef(color_typedef);
     }
-    sub_color->set_supColor(color);
+    sub_color->set_subColor(color);
 
     return std::static_pointer_cast<ColorNode>(sub_color);
   }
