@@ -1532,8 +1532,17 @@ class ArcNode : public LnaNode {
  */
 typedef std::shared_ptr<ArcNode> ArcNodePtr;
 
+/**
+ * Transitions of a Petri net are active nodes that may change the state of the
+ * system (i.e., the distribution of tokens in the places). Transitions need
+ * some tokens in their input places to be firable and produce tokens in their
+ * output places.
+ */
 class TransitionNode : public LnaNode {
  public:
+  /**
+   * Create a new transition
+   */
   TransitionNode() : LnaNode(LnaNodeTypeTransition) {}
 
   /**
@@ -1543,30 +1552,116 @@ class TransitionNode : public LnaNode {
    */
   std::string source_code();
 
+  /**
+   * Set the name of the transition
+   *
+   * @param _name name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the transition
+   *
+   * @return transition's name
+   */
   std::string get_name() const;
 
+  /**
+   * Add an ingoing arc
+   *
+   * @param _node arc node
+   */
   void add_inArc(const ArcNodePtr& _node);
+
+  /**
+   * Get ingoing arc by its name
+   *
+   * @param _name arc's name
+   * @return arc node
+   */
   ArcNodePtr get_in_arc_by_name(const std::string& _name);
 
+  /**
+   * Add an outgoing arc
+   *
+   * @param _node arc node
+   */
   void add_outArc(const ArcNodePtr& _node);
+
+  /**
+   * Get outgoing arc by its name
+   *
+   * @param _name arc's name
+   * @return  arc node
+   */
   ArcNodePtr get_out_arc_by_name(const std::string& _name);
 
+  /**
+   * Add an inhibitor arc to the transition
+   *
+   * @param _node arc node
+   */
   void add_inhibitArc(const ArcNodePtr& _node);
 
-  void add_let(const std::string& _node);
-
+  /**
+   * Set the guard of the transition
+   *
+   * @param _guard guard
+   */
   void set_guard(const std::string& _guard);
+
+  /**
+   * Get the guard of the transition
+   *
+   * @return guard
+   */
   std::string get_guard() const;
 
+  /**
+   * Set the priority of the transition
+   *
+   * @param _priority new priority
+   */
   void set_priority(const std::string& _priority);
+
+  /**
+   * Get the priority of the transition
+   *
+   * @return prioritiy
+   */
   std::string get_priority() const;
 
+  /**
+   * Set the description of the transition
+   *
+   * @param _description new description
+   */
   void set_description(const std::string& _description);
+
+  /**
+   * Get the description of the transition
+   * @return description
+   */
   std::string get_description() const;
 
+  /**
+   * Set if a transition is safe
+   * @param _safe safe value
+   */
   void set_safe(const std::string& _safe);
+
+  /**
+   * Get if a transition is safe
+   *
+   * @return safe value
+   */
   std::string get_safe() const;
+
+  /**
+   * Add a new bounded variable to the transition
+   * @param _node  varibles
+   */
+  void add_let(const std::string& _node);
 
  private:
   std::string name;
@@ -1579,6 +1674,10 @@ class TransitionNode : public LnaNode {
   std::string description;
   std::string safe;
 };
+
+/**
+ * Type of pointers for a TransitionNode
+ */
 typedef std::shared_ptr<TransitionNode> TransitionNodePtr;
 
 }  // namespace HELENA

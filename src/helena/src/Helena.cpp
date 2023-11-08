@@ -600,63 +600,71 @@ std::string ArcNode::get_label() const {
  * Implementation of the TransitionNode Class
  *****************************************************************************/
 
-/** Processing for the Transition node
- */
 std::string TransitionNode::source_code() {
   std::string result = "transition " + name + " {\n\tin {\n";
-  for (auto it = inArcs.begin(); it != inArcs.end(); ++it)
+
+  // ingoing arcs
+  for (auto it = inArcs.begin(); it != inArcs.end(); ++it) {
     result += "\t\t" + (*it)->source_code() + "\n";
+  }
+
+  // outgoing arcs
   result += "\t}\n\tout {\n";
-  for (auto it = outArcs.begin(); it != outArcs.end(); ++it)
+  for (auto it = outArcs.begin(); it != outArcs.end(); ++it) {
     result += "\t\t" + (*it)->source_code() + "\n";
+  }
   result += "\t}\n";
-  if (lets.size() != 0) {
+
+  // bound variables
+  if (!lets.empty()) {
     result += "\tlet {\n";
     for (auto it = lets.begin(); it != lets.end(); ++it) {
       result += "\t\t" + (*it) + "\n";
     }
     result += "\t\t}\n";
   }
-  if (inhibitArcs.size() != 0) {
+
+  // inhibitor arcs
+  if (!inhibitArcs.empty()) {
     result += "\tinhibit {\n";
-    for (auto it = inhibitArcs.begin(); it != inhibitArcs.end(); ++it)
+    for (auto it = inhibitArcs.begin(); it != inhibitArcs.end(); ++it) {
       result += "\t\t" + (*it)->source_code() + "\n";
+    }
     result += "\t}\n";
   }
-  if (guard != "")
+
+  if (!guard.empty()) {
     result += "\tguard : " + guard + "\n";
-  if (priority != "")
+  }
+
+  if (!priority.empty()) {
     result += "\tpriority : " + priority + "\n";
-  if (description != "")
+  }
+
+  if (!description.empty()) {
     result += "\tdescription : " + description + "\n";
-  if (safe != "")
+  }
+
+  if (!safe.empty()) {
     result += "\tsafe\n";
+  }
+
   result += "}\n";
   return result;
 }
 
-/** Set name for the transition node
- */
 void TransitionNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the Transition node
- */
+
 std::string TransitionNode::get_name() const {
   return name;
 }
-/** Add an input Arc node to the net
- */
+
 void TransitionNode::add_inArc(const ArcNodePtr& _node) {
   inArcs.push_back(_node);
 }
-/** Add an output Arc node to the net
- */
-void TransitionNode::add_outArc(const ArcNodePtr& _node) {
-  outArcs.push_back(_node);
-}
-/** Get in arc by input name
- */
+
 ArcNodePtr TransitionNode::get_in_arc_by_name(const std::string& _name) {
   for (auto it = inArcs.begin(); it != inArcs.end(); ++it) {
     if ((*it)->get_placeName() == _name) {
@@ -665,8 +673,11 @@ ArcNodePtr TransitionNode::get_in_arc_by_name(const std::string& _name) {
   }
   return nullptr;
 }
-/** Get out arc by input name
- */
+
+void TransitionNode::add_outArc(const ArcNodePtr& _node) {
+  outArcs.push_back(_node);
+}
+
 ArcNodePtr TransitionNode::get_out_arc_by_name(const std::string& _name) {
   for (auto it = outArcs.begin(); it != outArcs.end(); ++it) {
     if ((*it)->get_placeName() == _name) {
@@ -676,53 +687,41 @@ ArcNodePtr TransitionNode::get_out_arc_by_name(const std::string& _name) {
   return nullptr;
 }
 
-/** Add an inhibit Arc to the net
- */
 void TransitionNode::add_inhibitArc(const ArcNodePtr& _node) {
   inhibitArcs.push_back(_node);
 }
-/** Set guard for the transition
- */
+
 void TransitionNode::set_guard(const std::string& _guard) {
   guard = _guard;
 }
-/** Get the guard of the transition
- */
+
 std::string TransitionNode::get_guard() const {
   return guard;
 }
-/** Set priority for the transition
- */
+
 void TransitionNode::set_priority(const std::string& _priority) {
   priority = _priority;
 }
-/** Get priority of the Transition
- */
+
 std::string TransitionNode::get_priority() const {
   return priority;
 }
-/** Set description for the transitions
- */
+
 void TransitionNode::set_description(const std::string& _description) {
   description = _description;
 }
-/** Get the description for the transition
- */
+
 std::string TransitionNode::get_description() const {
   return description;
 }
-/** Set safe for the Transition node
- */
+
 void TransitionNode::set_safe(const std::string& _safe) {
   safe = _safe;
 }
-/** Get safe of the transition node
- */
 std::string TransitionNode::get_safe() const {
   return safe;
 }
-/** Add a _node to let
- */
+
 void TransitionNode::add_let(const std::string& _node) {
   lets.push_back(_node);
 }
