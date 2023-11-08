@@ -938,6 +938,10 @@ typedef std::shared_ptr<SubColorNode> SubColorNodePtr;
 
 /**
  * @brief Class representing a component
+ *
+ * Elements of a structured type consist in contiguous elements called
+ * components which may be of different types. Each component is identified by a
+ * name.
  */
 class ComponentNode : public LnaNode {
  public:
@@ -1001,31 +1005,35 @@ class ComponentNode : public LnaNode {
 typedef std::shared_ptr<ComponentNode> ComponentNodePtr;
 
 /**
- * Class representing a struct color node
+ * @brief Class representing a structured type
+ *
+ * Elements of a structured type consist in contiguous elements called
+ * components which may be of different types. The number of elements in the
+ * type is equal to the number of components in the declaration.
  */
 class StructColorNode : public ColorNode {
  public:
   /**
-   * Create a new node
+   * Create a new structured type
    */
   StructColorNode() : ColorNode(LnaNodeTypeStruct_Color) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of thestructured type
    *
    * @return helena code
    */
   std::string source_code();
 
   /**
-   * Add a new component to the color
+   * Add a new component to the structured type
    *
    * @param _component component to be added
    */
   void add_component(const ComponentNodePtr& _component);
 
   /**
-   * Get a component
+   * Get a component from the structured type
    *
    * @param x identifier of the component
    * @return component
@@ -1048,9 +1056,6 @@ class StructColorNode : public ColorNode {
   size_t num_components() const;
 
  private:
-  /**
-   * Components in the structure
-   */
   std::vector<ComponentNodePtr> components;
 };
 
