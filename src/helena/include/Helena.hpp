@@ -339,7 +339,7 @@ class LnaNode;
 typedef shared_ptr<LnaNode> LnaNodePtr;
 
 /**
- * Class defining a Lna node
+ * Abstract class defining a Helena element
  */
 class LnaNode {
  public:
@@ -404,19 +404,15 @@ class LnaNode {
    */
   LnaNodePtr get_sub_node(const unsigned int& x) const;
 
-  /**
-   * type of the node
-   */
   LnaNodeType node_type;
-
-  /**
-   * list of subnodes
-   */
   std::vector<LnaNodePtr> lna_nodes;
 };
 
 /**
- * Class defining a parameter node
+ * A net may have parameters such as e.g., a number of processes. They are
+ * interpreted as constants of the predefined int type. The advantage of using
+ * parameters is that their values can be changed via the command line when
+ * helena is invoked, i.e., without changing the model file.
  */
 class ParameterNode : public LnaNode {
  public:
@@ -433,30 +429,30 @@ class ParameterNode : public LnaNode {
   std::string source_code();
 
   /**
-   * Set the name of the parameter node
+   * Set the name of the net parameter
    *
    * @param _name new name
    */
   void set_name(const std::string& _name);
 
   /**
-   * Get the name of the parameter node
+   * Get the name of the net parameter
    *
    * @return name
    */
   std::string get_name() const;
 
   /**
-   * Set the number of the parameter node
+   * Set the value of the net parameter
    *
-   * @param _number new number
+   * @param _number new parameter value
    */
   void set_number(const std::string& _number);
 
   /**
-   * Get the number of the parameter node
+   * Get the value of the net parameter
    *
-   * @return number of the node
+   * @return value of the net parameter
    */
   std::string get_number() const;
 
