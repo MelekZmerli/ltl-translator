@@ -578,7 +578,6 @@ typedef std::shared_ptr<NetNode> NetNodePtr;
 
 /**
  * Class representing a StructuredNet node
- *
  */
 class StructuredNetNode : public LnaNode {
  public:
@@ -764,43 +763,145 @@ class StructuredNetNode : public LnaNode {
  */
 typedef std::shared_ptr<StructuredNetNode> StructuredNetNodePtr;
 
+/**
+ * Class representing a Comment node
+ */
 class CommentNode : public LnaNode {
  public:
+  /**
+   * Create a new comment node
+   */
   CommentNode() : LnaNode(LnaNodeTypeComment) {}
+
+  /**
+   * Create a new comment node
+   *
+   * @param _comment content of the comment
+   */
   CommentNode(const std::string& _comment)
       : comment(_comment), LnaNode(LnaNodeTypeComment) {}
+
+  /**
+   * Return the Helena code of a comment node
+   *
+   * @return Helena code
+   */
   std::string source_code();
 
+  /**
+   * Set content of the comment node
+   *
+   * @param _comment content of the comment
+   */
   void set_comment(const std::string& _comment);
-  std::string get_comment();
+
+  /**
+   * Get content of the comment
+   *
+   * @return content
+   */
+  std::string get_comment() const;
 
  private:
+  /**
+   * content of the comment
+   */
   std::string comment;
 };
+
+/**
+ * Type of pointers for CommentNodes
+ */
 typedef std::shared_ptr<CommentNode> CommentNodePtr;
 
-// TODO: define classes for each type of color (range, mod, struct..)..
+/**
+ * Class representing a Color node
+ *
+ * TODO: define classes for each type of color (range, mod, struct..)..
+ */
 class ColorNode : public LnaNode {
  public:
+  /**
+   * Create a new color node
+   */
   ColorNode() : LnaNode(LnaNodeTypeColor) {}
-  ColorNode(LnaNodeType NodeType) : LnaNode(NodeType) {}
 
+  /**
+   * Create a new color node
+   *
+   * @param _node_type type of the new node
+   */
+  ColorNode(LnaNodeType _node_type) : LnaNode(_node_type) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the color node
+   *
+   * @param _name name of the node
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the color node
+   *
+   * @return node's name
+   */
   std::string get_name() const;
 
+  /**
+   * Set the type of the color node
+   *
+   * @param _typeDef type
+   */
   void set_typeDef(const std::string& _typeDef);
+
+  /**
+   * Get the type of the color node
+   *
+   * @return node's type
+   */
   std::string get_typeDef() const;
 
+  /**
+   * Set initial value of the color node
+   *
+   * @param _value initial value
+   */
   void set_init_value(const std::string& _value);
+
+  /**
+   * Get initial value of the color node
+   *
+   * @return initial value
+   */
   std::string get_init_value() const;
 
  protected:
+  /**
+   * Name of the color node
+   */
   std::string name;
+
+  /**
+   * Type of the color node
+   */
   std::string typeDef;
+
+  /**
+   * Initial value of the node
+   */
   std::string init_value;
 };
+
+/**
+ * Type of pointers for ColorNodes
+ */
 typedef std::shared_ptr<ColorNode> ColorNodePtr;
 
 class SubColorNode : public ColorNode {

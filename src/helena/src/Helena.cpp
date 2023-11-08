@@ -235,56 +235,51 @@ size_t StructuredNetNode::num_transitions() const {
   return transition_nodes.size();
 }
 
-/** Return comment
- */
+/******************************************************************************
+ * Implementation of the CommentNode Class
+ *****************************************************************************/
+
 std::string CommentNode::source_code() {
   return comment;
 }
-/** Set comment for the comment node
- */
+
 void CommentNode::set_comment(const std::string& _comment) {
   comment = _comment;
 }
-/** Get comment of the comment node
- */
-std::string CommentNode::get_comment() {
+
+std::string CommentNode::get_comment() const {
   return comment;
 }
 
-/** Append information
- */
+/******************************************************************************
+ * Implementation of the ColorNode Class
+ *****************************************************************************/
+
 std::string ColorNode::source_code() {
-  // visit(this);
   std::string result = "type " + name + " : " + typeDef + ";\n";
   return result;
 }
-/** Set name for the colour node
- */
+
 void ColorNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the colour node
- */
+
 std::string ColorNode::get_name() const {
   return name;
 }
-/** Set type definition
- */
+
 void ColorNode::set_typeDef(const std::string& _typeDef) {
   typeDef = _typeDef;
 }
-/** Get type definition
- */
+
 std::string ColorNode::get_typeDef() const {
   return typeDef;
 }
-/** Set init value
- */
+
 void ColorNode::set_init_value(const std::string& _value) {
   init_value = _value;
 }
-/** Get type definition
- */
+
 std::string ColorNode::get_init_value() const {
   return init_value;
 }
