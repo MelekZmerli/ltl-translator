@@ -327,76 +327,80 @@ std::string ComponentNode::get_type() const {
   return type;
 }
 
-/** Process for the struct color node
- */
+/******************************************************************************
+ * Implementation of the StructColorNode Class
+ *****************************************************************************/
+
 std::string StructColorNode::source_code() {
   std::string result = "type " + name + " : struct { ";
-  for (auto it = components.begin(); it != components.end(); ++it)
+
+  for (auto it = components.begin(); it != components.end(); ++it) {
     result += (*it)->source_code();
+  }
+
   result += "};\n";
   return result;
 }
-/** Add component to the struct
- */
+
 void StructColorNode::add_component(const ComponentNodePtr& _component) {
   components.push_back(_component);
 }
-/** Get component of the struct color node
- */
+
 ComponentNodePtr StructColorNode::get_component(const unsigned int& x) {
   return components[x];
 }
-/** Get component by name
- */
+
 ComponentNodePtr StructColorNode::get_component_by_name(const string& _name) {
-  for (auto it = components.begin(); it != components.end(); ++it)
-    if ((*it)->get_name() == _name)
+  for (auto it = components.begin(); it != components.end(); ++it) {
+    if ((*it)->get_name() == _name) {
       return (*it);
+    }
+  }
   return nullptr;
 }
-/** Get size of the components
- */
-size_t StructColorNode::num_components() {
+
+size_t StructColorNode::num_components() const {
   return components.size();
 }
-/** Processing the List of colour node
- */
+
+/******************************************************************************
+ * Implementation of the ListColorNode Class
+ *****************************************************************************/
+
 std::string ListColorNode::source_code() {
-  // visit(this);
   std::string result = "type " + name + " : list[" + index_type + "] of " +
                        element_type + " with capacity " + capacity + ";\n";
   return result;
 }
-/** Set value for index type
- */
+
 void ListColorNode::set_index_type(const std::string& _index_type) {
   index_type = _index_type;
 }
-/** Get value of the index type
- */
+
 std::string ListColorNode::get_index_type() const {
   return index_type;
 }
-/** Set value for the element type
- */
+
 void ListColorNode::set_element_type(const std::string& _element_type) {
   element_type = _element_type;
 }
-/** Get value of the element type
- */
+
 std::string ListColorNode::get_element_type() const {
   return element_type;
 }
-/** Set value for the capacity
- */
+
 void ListColorNode::set_capacity(const std::string& _capacity) {
   capacity = _capacity;
 }
-/** Get value of the capacity
- */
+
 std::string ListColorNode::get_capacity() const {
   return capacity;
 }
+
+/******************************************************************************
+ * Implementation of the ConstantNode Class
+ *****************************************************************************/
+
 /** Processing for the constant node
  */
 std::string ConstantNode::source_code() {

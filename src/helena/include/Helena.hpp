@@ -1020,45 +1020,155 @@ class ComponentNode : public LnaNode {
    */
   std::string type;
 };
+
+/**
+ * Type of pointers for ComponentNodes
+ */
 typedef std::shared_ptr<ComponentNode> ComponentNodePtr;
 
+/**
+ * Class representing a struct color node
+ */
 class StructColorNode : public ColorNode {
  public:
+  /**
+   * Create a new node
+   */
   StructColorNode() : ColorNode(LnaNodeTypeStruct_Color) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Add a new component to the color
+   *
+   * @param _component component to be added
+   */
   void add_component(const ComponentNodePtr& _component);
+
+  /**
+   * Get a component
+   *
+   * @param x identifier of the component
+   * @return component
+   */
   ComponentNodePtr get_component(const unsigned int& x);
+
+  /**
+   * Get a component by its name
+   *
+   * @param _name component's name
+   * @return component
+   */
   ComponentNodePtr get_component_by_name(const string& _name);
 
-  size_t num_components();
+  /**
+   * Get the number of components
+   *
+   * @return number of components
+   */
+  size_t num_components() const;
 
  private:
+  /**
+   * Components in the structure
+   */
   std::vector<ComponentNodePtr> components;
 };
+
+/**
+ * Type of pointers for StructColorNodes
+ */
 typedef std::shared_ptr<StructColorNode> StructColorNodePtr;
 
+/**
+ * Class representing a list color node
+ */
 class ListColorNode : public ColorNode {
  public:
+  /**
+   * Create a new list color node
+   */
   ListColorNode() : ColorNode(LnaNodeTypeListColor) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
-  void set_index_type(const std::string& _name);
+  /**
+   * Set the index type
+   *
+   * @param _index_type new type
+   */
+  void set_index_type(const std::string& _index_type);
+
+  /**
+   * Get the index type
+   *
+   * @return type
+   */
   std::string get_index_type() const;
 
-  void set_element_type(const std::string& _name);
+  /**
+   * Set the element type
+   *
+   * @param _element_type
+   */
+  void set_element_type(const std::string& _element_type);
+
+  /**
+   * Get the element type
+   *
+   * @return type
+   */
   std::string get_element_type() const;
 
-  void set_capacity(const std::string& _name);
+  /**
+   * Set the capacity of the list
+   *
+   * @param _capacity new capacity
+   */
+  void set_capacity(const std::string& _capacity);
+
+  /**
+   * Get the capacity of the list
+   *
+   * @return capacity
+   */
   std::string get_capacity() const;
 
  private:
+  /**
+   * Index type
+   */
   std::string index_type;
+
+  /**
+   * Element type
+   */
   std::string element_type;
+
+  /**
+   * Capacity
+   */
   std::string capacity;
 };
+
+/**
+ * Type of pointers for ListColorNodes
+ */
 typedef std::shared_ptr<ListColorNode> ListColorNodePtr;
 
+/**
+ * Class representing constant nodes
+ */
 class ConstantNode : public LnaNode {
  public:
   ConstantNode() : LnaNode(LnaNodeTypeConstant) {}
