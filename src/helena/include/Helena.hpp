@@ -378,9 +378,6 @@ class LnaNode {
    */
   void append_sub_node(const LnaNodePtr& _node);
 
-  /** Delete the sub node
-   */
-
   /**
    * Delete subnode from the collection
    *
@@ -424,7 +421,7 @@ class ParameterNode : public LnaNode {
   ParameterNode() : LnaNode(LnaNodeTypeNet_Param) {}
 
   /**
-   * Return the Helena code of a parameter node
+   * Return the Helena code of the net parameter
    *
    * @return Helena code
    */
@@ -497,7 +494,7 @@ class NetNode : public LnaNode {
   NetNode(std::string _name) : LnaNode(LnaNodeTypeNet), name(_name) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the net
    *
    * @return helena code
    */
@@ -572,79 +569,79 @@ class NetNode : public LnaNode {
 typedef std::shared_ptr<NetNode> NetNodePtr;
 
 /**
- * Class representing a StructuredNet node
+ * Class representing a structured net
  */
 class StructuredNetNode : public LnaNode {
  public:
   /**
-   * Create a structured net node
+   * Create a structured net
    */
   StructuredNetNode() : LnaNode(LnaNodeTypeStructuredNet) {}
 
   /**
-   * Create a structured net node
+   * Create a structured net
    *
-   * @param _name  name of the node
+   * @param _name  name of the net
    */
   StructuredNetNode(std::string _name)
       : LnaNode(LnaNodeTypeStructuredNet), name(_name) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the structured net
    *
    * @return helena code
    */
   std::string source_code();
 
   /**
-   * Set the name of the node
+   * Set the name of the net
    *
    * @param _name new name
    */
   void set_name(const std::string& _name);
 
   /**
-   * Get the name of the node
+   * Get the name of the net
    *
-   * @return
+   * @return net's name
    */
   std::string get_name() const;
 
   /**
-   * Add a parameter node to the collection
+   * Add a net parameter
    *
-   * @param _node new parameter node
+   * @param _node new net parameter
    */
   void add_parameter(const ParameterNodePtr& _node);
 
   /**
-   * Get a parameter node
+   * Get a net parameter
    *
-   * @param x identifier of the parameter node
+   * @param x identifier of the net parameter
    *
-   * @return parameter node
+   * @return net parameter
    */
   ParameterNodePtr get_parameter(const unsigned int& x);
 
   /**
-   * Get the number of parameter nodes in the net
+   * Get the number of net parameters
    *
-   * @return  number of parameter nodes
+   * @return  number of net parameters
    */
   size_t num_parameters() const;
 
   /**
-   * Add color node to the net
+   * Add color to the net
    *
-   * @param _color color node to be added
+   * @param _color color to be added
    */
   void add_color(const LnaNodePtr& _color);
 
   /**
-   * Get a color node
+   * Get a color from the net
    *
-   * @param x identifier of the color node
-   * @return color node
+   * @param x identifier of the color
+   * @return color
    */
   LnaNodePtr get_color(const unsigned int& x);
 
@@ -656,51 +653,51 @@ class StructuredNetNode : public LnaNode {
   size_t num_colors() const;
 
   /**
-   * Add a place node to the net
+   * Add a place to the net
    *
-   * @param _place place node to be added
+   * @param _place place to be added
    */
   void add_place(const LnaNodePtr& _place);
 
   /**
    * Get a place from the net
    *
-   * @param x  identifier of the place
-   * @return place pointer
+   * @param x identifier of the place
+   * @return place
    */
   LnaNodePtr get_place(const unsigned int& x);
 
   /**
    * Get the number of places in the net
    *
-   * @return  number of places
+   * @return number of places
    */
   size_t num_places() const;
 
   /**
-   * Add a function node to the net
+   * Add a function to the net
    *
-   * @param _function new function node
+   * @param _function new function
    */
   void add_function(const LnaNodePtr& _function);
 
   /**
-   * Get a function node
+   * Get a function
    *
-   * @param x identifier of the node
-   * @return function node
+   * @param x identifier of the function
+   * @return function
    */
   LnaNodePtr get_function(const unsigned int& x);
 
   /**
    * Get the number of functions in the net
    *
-   * @return  number of functions
+   * @return number of functions
    */
   size_t num_functions() const;
 
   /**
-   * Add a transition node to the net
+   * Add a transition to the net
    *
    * @param _transition transition to be added
    */
@@ -722,34 +719,11 @@ class StructuredNetNode : public LnaNode {
   size_t num_transitions() const;
 
  private:
-  /**
-   * Name of the net
-   */
   std::string name;
-
-  /**
-   * Collection of parameters nodes
-   */
   std::vector<ParameterNodePtr> param_nodes;
-
-  /**
-   * Collection of color nodes
-   */
   std::vector<LnaNodePtr> color_nodes;
-
-  /**
-   * Collection of place nodes
-   */
   std::vector<LnaNodePtr> place_nodes;
-
-  /**
-   * Collection of function nodes
-   */
   std::vector<LnaNodePtr> function_nodes;
-
-  /**
-   * Collection of transitions nodes
-   */
   std::vector<LnaNodePtr> transition_nodes;
 };
 
