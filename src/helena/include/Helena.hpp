@@ -1469,7 +1469,11 @@ class PlaceNode : public LnaNode {
 typedef std::shared_ptr<PlaceNode> PlaceNodePtr;
 
 /**
- * Class representing an arc in the net
+ * @brief Class representing an arc in the net
+ *
+ * An arc is characterized by the place from which we remove, add or check
+ * tokens, and by an expression specifying for a given instantiation of the
+ * variable of the transition the considered tokens.
  */
 class ArcNode : public LnaNode {
  public:
