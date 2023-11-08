@@ -955,21 +955,69 @@ class SubColorNode : public ColorNode {
  */
 typedef std::shared_ptr<SubColorNode> SubColorNodePtr;
 
+/**
+ * Class representing a component node
+ */
 class ComponentNode : public LnaNode {
  public:
+  /**
+   * Create a new component node
+   */
   ComponentNode() : LnaNode(LnaNodeTypeComponent) {}
+
+  /**
+   * Create a new component node
+   *
+   * @param _name name of the component
+   * @param _type type of the component
+   */
   ComponentNode(std::string _name, std::string _type)
       : LnaNode(LnaNodeTypeComponent), name(_name), type(_type) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the component node
+   *
+   * @param _name name of the component
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the component node
+   *
+   * @return name of the node
+   */
   std::string get_name() const;
 
+  /**
+   * Set the type of the component node
+   *
+   * @param _type new type
+   */
   void set_type(const std::string& _type);
+
+  /**
+   * Get the type of the component node
+   *
+   * @return type
+   */
   std::string get_type() const;
 
  private:
+  /**
+   * Name of the component
+   */
   std::string name;
+
+  /**
+   * Type of the component
+   */
   std::string type;
 };
 typedef std::shared_ptr<ComponentNode> ComponentNodePtr;

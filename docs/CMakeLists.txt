@@ -15,6 +15,7 @@ FetchContent_MakeAvailable(doxygen-awesome-css)
 # Doxygen configuration
 set(DOXYGEN_GENERATE_HTML YES)
 set(DOXYGEN_GENERATE_TREEVIEW YES)
+set(DOXYGEN_COLLABORATION_GRAPH NO)
 set(DISABLE_INDEX NO)
 set(FULL_SIDEBAR NO)
 set(HTML_COLORSTYLE LIGHT)

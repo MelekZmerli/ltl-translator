@@ -306,29 +306,23 @@ ColorNodePtr SubColorNode::get_subColor() const {
  * Implementation of the Component Class
  *****************************************************************************/
 
-/** Connect the information for the Component node
- */
 std::string ComponentNode::source_code() {
   std::string result = type + " " + name + ";";
   return result;
 }
-/** Set name for the component node
- */
+
 void ComponentNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the component node
- */
+
 std::string ComponentNode::get_name() const {
   return name;
 }
-/** Set type of the component node
- */
+
 void ComponentNode::set_type(const std::string& _type) {
   type = _type;
 }
-/** Get type of the component node
- */
+
 std::string ComponentNode::get_type() const {
   return type;
 }
