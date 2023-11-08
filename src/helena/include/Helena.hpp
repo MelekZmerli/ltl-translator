@@ -1362,9 +1362,14 @@ class FunctionNode : public LnaNode {
 typedef std::shared_ptr<FunctionNode> FunctionNodePtr;
 
 /**
+ * @brief Class representing a place of the net
+ *
  * The state of a system modeled by a Petri net is given by the distribution
  * (or marking) of items called tokens upon the places of the net. In high-level
  * nets, these tokens are typed (i.e. the domain of the place).
+ *
+ * We call capacity of a place, the maximal multiplicity (i.e., number of
+ * repetitions of a token) of any item in the place.
  */
 class PlaceNode : public LnaNode {
  public:
@@ -1374,7 +1379,7 @@ class PlaceNode : public LnaNode {
   PlaceNode() : LnaNode(LnaNodeTypePlace) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the place
    *
    * @return helena code
    */
@@ -1404,35 +1409,35 @@ class PlaceNode : public LnaNode {
   /**
    * Get the domain of the place
    *
-   * @return domain
+   * @return place's domain
    */
   std::string get_domain() const;
 
   /**
-   * Set the initialization of the place
+   * Set the initial marking of the place
    *
-   * @param _init initialization
+   * @param _init initial marking
    */
   void set_init(const std::string& _init);
 
   /**
-   * Get the initialization of the place
+   * Get the initial marking of the place
    *
-   * @return initialization
+   * @return initial marking
    */
   std::string get_init() const;
 
   /**
    * Set the capacity of the place
    *
-   * @param _capacity new capacity value
+   * @param _capacity new capacity
    */
   void set_capacity(const std::string& _capacity);
 
   /**
    * Get the capacity of the place
    *
-   * @return capacity value
+   * @return place's capacity
    */
   std::string get_capacity() const;
 
