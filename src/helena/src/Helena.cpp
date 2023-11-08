@@ -401,72 +401,65 @@ std::string ListColorNode::get_capacity() const {
  * Implementation of the ConstantNode Class
  *****************************************************************************/
 
-/** Processing for the constant node
- */
 std::string ConstantNode::source_code() {
-  // visit(this);
   std::string result =
       "constant " + type + " " + name + ":=" + expression + ";\n";
   return result;
 }
-/** Set name for the constant node
- */
+
 void ConstantNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name ò the constant node
- */
+
 std::string ConstantNode::get_name() const {
   return name;
 }
-/** Set type for the constant node
- */
+
 void ConstantNode::set_type(const std::string& _type) {
   type = _type;
 }
-/** Get type of the constant node
- */
+
 std::string ConstantNode::get_type() const {
   return type;
 }
-/** Set expression for the constant node
- */
+
 void ConstantNode::set_expression(const std::string& _expression) {
   expression = _expression;
 }
-/** Get expression of the constant node
- */
+
 std::string ConstantNode::get_expression() const {
   return expression;
 }
-/** Processing for the Parameter node
- */
+
+/******************************************************************************
+ * Implementation of the ParamNode Class
+ *****************************************************************************/
+
 std::string ParamNode::source_code() {
   std::string result = type + " " + name;
   return result;
 }
-/** Set name for the Parameter node
- */
+
 void ParamNode::set_name(const std::string& _name) {
   name = _name;
 }
-/** Get name of the parameter node
- */
+
 std::string ParamNode::get_name() const {
   return name;
 }
-/** Set type for the parameter node
- */
+
 void ParamNode::set_type(const std::string& _type) {
   type = _type;
 }
-/** Get type of the parameter node
- */
+
 std::string ParamNode::get_type() const {
   return type;
 }
-/** Processing for the function node
- */
+
+/******************************************************************************
+ * Implementation of the FunctionNode Class
+ *****************************************************************************/
+
 std::string FunctionNode::source_code() {
   std::string result = "function " + name + " (";
   for (auto it = parameters_spec.begin(); it != parameters_spec.end(); ++it) {

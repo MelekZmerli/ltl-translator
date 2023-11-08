@@ -1171,16 +1171,58 @@ typedef std::shared_ptr<ListColorNode> ListColorNodePtr;
  */
 class ConstantNode : public LnaNode {
  public:
+  /**
+   * Create a new constant node
+   */
   ConstantNode() : LnaNode(LnaNodeTypeConstant) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the constant
+   *
+   * @param _name new name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the constant
+   *
+   * @return name
+   */
   std::string get_name() const;
 
+  /**
+   * Set the type of the constant
+   *
+   * @param _type new type
+   */
   void set_type(const std::string& _type);
+
+  /**
+   * Get the type of the constant
+   *
+   * @return type
+   */
   std::string get_type() const;
 
+  /**
+   * Set expression for the constant
+   *
+   * @param _expression new expression
+   */
   void set_expression(const std::string& _expression);
+
+  /**
+   * Get the expression of the constant
+   *
+   * @return expression
+   */
   std::string get_expression() const;
 
  private:
@@ -1188,27 +1230,76 @@ class ConstantNode : public LnaNode {
   std::string type;
   std::string expression;
 };
+
+/**
+ * Type of pointers for ConstantNode
+ */
 typedef std::shared_ptr<ConstantNode> ConstantNodePtr;
 
+/**
+ * Class representing a Param node
+ */
 class ParamNode : public LnaNode {
  public:
+  /**
+   * Create a new node
+   */
   ParamNode() : LnaNode(LnaNodeTypeParam) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
+  /**
+   * Set the name of the node
+   * @param _name new name
+   */
   void set_name(const std::string& _name);
+
+  /**
+   * Get the name of the node
+   *
+   * @return name
+   */
   std::string get_name() const;
+
+  /**
+   * Set the type of the node
+   *
+   * @param _type new type
+   */
   void set_type(const std::string& _type);
+
+  /**
+   * Get the type of the node
+   *
+   * @return type
+   */
   std::string get_type() const;
 
  private:
   std::string name;
   std::string type;
 };
+
+/**
+ * Type of pointers for ParamNode
+ *
+ */
 typedef std::shared_ptr<ParamNode> ParamNodePtr;
 
 class FunctionNode : public LnaNode {
  public:
   FunctionNode() : LnaNode(LnaNodeTypeFunc) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
   void set_name(const std::string& _name);
@@ -1234,6 +1325,12 @@ typedef std::shared_ptr<FunctionNode> FunctionNodePtr;
 class PlaceNode : public LnaNode {
  public:
   PlaceNode() : LnaNode(LnaNodeTypePlace) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
   void set_name(const std::string& _name);
@@ -1263,6 +1360,12 @@ typedef std::shared_ptr<PlaceNode> PlaceNodePtr;
 class ArcNode : public LnaNode {
  public:
   ArcNode() : LnaNode(LnaNodeTypeArc) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
   void set_placeName(const std::string& _placeName);
@@ -1280,6 +1383,12 @@ typedef std::shared_ptr<ArcNode> ArcNodePtr;
 class TransitionNode : public LnaNode {
  public:
   TransitionNode() : LnaNode(LnaNodeTypeTransition) {}
+
+  /**
+   * Return the Helena code of the Net node
+   *
+   * @return helena code
+   */
   std::string source_code();
 
   void set_name(const std::string& _name);
