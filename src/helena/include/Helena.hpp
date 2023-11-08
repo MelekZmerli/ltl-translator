@@ -1271,17 +1271,22 @@ class ParamNode : public LnaNode {
 typedef std::shared_ptr<ParamNode> ParamNodePtr;
 
 /**
- * Class representing a Function node
+ * @brief Class representing a function
+ *
+ * The user is allowed to define function which may then appear in arc
+ * expressions or in the property to verify. Functions can not have any side
+ * effect. They are functions in the mathematical sense: they take some
+ * parameters, compute a value and return it.
  */
 class FunctionNode : public LnaNode {
  public:
   /**
-   * Create a new node
+   * Create a new function
    */
   FunctionNode() : LnaNode(LnaNodeTypeFunc) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the function
    *
    * @return helena code
    */
@@ -1309,7 +1314,7 @@ class FunctionNode : public LnaNode {
   void add_parameter(const ParamNodePtr& _node);
 
   /**
-   * Get parameter of the function
+   * Get a parameter of the function
    *
    * @param x identifier of the parameter
    * @return parameter
@@ -1317,7 +1322,7 @@ class FunctionNode : public LnaNode {
   ParamNodePtr get_parameter(const unsigned int& x);
 
   /**
-   * Set the return type of the function node
+   * Set the return type of the function
    *
    * @param _returnType return type
    */
@@ -1325,6 +1330,7 @@ class FunctionNode : public LnaNode {
 
   /**
    * Get the return type of the function
+   *
    * @return type
    */
   std::string get_returnType() const;
@@ -1332,14 +1338,14 @@ class FunctionNode : public LnaNode {
   /**
    * Set the body of the function
    *
-   * @param _body body of the function
+   * @param _body function's body
    */
   void set_body(const std::string& _body);
 
   /**
    * Get the body of the function
    *
-   * @return body of the function
+   * @return function's body
    */
   std::string get_body() const;
 
