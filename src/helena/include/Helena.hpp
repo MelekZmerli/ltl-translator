@@ -882,48 +882,52 @@ class ColorNode : public LnaNode {
 typedef std::shared_ptr<ColorNode> ColorNodePtr;
 
 /**
- * Class representing a SubColor node
+ * @brief Class representing a subtype color
+ *
+ * Discrete types can be subtyped. Each subtype has a parent (which can also be
+ * a subtype) and is defined by a constraint which limit the set of values which
+ * belong to the subtype.
+ *
+ * A constraint simply consists of a range which must be statically evaluable
+ * and which bounds must belong to the parent of the subtype.
  */
 class SubColorNode : public ColorNode {
  public:
   /**
-   * Create a new subcolor node
+   * Create a new subtype color
    */
   SubColorNode() : ColorNode(LnaNodeTypeSub_Color) {}
 
   /**
-   * Create a new subcolor node
+   * Create a new subtype color
    *
-   * @param _sub_color subcolor
+   * @param _sub_color subtype
    */
   SubColorNode(ColorNodePtr _sub_color)
       : ColorNode(LnaNodeTypeSub_Color), subColor(_sub_color) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the subtype color
    *
    * @return helena code
    */
   std::string source_code();
 
   /**
-   * Set the subcolor of the node
+   * Set the subtype
    *
-   * @param _subcolor  subcolor
+   * @param _subcolor subtype
    */
   void set_subColor(const ColorNodePtr _subcolor);
 
   /**
-   * Get subcolor of the node
+   * Get subtype
    *
-   * @return  subcolor
+   * @return subtype
    */
   ColorNodePtr get_subColor() const;
 
  private:
-  /**
-   * subcolor node
-   */
   ColorNodePtr subColor;
 };
 
