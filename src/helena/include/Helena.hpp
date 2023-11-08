@@ -569,7 +569,11 @@ class NetNode : public LnaNode {
 typedef std::shared_ptr<NetNode> NetNodePtr;
 
 /**
- * Class representing a structured net
+ * @brief Class representing a structured net
+ *
+ * A net is described by a list of definitions that are the components of the
+ * net. Elements that may be defined in a net are date types, constants,
+ * functions, places, transitions, and state propositions
  */
 class StructuredNetNode : public LnaNode {
  public:
@@ -733,17 +737,19 @@ class StructuredNetNode : public LnaNode {
 typedef std::shared_ptr<StructuredNetNode> StructuredNetNodePtr;
 
 /**
- * Class representing a Comment node
+ * @brief Class representing a comment
+ *
+ * Comments are indicated as in the C++ language.
  */
 class CommentNode : public LnaNode {
  public:
   /**
-   * Create a new comment node
+   * Create a new comment
    */
   CommentNode() : LnaNode(LnaNodeTypeComment) {}
 
   /**
-   * Create a new comment node
+   * Create a new comment
    *
    * @param _comment content of the comment
    */
@@ -751,14 +757,14 @@ class CommentNode : public LnaNode {
       : comment(_comment), LnaNode(LnaNodeTypeComment) {}
 
   /**
-   * Return the Helena code of a comment node
+   * Return the Helena code of a comment
    *
    * @return Helena code
    */
   std::string source_code();
 
   /**
-   * Set content of the comment node
+   * Set content of the comment
    *
    * @param _comment content of the comment
    */
@@ -772,9 +778,6 @@ class CommentNode : public LnaNode {
   std::string get_comment() const;
 
  private:
-  /**
-   * content of the comment
-   */
   std::string comment;
 };
 
