@@ -90,12 +90,12 @@ std::map<std::string, std::string> LTLTranslator::translate() {
   auto formula_params = formula_json.at("params");
 
   // parse a specific formula
-  if (formula_type == "specific") {
+  if (formula_type == "general") {
     return createVulMapFromFormula(formula_params.at("formula"));
   }
 
   // parse a general formula
-  if (formula_type == "general") {
+  if (formula_type == "specific") {
     std::string vulnerability_name = formula_params.at("name");
     if (vulnerability_name == "under_over_flow") {
       auto inputs = formula_params.at("inputs");
@@ -332,9 +332,9 @@ std::string LTLTranslator::analysePropositionExpression(
 
   if (opr.size() == 1) {
     return opr.back();
-  } else {
-    return "";  // error
   }
+
+  return "";  // error
 }
 
 std::vector<std::string> LTLTranslator::infixToPostfixExpression(
