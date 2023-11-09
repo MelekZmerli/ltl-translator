@@ -6,26 +6,26 @@
 
 namespace HELENA {
 
-ParameterNodePtr handleParameter(list<string>::iterator& _iter,
-                                 list<string>::iterator _end_iter);
+ParameterNodePtr handleParameter(std::list<std::string>::iterator& _iter,
+                                 std::list<std::string>::iterator _end_iter);
 
-TransitionNodePtr handleTransition(list<string>::iterator& _iter,
-                                   list<string>::iterator _end_iter);
+TransitionNodePtr handleTransition(std::list<std::string>::iterator& _iter,
+                                   std::list<std::string>::iterator _end_iter);
 
-PlaceNodePtr handlePlace(list<string>::iterator& _iter,
-                         list<string>::iterator _end_iter);
+PlaceNodePtr handlePlace(std::list<std::string>::iterator& _iter,
+                         std::list<std::string>::iterator _end_iter);
 
-ColorNodePtr handleColor(list<string>::iterator& _iter,
-                         list<string>::iterator _end_iter);
+ColorNodePtr handleColor(std::list<std::string>::iterator& _iter,
+                         std::list<std::string>::iterator _end_iter);
 
-FunctionNodePtr handleFunction(list<string>::iterator& _iter,
-                               list<string>::iterator _end_iter);
+FunctionNodePtr handleFunction(std::list<std::string>::iterator& _iter,
+                               std::list<std::string>::iterator _end_iter);
 
-string handleElementBody(list<string>::iterator& _iter,
-                         list<string>::iterator _end_iter);
+std::string handleElementBody(std::list<std::string>::iterator& _iter,
+                              std::list<std::string>::iterator _end_iter);
 
-vector<ArcNodePtr> handleArcs(list<string>::iterator& _iter,
-                              list<string>::iterator _end_iter);
+std::vector<ArcNodePtr> handleArcs(std::list<std::string>::iterator& _iter,
+                                   std::list<std::string>::iterator _end_iter);
 }  // namespace HELENA
 
 #endif

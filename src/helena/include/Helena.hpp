@@ -9,67 +9,65 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace HELENA {
 
 /**
  * Declare a list of reserved string
  */
-const string ASSERT_TOKEN = "assert";
-const string AND_TOKEN = "and";
-const string CAPACITY_TOKEN = "capacity";
-const string CARD_TOKEN = "card";
-const string CASE_TOKEN = "case";
-const string CONSTANT_TOKEN = "constant";
-const string DEFAULT_TOKEN = "default";
-const string DESCRIPTION_TOKEN = "description";
-const string DOM_TOKEN = "dom";
-const string ELSE_TOKEN = "else";
-const string EMPTY_TOKEN = "empty";
-const string ENUM_TOKEN = "enum";
-const string EPSILON_TOKEN = "epsilon";
-const string EXISTS_TOKEN = "exists";
-const string FOR_TOKEN = "for";
-const string FORALL_TOKEN = "forall";
-const string FUNCTION_TOKEN = "function";
-const string GUARD_TOKEN = "guard";
-const string IF_TOKEN = "if";
-const string IMPORT_TOKEN = "import";
-const string IN_TOKEN = "in";
-const string INIT_TOKEN = "init";
-const string INHIBIT_TOKEN = "inhibit";
-const string LET_TOKEN = "let";
-const string LIST_TOKEN = "list";
-const string MAX_TOKEN = "max";
-const string MIN_TOKEN = "min";
-const string MOD_TOKEN = "mod";
-const string MULT_TOKEN = "mult";
-const string NOT_TOKEN = "not";
-const string OF_TOKEN = "of";
-const string OR_TOKEN = "or";
-const string OUT_TOKEN = "out";
-const string PICK_TOKEN = "pick";
-const string PLACE_TOKEN = "place";
-const string PRED_TOKEN = "pred";
-const string PRINT_TOKEN = "print";
-const string PRIORITY_TOKEN = "priority";
-const string PROPOSITION_TOKEN = "proposition";
-const string PRODUCT_TOKEN = "product";
-const string RANGE_TOKEN = "range";
-const string RETURN_TOKEN = "return";
-const string STRUCT_TOKEN = "struct";
-const string SAFE_TOKEN = "safe";
-const string SET_TOKEN = "set";
-const string SUBTYPE_TOKEN = "subtype";
-const string SUCC_TOKEN = "succ";
-const string SUM_TOKEN = "sum";
-const string TRANSITION_TOKEN = "transition";
-const string TYPE_TOKEN = "type";
-const string VECTOR_TOKEN = "vector";
-const string WHILE_TOKEN = "while";
-const string WITH_TOKEN = "with";
-const list<string> ReservedTokensList{
+const std::string ASSERT_TOKEN = "assert";
+const std::string AND_TOKEN = "and";
+const std::string CAPACITY_TOKEN = "capacity";
+const std::string CARD_TOKEN = "card";
+const std::string CASE_TOKEN = "case";
+const std::string CONSTANT_TOKEN = "constant";
+const std::string DEFAULT_TOKEN = "default";
+const std::string DESCRIPTION_TOKEN = "description";
+const std::string DOM_TOKEN = "dom";
+const std::string ELSE_TOKEN = "else";
+const std::string EMPTY_TOKEN = "empty";
+const std::string ENUM_TOKEN = "enum";
+const std::string EPSILON_TOKEN = "epsilon";
+const std::string EXISTS_TOKEN = "exists";
+const std::string FOR_TOKEN = "for";
+const std::string FORALL_TOKEN = "forall";
+const std::string FUNCTION_TOKEN = "function";
+const std::string GUARD_TOKEN = "guard";
+const std::string IF_TOKEN = "if";
+const std::string IMPORT_TOKEN = "import";
+const std::string IN_TOKEN = "in";
+const std::string INIT_TOKEN = "init";
+const std::string INHIBIT_TOKEN = "inhibit";
+const std::string LET_TOKEN = "let";
+const std::string LIST_TOKEN = "list";
+const std::string MAX_TOKEN = "max";
+const std::string MIN_TOKEN = "min";
+const std::string MOD_TOKEN = "mod";
+const std::string MULT_TOKEN = "mult";
+const std::string NOT_TOKEN = "not";
+const std::string OF_TOKEN = "of";
+const std::string OR_TOKEN = "or";
+const std::string OUT_TOKEN = "out";
+const std::string PICK_TOKEN = "pick";
+const std::string PLACE_TOKEN = "place";
+const std::string PRED_TOKEN = "pred";
+const std::string PRINT_TOKEN = "print";
+const std::string PRIORITY_TOKEN = "priority";
+const std::string PROPOSITION_TOKEN = "proposition";
+const std::string PRODUCT_TOKEN = "product";
+const std::string RANGE_TOKEN = "range";
+const std::string RETURN_TOKEN = "return";
+const std::string STRUCT_TOKEN = "struct";
+const std::string SAFE_TOKEN = "safe";
+const std::string SET_TOKEN = "set";
+const std::string SUBTYPE_TOKEN = "subtype";
+const std::string SUCC_TOKEN = "succ";
+const std::string SUM_TOKEN = "sum";
+const std::string TRANSITION_TOKEN = "transition";
+const std::string TYPE_TOKEN = "type";
+const std::string VECTOR_TOKEN = "vector";
+const std::string WHILE_TOKEN = "while";
+const std::string WITH_TOKEN = "with";
+const std::list<std::string> ReservedTokensList{
     ASSERT_TOKEN,     AND_TOKEN,      CAPACITY_TOKEN,    CARD_TOKEN,
     CASE_TOKEN,       CONSTANT_TOKEN, DEFAULT_TOKEN,     DESCRIPTION_TOKEN,
     DOM_TOKEN,        ELSE_TOKEN,     EMPTY_TOKEN,       ENUM_TOKEN,
@@ -88,147 +86,147 @@ const list<string> ReservedTokensList{
 /**
  * Declare a net
  */
-const string Net_Token = "Net";
+const std::string Net_Token = "Net";
 
 /**
  * Declare parameters
  */
-const string Net_Param_Token = "Net_Param";
+const std::string Net_Param_Token = "Net_Param";
 
 /**
  * Declare colors
  */
-const string Color_Token = "Color";
-const string Range_Color_Token = "Range_Color";
-const string Mod_Color_Token = "Mod_Color";
-const string Enum_Color_Token = "Enum_Color";
-const string Vector_Color_Token = "Vector_Color";
-const string Struct_Color_Token = "Struct_Color";
-const string Component_Token = "Component";
-const string List_Color_Token = "List_Color";
-const string Set_Color_Token = "Set_Color";
-const string Sub_Color_Token = "Sub_Color";
+const std::string Color_Token = "Color";
+const std::string Range_Color_Token = "Range_Color";
+const std::string Mod_Color_Token = "Mod_Color";
+const std::string Enum_Color_Token = "Enum_Color";
+const std::string Vector_Color_Token = "Vector_Color";
+const std::string Struct_Color_Token = "Struct_Color";
+const std::string Component_Token = "Component";
+const std::string List_Color_Token = "List_Color";
+const std::string Set_Color_Token = "Set_Color";
+const std::string Sub_Color_Token = "Sub_Color";
 
 /**
  * Declare functions
  */
-const string Func_Prot_Token = "Func_Prot";
-const string Func_Token = "Func";
-const string Param_Token = "Param";
-const string Var_Decl_Token = "Var_Decl";
+const std::string Func_Prot_Token = "Func_Prot";
+const std::string Func_Token = "Func";
+const std::string Param_Token = "Param";
+const std::string Var_Decl_Token = "Var_Decl";
 
 /**
  * Declare the expressions
  */
-const string Num_Const_Token = "Num_Const";
-const string Func_Call_Token = "Func_Call";
-const string Vector_Access_Token = "Vector_Access";
-const string Struct_Access_Token = "Struct_Access";
-const string Bin_Op_Token = "Bin_Op";
-const string Un_Op_Token = "Un_Op";
-const string Vector_Aggregate_Token = "Vector_Aggregate";
-const string Vector_Assign_Token = "Vector_Assign";
-const string Struct_Aggregate_Token = "Struct_Aggregate";
-const string Struct_Assign_Token = "Struct_Assign";
-const string Symbol_Token = "Symbol";
-const string Iterator_Token = "Iterator";
-const string Tuple_Access_Token = "Tuple_Access";
-const string Attribute_Token = "Attribute";
-const string Container_Aggregate_Token = "Container_Aggregate";
-const string Empty_Token = "Empty";
-const string List_Slice_Token = "List_Slice";
+const std::string Num_Const_Token = "Num_Const";
+const std::string Func_Call_Token = "Func_Call";
+const std::string Vector_Access_Token = "Vector_Access";
+const std::string Struct_Access_Token = "Struct_Access";
+const std::string Bin_Op_Token = "Bin_Op";
+const std::string Un_Op_Token = "Un_Op";
+const std::string Vector_Aggregate_Token = "Vector_Aggregate";
+const std::string Vector_Assign_Token = "Vector_Assign";
+const std::string Struct_Aggregate_Token = "Struct_Aggregate";
+const std::string Struct_Assign_Token = "Struct_Assign";
+const std::string Symbol_Token = "Symbol";
+const std::string Iterator_Token = "Iterator";
+const std::string Tuple_Access_Token = "Tuple_Access";
+const std::string Attribute_Token = "Attribute";
+const std::string Container_Aggregate_Token = "Container_Aggregate";
+const std::string Empty_Token = "Empty";
+const std::string List_Slice_Token = "List_Slice";
 
 /**
  * Declare iterator types
  */
-const string card_iterator_Token = "card_iterator";
-const string mult_iterator_Token = "mult_iterator";
-const string forall_iterator_Token = "forall_iterator";
-const string exists_iterator_Token = "exists_iterator";
-const string max_iterator_Token = "max_iterator";
-const string min_iterator_Token = "min_iterator";
-const string sum_iterator_Token = "sum_iterator";
-const string product_iterator_Token = "product_iterator";
+const std::string card_iterator_Token = "card_iterator";
+const std::string mult_iterator_Token = "mult_iterator";
+const std::string forall_iterator_Token = "forall_iterator";
+const std::string exists_iterator_Token = "exists_iterator";
+const std::string max_iterator_Token = "max_iterator";
+const std::string min_iterator_Token = "min_iterator";
+const std::string sum_iterator_Token = "sum_iterator";
+const std::string product_iterator_Token = "product_iterator";
 
 /**
  * Declare unary operators
  */
-const string Pred_Op_Token = "Pred_Op";
-const string Succ_Op_Token = "Succ_Op";
-const string Plus_Op_Token = "Plus_Op";
-const string Minus_Op_Token = "Minus_Op";
-const string Not_Op_Token = "Not_Op";
+const std::string Pred_Op_Token = "Pred_Op";
+const std::string Succ_Op_Token = "Succ_Op";
+const std::string Plus_Op_Token = "Plus_Op";
+const std::string Minus_Op_Token = "Minus_Op";
+const std::string Not_Op_Token = "Not_Op";
 
 /**
  * Declare binary operators
  */
-const string Mult_Op_Token = "Mult_Op";
-const string Div_Op_Token = "Div_Op";
-const string Mod_Op_Token = "Mod_Op";
-const string And_Op_Token = "And_Op";
-const string Or_Op_Token = "Or_Op";
-const string Sup_Op_Token = "Sup_Op";
-const string Sup_Eq_Op_Token = "Sup_Eq_Op";
-const string Inf_Op_Token = "Inf_Op";
-const string Inf_Eq_Op_Token = "Inf_Eq_Op";
-const string Eq_Op_Token = "Eq_Op";
-const string Neq_Op_Token = "Neq_Op";
-const string Amp_Op_Token = "Amp_Op";
-const string In_Op_Token = "In_Op";
+const std::string Mult_Op_Token = "Mult_Op";
+const std::string Div_Op_Token = "Div_Op";
+const std::string Mod_Op_Token = "Mod_Op";
+const std::string And_Op_Token = "And_Op";
+const std::string Or_Op_Token = "Or_Op";
+const std::string Sup_Op_Token = "Sup_Op";
+const std::string Sup_Eq_Op_Token = "Sup_Eq_Op";
+const std::string Inf_Op_Token = "Inf_Op";
+const std::string Inf_Eq_Op_Token = "Inf_Eq_Op";
+const std::string Eq_Op_Token = "Eq_Op";
+const std::string Neq_Op_Token = "Neq_Op";
+const std::string Amp_Op_Token = "Amp_Op";
+const std::string In_Op_Token = "In_Op";
 
 /**
  * Declare the statements
  */
-const string Assign_Token = "Assign";
-const string If_Then_Else_Token = "If_Then_Else";
-const string Case_Stat_Token = "Case_Stat";
-const string Case_Alternative_Token = "Case_Alternative";
-const string While_Stat_Token = "While_Stat";
-const string Print_Stat_Token = "Print_Stat";
-const string Return_Stat_Token = "Return_Stat";
-const string For_Stat_Token = "For_Stat";
-const string Block_Stat_Token = "Block_Stat";
+const std::string Assign_Token = "Assign";
+const std::string If_Then_Else_Token = "If_Then_Else";
+const std::string Case_Stat_Token = "Case_Stat";
+const std::string Case_Alternative_Token = "Case_Alternative";
+const std::string While_Stat_Token = "While_Stat";
+const std::string Print_Stat_Token = "Print_Stat";
+const std::string Return_Stat_Token = "Return_Stat";
+const std::string For_Stat_Token = "For_Stat";
+const std::string Block_Stat_Token = "Block_Stat";
 
 /**
  * Declare the places
  */
-const string Place_Token = "Place";
-const string Place_Init_Token = "Place_Init";
-const string Place_Capacity_Token = "Place_Capacity";
-const string Place_Type_Token = "Place_Type";
+const std::string Place_Token = "Place";
+const std::string Place_Init_Token = "Place_Init";
+const std::string Place_Capacity_Token = "Place_Capacity";
+const std::string Place_Type_Token = "Place_Type";
 
 /**
  * Declare the transitions
  */
-const string Transition_Token = "Transition";
-const string Transition_Description_Token = "Transition_Description";
-const string Transition_Guard_Token = "Transition_Guard";
-const string Transition_Priority_Token = "Transition_Priority";
-const string Transition_Safe_Token = "Transition_Safe";
+const std::string Transition_Token = "Transition";
+const std::string Transition_Description_Token = "Transition_Description";
+const std::string Transition_Guard_Token = "Transition_Guard";
+const std::string Transition_Priority_Token = "Transition_Priority";
+const std::string Transition_Safe_Token = "Transition_Safe";
 
 /**
  * Declare the mappings
  */
-const string Arc_Token = "Arc";
-const string Mapping_Token = "Mapping";
-const string Tuple_Token = "Tuple";
-const string Simple_Tuple_Token = "Simple_Tuple";
+const std::string Arc_Token = "Arc";
+const std::string Mapping_Token = "Mapping";
+const std::string Tuple_Token = "Tuple";
+const std::string Simple_Tuple_Token = "Simple_Tuple";
 
 /**
  * Declare the propositions
  */
-const string Proposition_Token = "Proposition";
+const std::string Proposition_Token = "Proposition";
 
 /**
  * Declare the others
  */
-const string Assert_Token = "Assert";
-const string Iter_Variable_Token = "Iter_Variable";
-const string Low_High_Range_Token = "Low_High_Range";
-const string Name_Token = "Name";
-const string A_String_Token = "A_String";
-const string Number_Token = "Number";
-const string List_Token = "List";
+const std::string Assert_Token = "Assert";
+const std::string Iter_Variable_Token = "Iter_Variable";
+const std::string Low_High_Range_Token = "Low_High_Range";
+const std::string Name_Token = "Name";
+const std::string A_String_Token = "A_String";
+const std::string Number_Token = "Number";
+const std::string List_Token = "List";
 
 /**
  * Definition of the node types
@@ -336,7 +334,7 @@ class LnaNode;
 /**
  * Definition of the type for pointers of LNA nodes
  */
-typedef shared_ptr<LnaNode> LnaNodePtr;
+typedef std::shared_ptr<LnaNode> LnaNodePtr;
 
 /**
  * Abstract class defining a Helena element
@@ -1046,7 +1044,7 @@ class StructColorNode : public ColorNode {
    * @param _name component's name
    * @return component
    */
-  ComponentNodePtr get_component_by_name(const string& _name);
+  ComponentNodePtr get_component_by_name(const std::string& _name);
 
   /**
    * Get the number of components

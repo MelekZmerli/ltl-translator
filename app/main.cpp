@@ -75,42 +75,42 @@ int main(int argc, char **argv) {
       ->required()
       ->check(CLI::ExistingFile);
 
-  string CONTEXT_TYPE;
+  std::string CONTEXT_TYPE;
   app.add_option("--context-type", CONTEXT_TYPE, "Context type")
       ->check(CLI::IsMember({"DCR", "CPN", "FREE"}))
       ->required();
 
-  string LTL_FILE_PATH;
+  std::string LTL_FILE_PATH;
   app.add_option("--ltl", LTL_FILE_PATH,
                  "LTL file (.json), Vulnerabilities to check")
       ->required()
       ->check(CLI::ExistingFile);
 
-  string AST_FILE_PATH;
+  std::string AST_FILE_PATH;
   app.add_option(
          "--sol-ast", AST_FILE_PATH,
          "AST file (.ast), output of solidity compiler in mode --ast-json")
       ->required()
       ->check(CLI::ExistingFile);
 
-  string LNA_JSON_FILE_PATH;
+  std::string LNA_JSON_FILE_PATH;
   app.add_option("--lna-json", LNA_JSON_FILE_PATH,
                  "JSON file (.json), output of solidity2cpn tool")
       ->required()
       ->check(CLI::ExistingFile);
 
-  string IM_JSON_FILE_PATH;
+  std::string IM_JSON_FILE_PATH;
   app.add_option("--im-json", IM_JSON_FILE_PATH,
                  "JSON file (.json), initial marking settings")
       ->required()
       ->check(CLI::ExistingFile);
 
-  string OUT_FILE_PATH;
+  std::string OUT_FILE_PATH;
   app.add_option("--output_path", OUT_FILE_PATH, "Output file path")
       ->default_val("./")
       ->check(CLI::ExistingFile);
 
-  string OUT_FILE_NAME;
+  std::string OUT_FILE_NAME;
   app.add_option("--output_name", OUT_FILE_NAME, "Output file name")
       ->default_val("output");
 
@@ -122,8 +122,8 @@ int main(int argc, char **argv) {
   /****************************************************************************
    * READ FILES
    ****************************************************************************/
-  stringstream model_lna_text_stream = read_file(MODEL_LNA_FILE_PATH);
-  stringstream ast_text_stream = read_file(AST_FILE_PATH);
+  std::stringstream model_lna_text_stream = read_file(MODEL_LNA_FILE_PATH);
+  std::stringstream ast_text_stream = read_file(AST_FILE_PATH);
 
   nlohmann::json ltl_json = parse_json_file(LTL_FILE_PATH);
   nlohmann::json sol_json = parse_json_file(LNA_JSON_FILE_PATH);
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
         DCR2CPN::Dcr2CpnTranslator(dcrClass);
     context_net = contextTranslator.translate();
   } else if (CONTEXT_TYPE == "CPN") {
-    stringstream context_text_stream = read_file(CONTEXT_FILE_PATH);
+    std::stringstream context_text_stream = read_file(CONTEXT_FILE_PATH);
     context_net = Unfolder::analyseLnaFile(context_text_stream);
   } else {
     // free context by default

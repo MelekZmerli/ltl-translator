@@ -352,7 +352,8 @@ ComponentNodePtr StructColorNode::get_component(const unsigned int& x) {
   return components[x];
 }
 
-ComponentNodePtr StructColorNode::get_component_by_name(const string& _name) {
+ComponentNodePtr StructColorNode::get_component_by_name(
+    const std::string& _name) {
   for (auto it = components.begin(); it != components.end(); ++it) {
     if ((*it)->get_name() == _name) {
       return (*it);
