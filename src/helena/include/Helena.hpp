@@ -1528,10 +1528,24 @@ class ArcNode : public LnaNode {
 typedef std::shared_ptr<ArcNode> ArcNodePtr;
 
 /**
+ * @brief Class representing a transition in the net
+ *
  * Transitions of a Petri net are active nodes that may change the state of the
  * system (i.e., the distribution of tokens in the places). Transitions need
  * some tokens in their input places to be firable and produce tokens in their
  * output places.
+ *
+ * To further restrain the firability of a transition, inhibitor
+ * arcs may be used to specify that some tokens must not be present in a
+ * specific place. In high-level Petri nets, arcs between places and transitions
+ * are labeled by expressions in which variables appear. Thus, a transition is
+ * firable for a given instantatiation (or binding) os these variables.
+ *
+ * Transitions in Helena are identified by a name. The description of a
+ * transition must specify the input and output plaxes of the transition
+ * followed by inhibitor arcs (if any), free variables (if any), bound variables
+ * (if any), and finally its attributes: a guard, a priority, a description and
+ * a safe attribute.
  */
 class TransitionNode : public LnaNode {
  public:
@@ -1541,7 +1555,7 @@ class TransitionNode : public LnaNode {
   TransitionNode() : LnaNode(LnaNodeTypeTransition) {}
 
   /**
-   * Return the Helena code of the Net node
+   * Return the Helena code of the transition
    *
    * @return helena code
    */
@@ -1564,37 +1578,37 @@ class TransitionNode : public LnaNode {
   /**
    * Add an ingoing arc
    *
-   * @param _node arc node
+   * @param _node arc to be added
    */
   void add_inArc(const ArcNodePtr& _node);
 
   /**
-   * Get ingoing arc by its name
+   * Get an ingoing arc by its name
    *
    * @param _name arc's name
-   * @return arc node
+   * @return arc
    */
   ArcNodePtr get_in_arc_by_name(const std::string& _name);
 
   /**
    * Add an outgoing arc
    *
-   * @param _node arc node
+   * @param _node arc to be added
    */
   void add_outArc(const ArcNodePtr& _node);
 
   /**
-   * Get outgoing arc by its name
+   * Get an outgoing arc by its name
    *
    * @param _name arc's name
-   * @return  arc node
+   * @return  arc
    */
   ArcNodePtr get_out_arc_by_name(const std::string& _name);
 
   /**
    * Add an inhibitor arc to the transition
    *
-   * @param _node arc node
+   * @param _node arc to be added
    */
   void add_inhibitArc(const ArcNodePtr& _node);
 
@@ -1635,25 +1649,28 @@ class TransitionNode : public LnaNode {
 
   /**
    * Get the description of the transition
+   *
    * @return description
    */
   std::string get_description() const;
 
   /**
-   * Set if a transition is safe
-   * @param _safe safe value
+   * Set the safe attribute of the transition
+   *
+   * @param _safe safe attribute
    */
   void set_safe(const std::string& _safe);
 
   /**
-   * Get if a transition is safe
+   * Get the safe attribute of the transition
    *
-   * @return safe value
+   * @return safe attribute
    */
   std::string get_safe() const;
 
   /**
    * Add a new bounded variable to the transition
+   *
    * @param _node  varibles
    */
   void add_let(const std::string& _node);
