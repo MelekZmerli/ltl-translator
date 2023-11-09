@@ -1,5 +1,14 @@
 #include "LTLtranslator.hpp"
 
+#include <stddef.h>
+
+#include <iostream>
+#include <memory>
+#include <sstream>
+
+#include "json.hpp"
+#include "utils.hpp"
+
 namespace LTL2PROP {
 
 int precedence_of_op(std::string _op) {

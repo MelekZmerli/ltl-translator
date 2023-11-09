@@ -1,16 +1,11 @@
 #ifndef LTLTRANSLATOR_H_
 #define LTLTRANSLATOR_H_
 
-#include <iostream>
 #include <json.hpp>
 #include <list>
 #include <map>
-#include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
-
-#include "utils.hpp"
 
 namespace LTL2PROP {
 
