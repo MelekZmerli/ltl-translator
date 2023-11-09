@@ -75,34 +75,16 @@ class LTLTranslator {
    */
   LTLTranslator(const nlohmann::json& lna_json, const nlohmann::json& ltl_json);
 
+  /**
+   * Translate a LTL formula into Helena
+   *
+   * @return
+   */
   std::map<std::string, std::string> translate();
 
-  std::map<std::string, std::string> createUnderOverFlowVul(
-      const std::string& min_threshold, const std::string& max_threshold,
-      const std::string& variable);
-  std::map<std::string, std::string> createVulFileFromFormula(
-      std::string _formula);
-
-  void handleConstDefinition();
-  void handlePropositionDefinition();
-
-  void handlePropertyDefinition();
-
-  static std::vector<std::string> infixToPostfixExpression(
-      const std::string& _exp);
   static std::vector<std::string> splitExpression(const std::string& _exp);
 
   std::string handleNoNamePropositionDefinition(const std::string& _def);
-
-  std::string analysePropositionExpression(const std::string& _exp);
-  bool is_const_definition(const std::string& _name);
-  std::string get_const_definition_value(const std::string& _name);
-
-  bool is_global_variable(const std::string& _name);
-  std::string get_global_variable_placetype(const std::string& _name);
-
-  bool is_local_variable(const std::string& _name);
-  std::string get_local_variable_placetype(const std::string& _name);
 
   static std::vector<std::string> getListVariableFromFormula(
       const std::string& _formula);
@@ -130,6 +112,98 @@ class LTLTranslator {
    * @param lna_json JSON object containing information about a CPN net
    */
   void handleVariable(const nlohmann::json& lna_json);
+
+  /**
+   * Check if _name is a constant
+   *
+   * @param _name definition's name
+   * @return true if it's a constant, false otherwise
+   */
+  bool is_const_definition(const std::string& _name) const;
+
+  /**
+   * Get the value of a constant
+   *
+   * @param _name name of the constant
+   * @return value  of the constant
+   */
+  std::string get_const_definition_value(const std::string& _name);
+
+  /**
+   * Check if _name is a global variable
+   *
+   * @param _name name of the variable
+   * @return true if the variable is global, false otherwise
+   */
+  bool is_global_variable(const std::string& _name) const;
+
+  /**
+   * Return the place modeling the global variable _name
+   *
+   * @param _name global variable
+   * @return name of the place
+   */
+  std::string get_global_variable_placetype(const std::string& _name);
+
+  /**
+   * Check if _name is a local variable
+   *
+   * @param _name name of the variable
+   * @return true if the variable is local, false otherwise
+   */
+  bool is_local_variable(const std::string& _name) const;
+
+  /**
+   * Return the place modelling the local variable
+   *
+   * @param _name name of the local variable
+   * @return name of the place
+   */
+  std::string get_local_variable_placetype(const std::string& _name);
+
+  /**
+   * Return the Helena code for the under_over_flow vulnerability
+   *
+   * @param min_threshold minimum threshold value
+   * @param max_threshold maximum threshold value
+   * @param variable variable being tested
+   * @return Helena code
+   */
+  std::map<std::string, std::string> createUnderOverFlowVul(
+      const std::string& min_threshold, const std::string& max_threshold,
+      const std::string& variable);
+
+  /**
+   * Return the Helena code from an formula
+   *
+   * @param _formula Helena formula
+   * @return mapping of propositions and the property
+   */
+  std::map<std::string, std::string> createVulMapFromFormula(
+      const std::string& _formula);
+
+  /**
+   * Parse const definitions from Helena code
+   */
+  void handleConstDefinition();
+
+  /**
+   * Parse proposition definitions from Helena code
+   */
+  void handlePropositionDefinition();
+
+  /**
+   * Parse the expression inside a proposition from Helena code
+   *
+   * @param _exp expression code
+   * @return
+   */
+  std::string analysePropositionExpression(const std::string& _exp);
+
+  static std::vector<std::string> infixToPostfixExpression(
+      const std::string& _exp);
+
+  void handlePropertyDefinition();
 };
 
 }  // namespace LTL2PROP

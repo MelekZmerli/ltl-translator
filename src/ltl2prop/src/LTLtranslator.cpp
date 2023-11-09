@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 
 #include "json.hpp"
 #include "utils.hpp"
@@ -56,107 +57,89 @@ void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
   }
 }
 
-/** Check if _name is defined as const
- */
-bool LTLTranslator::is_const_definition(const std::string& _name) {
-  if (constDefinitions.find(_name) != constDefinitions.end()) {
-    return true;
-  }
-  return false;
-}
-/** Get value of _name (_name is defined as const)
- */
-std::string LTLTranslator::get_const_definition_value(
-    const std::string& _name) {
-  if (is_const_definition(_name)) {
-    return constDefinitions[_name];
-  }
-  return "";
-}
-/** Check if _name is  global variable
- */
-bool LTLTranslator::is_global_variable(const std::string& _name) {
-  if (global_variables.find(_name) != global_variables.end()) {
-    return true;
-  }
-  return false;
-}
-/** Get global variable placetype by input
- */
-std::string LTLTranslator::get_global_variable_placetype(
-    const std::string& _name) {
-  if (is_global_variable(_name)) {
-    return global_variables[_name];
-  }
-  return "";
-}
-/** Check if _name is local variable
- */
-bool LTLTranslator::is_local_variable(const std::string& _name) {
-  if (local_variables.find(_name) != local_variables.end()) {
-    return true;
-  }
-  return false;
-}
-/** Get local variable placetype by input
- */
-std::string LTLTranslator::get_local_variable_placetype(
-    const std::string& _name) {
-  if (is_local_variable(_name)) {
-    return local_variables[_name];
-  }
-  return "";
+bool LTLTranslator::is_const_definition(const std::string& _name) const {
+  return constDefinitions.find(_name) != constDefinitions.end();
 }
 
-/** Read ltl,lna,json file as input and output lna and prop.lna file
- */
+std::string LTLTranslator::get_const_definition_value(
+    const std::string& _name) {
+  return is_const_definition(_name) ? constDefinitions[_name] : "";
+}
+
+bool LTLTranslator::is_global_variable(const std::string& _name) const {
+  return global_variables.find(_name) != global_variables.end();
+}
+
+std::string LTLTranslator::get_global_variable_placetype(
+    const std::string& _name) {
+  return is_global_variable(_name) ? global_variables[_name] : "";
+}
+
+bool LTLTranslator::is_local_variable(const std::string& _name) const {
+  return local_variables.find(_name) != local_variables.end();
+}
+
+std::string LTLTranslator::get_local_variable_placetype(
+    const std::string& _name) {
+  return is_local_variable(_name) ? local_variables[_name] : "";
+}
+
 std::map<std::string, std::string> LTLTranslator::translate() {
-  std::string ltl_type = formula_json.at("type");
-  auto ltl_param = formula_json.at("params");
-  if (ltl_type == "general") {
-    std::string ltl_name = ltl_param.at("name");
-    if (ltl_name == "under_over_flow") {
-      auto inputs = ltl_param.at("inputs");
+  // get the type of formula : general or specific
+  std::string formula_type = formula_json.at("type");
+  auto formula_params = formula_json.at("params");
+
+  // parse a specific formula
+  if (formula_type == "specific") {
+    return createVulMapFromFormula(formula_params.at("formula"));
+  }
+
+  // parse a general formula
+  if (formula_type == "general") {
+    std::string vulnerability_name = formula_params.at("name");
+    if (vulnerability_name == "under_over_flow") {
+      auto inputs = formula_params.at("inputs");
       std::string min_threshold = inputs.at("min_threshold");
       std::string max_threshold = inputs.at("max_threshold");
       std::string variable = inputs.at("selected_variable");
       return createUnderOverFlowVul(min_threshold, max_threshold, variable);
     }
-  } else if (ltl_type == "specific") {
-    return createVulFileFromFormula(ltl_param.at("formula"));
   }
+
+  // throw an exception since the type cannot be handled
+  throw std::runtime_error("formula type " + formula_type +
+                           " is not handled by LTLTranslator");
 }
 
 std::map<std::string, std::string> LTLTranslator::createUnderOverFlowVul(
     const std::string& min_threshold, const std::string& max_threshold,
     const std::string& variable) {
-  std::stringstream _vul;
-  _vul << "const minThreshold = " + min_threshold + ";"
+  std::stringstream code;
+  code << "const minThreshold = " + min_threshold + ";"
        << "\n"
        << "const maxThreshold = " + max_threshold + ""
        << "\n";
-  _vul << "proposition oFut: ('" + variable + "' < minThreshold) | ('" +
+  code << "proposition oFut: ('" + variable + "' < minThreshold) | ('" +
               variable + "' > maxThreshold);"
        << "\n";
-  _vul << "property outOfRange: G ( ! oFut );";
-  return createVulFileFromFormula(_vul.str());
+  code << "property outOfRange: G ( ! oFut );";
+  return createVulMapFromFormula(code.str());
 }
 
-std::map<std::string, std::string> LTLTranslator::createVulFileFromFormula(
-    std::string _formula) {
+std::map<std::string, std::string> LTLTranslator::createVulMapFromFormula(
+    const std::string& _formula) {
   std::vector<std::string> lines = split(_formula, "\n");
 
-  for (size_t i = 0; i < lines.size(); i++) {
-    std::string line = lines[i];
+  // remove empty lines from Helena code
+  for (auto& line : lines) {
+    trim_ex(line);
     if (!line.empty()) {
-      std::string temp = std::string(line);
-      trim_ex(temp);
-      if (temp.length() > 0)
-        ltl_lines.emplace_back(line);
+      ltl_lines.emplace_back(line);
     }
   }
-  ptr_ltl_line = ltl_lines.begin();
 
+  // parse formula code
+  ptr_ltl_line = ltl_lines.begin();
   while (ptr_ltl_line != ltl_lines.end()) {
     std::string keyword = retrieve_string_element(*ptr_ltl_line, 0, " ");
     if (std::find(TokensDefine.begin(), TokensDefine.end(), keyword) !=
@@ -172,6 +155,7 @@ std::map<std::string, std::string> LTLTranslator::createVulFileFromFormula(
     ++ptr_ltl_line;
   }
 
+  // collect all the proposition in the formula
   std::stringstream prop_result;
   for (auto it = propositions.begin(); it != propositions.end(); ++it) {
     prop_result << (*it) << "\n";
@@ -183,46 +167,6 @@ std::map<std::string, std::string> LTLTranslator::createVulFileFromFormula(
   return result;
 }
 
-std::vector<std::string> LTLTranslator::getListVariableFromFormula(
-    const std::string& _formula) {
-  std::vector<std::string> lines = split(_formula, "\n");
-  std::list<std::string> temp_ltl_lines;
-
-  for (size_t i = 0; i < lines.size(); i++) {
-    std::string line = lines[i];
-    if (!line.empty()) {
-      std::string temp = std::string(line);
-      trim_ex(temp);
-      if (temp.length() > 0)
-        temp_ltl_lines.emplace_back(line);
-    }
-  }
-  std::list<std::string>::iterator temp_ptr_ltl_line = temp_ltl_lines.begin();
-
-  std::vector<std::string> ret;
-  while (temp_ptr_ltl_line != temp_ltl_lines.end()) {
-    std::string keyword = retrieve_string_element(*temp_ptr_ltl_line, 0, " ");
-    if (std::find(TokensDefine.begin(), TokensDefine.end(), keyword) !=
-        TokensDefine.end()) {
-      if (keyword == PROPOSITION_STRING || keyword == PROPERTY_STRING) {
-        std::string prop_def =
-            retrieve_string_element(*temp_ptr_ltl_line, 1, ":");
-        std::vector<std::string> expression = splitExpression(prop_def);
-        for (auto it = expression.begin(); it != expression.end(); ++it) {
-          std::string op = *it;
-          if (op[0] == '\'') {
-            ret.push_back(op);
-          }
-        }
-      }
-    }
-    ++temp_ptr_ltl_line;
-  }
-  return ret;
-}
-
-/** Analyse const definition
- */
 void LTLTranslator::handleConstDefinition() {
   std::string temp = *ptr_ltl_line;
   trim_ex(temp);
@@ -236,8 +180,6 @@ void LTLTranslator::handleConstDefinition() {
   constDefinitions[variable] = value;
 }
 
-/** Analyse proposition definition
- */
 void LTLTranslator::handlePropositionDefinition() {
   std::string temp = *ptr_ltl_line;
   trim_ex(temp);
@@ -247,24 +189,9 @@ void LTLTranslator::handlePropositionDefinition() {
       removeNoneAlnum(retrieve_string_element(definition, 0, ":"));
   std::string prop_def = retrieve_string_element(definition, 1, ":");
 
-  std::string finnal_expression = analysePropositionExpression(prop_def);
-
+  std::string final_expression = analysePropositionExpression(prop_def);
   propositions.push_back("proposition " + prop_name + ":\n\t" +
-                         finnal_expression + ";\n");
-}
-
-std::string LTLTranslator::handleNoNamePropositionDefinition(
-    const std::string& _def) {
-  std::string proposition_name =
-      "proposition_number_" + std::to_string(current_noname_proposition);
-  current_noname_proposition++;
-
-  std::string expression = substr_by_edge(_def, "{", "}");
-  std::string finnal_expression = analysePropositionExpression(expression);
-
-  propositions.push_back("proposition " + proposition_name + ":\n\t" +
-                         finnal_expression + ";\n");
-  return proposition_name;
+                         final_expression + ";\n");
 }
 
 std::string LTLTranslator::analysePropositionExpression(
@@ -274,6 +201,8 @@ std::string LTLTranslator::analysePropositionExpression(
   std::vector<std::string> opr;
   for (auto it = expression.begin(); it != expression.end(); ++it) {
     std::string op = *it;
+
+    std::cout << op << std::endl;
 
     if (MappingOp.find(op) != MappingOp.end()) {
       op = MappingOp[op];
@@ -410,6 +339,59 @@ std::string LTLTranslator::analysePropositionExpression(
     return "";
   }
 }
+
+std::vector<std::string> LTLTranslator::getListVariableFromFormula(
+    const std::string& _formula) {
+  std::vector<std::string> lines = split(_formula, "\n");
+  std::list<std::string> temp_ltl_lines;
+
+  for (size_t i = 0; i < lines.size(); i++) {
+    std::string line = lines[i];
+    if (!line.empty()) {
+      std::string temp = std::string(line);
+      trim_ex(temp);
+      if (temp.length() > 0)
+        temp_ltl_lines.emplace_back(line);
+    }
+  }
+  std::list<std::string>::iterator temp_ptr_ltl_line = temp_ltl_lines.begin();
+
+  std::vector<std::string> ret;
+  while (temp_ptr_ltl_line != temp_ltl_lines.end()) {
+    std::string keyword = retrieve_string_element(*temp_ptr_ltl_line, 0, " ");
+    if (std::find(TokensDefine.begin(), TokensDefine.end(), keyword) !=
+        TokensDefine.end()) {
+      if (keyword == PROPOSITION_STRING || keyword == PROPERTY_STRING) {
+        std::string prop_def =
+            retrieve_string_element(*temp_ptr_ltl_line, 1, ":");
+        std::vector<std::string> expression = splitExpression(prop_def);
+        for (auto it = expression.begin(); it != expression.end(); ++it) {
+          std::string op = *it;
+          if (op[0] == '\'') {
+            ret.push_back(op);
+          }
+        }
+      }
+    }
+    ++temp_ptr_ltl_line;
+  }
+  return ret;
+}
+
+std::string LTLTranslator::handleNoNamePropositionDefinition(
+    const std::string& _def) {
+  std::string proposition_name =
+      "proposition_number_" + std::to_string(current_noname_proposition);
+  current_noname_proposition++;
+
+  std::string expression = substr_by_edge(_def, "{", "}");
+  std::string finnal_expression = analysePropositionExpression(expression);
+
+  propositions.push_back("proposition " + proposition_name + ":\n\t" +
+                         finnal_expression + ";\n");
+  return proposition_name;
+}
+
 /** Analyse property definition
  */
 void LTLTranslator::handlePropertyDefinition() {
