@@ -52,6 +52,6 @@ An example of execution is
   --sol-ast ./test/blindAuction.ast \
   --lna-json ./test/etherGame.json \
   --im-json ./test/test.im.json \
-  --output_path ./output/ \
-  --output_name test
+  --output-path ./output/ \
+  --output-name test
 ```

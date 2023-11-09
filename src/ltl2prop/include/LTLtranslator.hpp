@@ -38,28 +38,43 @@ const std::list<std::string> BooleanOperator = {
 };
 
 const std::string GLOBAL_OP = "G";
-const std::string FINNALY_OP = "F";
+const std::string FINALLY_OP = "F";
 const std::string UNTIL_OP = "U";
 const std::string RUN_OP = "run";
 const std::string EXEC_OP = "exec";
-const std::list<std::string> LTLOperator = {GLOBAL_OP, FINNALY_OP, UNTIL_OP,
+const std::list<std::string> LTLOperator = {GLOBAL_OP, FINALLY_OP, UNTIL_OP,
                                             RUN_OP, EXEC_OP};
 
 const std::string OR_OP_PROP = "or";
 const std::string AND_OP_PROP = "and";
 const std::string NOT_OP_PROP = "not";
 const std::string GLOBAL_OP_PROP = "[]";
-const std::string FINNALY_OP_PROP = "<>";
+const std::string FINALLY_OP_PROP = "<>";
 const std::string UNTIL_OP_PROP = "until";
 
 const std::string PROPOSITION_AREA = "proposition";
 
-int precedence_of_op(std::string _op);
+/**
+ * Return the precedence level of an operator
+ *
+ * @param _op operator
+ * @return precedence level
+ */
+int precedence_of_op(const std::string& _op);
 
+/**
+ * @brief Class encapsulating the parser from LTL to Helena
+ */
 class LTLTranslator {
  public:
+  /**
+   * Create a new LTL translator
+   *
+   * @param lna_json JSON object containing the information of the CPN net
+   * @param ltl_json JSON object containing the information of the LTL formula
+   */
   LTLTranslator(const nlohmann::json& lna_json, const nlohmann::json& ltl_json);
-  void handleVariable(const nlohmann::json& lna_json);
+
   std::map<std::string, std::string> translate();
 
   std::map<std::string, std::string> createUnderOverFlowVul(
@@ -92,8 +107,6 @@ class LTLTranslator {
   static std::vector<std::string> getListVariableFromFormula(
       const std::string& _formula);
 
-  void createMap();
-
  private:
   nlohmann::json formula_json;
   std::map<std::string, std::string> MappingOp;
@@ -105,6 +118,18 @@ class LTLTranslator {
   std::vector<std::string> propositions;
   std::string property_string;
   int current_noname_proposition = 1;
+
+  /**
+   * Create a map between the syntax of LTL operators and Helena
+   */
+  void createMap();
+
+  /**
+   * Parse global/local variables from a CPN JSON object
+   *
+   * @param lna_json JSON object containing information about a CPN net
+   */
+  void handleVariable(const nlohmann::json& lna_json);
 };
 
 }  // namespace LTL2PROP

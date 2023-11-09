@@ -11,56 +11,47 @@
 
 namespace LTL2PROP {
 
-int precedence_of_op(std::string _op) {
-  if (_op == NOT_OP || _op == GLOBAL_OP || _op == FINNALY_OP || _op == RUN_OP ||
+int precedence_of_op(const std::string& _op) {
+  if (_op == NOT_OP || _op == GLOBAL_OP || _op == FINALLY_OP || _op == RUN_OP ||
       _op == EXEC_OP) {
     return 2;
-  } else if (_op == OR_OP || _op == AND_OP || _op == UNTIL_OP ||
-             std::find(ComparisonOperator.begin(), ComparisonOperator.end(),
-                       _op) != ComparisonOperator.end()) {
+  }
+
+  if (_op == OR_OP || _op == AND_OP || _op == UNTIL_OP ||
+      std::find(ComparisonOperator.begin(), ComparisonOperator.end(), _op) !=
+          ComparisonOperator.end()) {
     return 1;
   }
+
   return 0;
 }
 
-/** The main function to process and read the input files (lna,json,ltl)
- */
 LTLTranslator::LTLTranslator(const nlohmann::json& lna_json,
                              const nlohmann::json& ltl_json) {
-  std::string new_line;
-
   formula_json = ltl_json;
-
   handleVariable(lna_json);
   createMap();
 }
 
-/** Create a map to map between the ltl formula and the helena ltl prop formula
- */
 void LTLTranslator::createMap() {
   MappingOp[OR_OP] = OR_OP_PROP;
   MappingOp[AND_OP] = AND_OP_PROP;
   MappingOp[NOT_OP] = NOT_OP_PROP;
   MappingOp[GLOBAL_OP] = GLOBAL_OP_PROP;
-  MappingOp[FINNALY_OP] = FINNALY_OP_PROP;
+  MappingOp[FINALLY_OP] = FINALLY_OP_PROP;
   MappingOp[UNTIL_OP] = UNTIL_OP_PROP;
 }
 
-/** Read variable information from json file and store
- */
 void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
-  auto gvs = lna_json.at("globalVariables");
-  for (size_t i = 0; i < gvs.size(); i++) {
-    auto gv = gvs[i];
-    global_variables[gv.at("name")] = gv.at("placeType");
+  // get global variables
+  for (const auto& global_var : lna_json.at("globalVariables")) {
+    global_variables[global_var.at("name")] = global_var.at("placeType");
   }
 
-  auto functions = lna_json.at("functions");
-  for (size_t i = 0; i < functions.size(); i++) {
-    auto lvs = functions[i].at("localVariables");
-    for (size_t i = 0; i < lvs.size(); i++) {
-      auto lv = lvs[i];
-      local_variables[lv.at("name")] = lv.at("place");
+  // get local variables from functions
+  for (const auto& function : lna_json.at("functions")) {
+    for (const auto& local_var : function.at("localVariables")) {
+      local_variables[local_var.at("name")] = local_var.at("place");
     }
   }
 }
