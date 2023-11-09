@@ -106,12 +106,12 @@ int main(int argc, char **argv) {
       ->check(CLI::ExistingFile);
 
   std::string OUT_FILE_PATH;
-  app.add_option("--output_path", OUT_FILE_PATH, "Output file path")
+  app.add_option("--output-path", OUT_FILE_PATH, "Output file path")
       ->default_val("./")
-      ->check(CLI::ExistingFile);
+      ->check(CLI::ExistingDirectory);
 
   std::string OUT_FILE_NAME;
-  app.add_option("--output_name", OUT_FILE_NAME, "Output file name")
+  app.add_option("--output-name", OUT_FILE_NAME, "Output file name")
       ->default_val("output");
 
   CLI11_PARSE(app, argc, argv);
