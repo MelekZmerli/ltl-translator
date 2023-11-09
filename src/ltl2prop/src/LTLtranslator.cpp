@@ -202,8 +202,6 @@ std::string LTLTranslator::analysePropositionExpression(
   for (auto it = expression.begin(); it != expression.end(); ++it) {
     std::string op = *it;
 
-    std::cout << op << std::endl;
-
     if (MappingOp.find(op) != MappingOp.end()) {
       op = MappingOp[op];
     }
@@ -277,9 +275,8 @@ std::string LTLTranslator::analysePropositionExpression(
         }
         opr.push_back(temp_exp.str());
       } else {
-        // error
+        throw std::runtime_error("operator " + op + " is not well-formed");
       }
-
     } else if (*it == OR_OP || *it == AND_OP) {
       if (opr.size() >= 2) {
         std::string first_opr = opr.back();
@@ -289,19 +286,19 @@ std::string LTLTranslator::analysePropositionExpression(
 
         opr.push_back(second_opr + " " + op + " " + first_opr);
       } else {
-        // error
+        throw std::runtime_error("operator " + op + " is not well-formed");
       }
     } else if (*it == NOT_OP) {
-      if (opr.size() >= 1) {
+      if (!opr.empty()) {
         std::string first_opr = opr.back();
         opr.pop_back();
 
         opr.push_back(op + " " + first_opr);
       } else {
-        // error
+        throw std::runtime_error("operator " + op + " is not well-formed");
       }
     } else if (*it == RUN_OP) {
-      if (opr.size() >= 1) {
+      if (!opr.empty()) {
         std::string first_opr = opr.back();
         opr.pop_back();
 
@@ -326,18 +323,139 @@ std::string LTLTranslator::analysePropositionExpression(
         }
         opr.push_back(temp_exp);
       } else {
-        // error
+        throw std::runtime_error("operator " + op + " is not well-formed");
       }
     } else {
       opr.push_back(*it);
     }
   }
+
   if (opr.size() == 1) {
     return opr.back();
   } else {
-    // error
-    return "";
+    return "";  // error
   }
+}
+
+std::vector<std::string> LTLTranslator::infixToPostfixExpression(
+    const std::string& _exp) {
+  std::vector<std::string> els = splitExpression(_exp);
+  std::vector<std::string> opt_stack;
+  std::vector<std::string> opr_stack;
+  int cout = 0;
+
+  while (cout < els.size()) {
+    if (els[cout] == OPEN_PARENTHESES) {
+      opr_stack.push_back(els[cout]);
+    } else if (els[cout] == CLOSE_PARENTHESES) {
+      while (opr_stack.back() != OPEN_PARENTHESES) {
+        opt_stack.push_back(opr_stack.back());
+        opr_stack.pop_back();
+      }
+      opr_stack.pop_back();
+    } else if (std::find(ComparisonOperator.begin(), ComparisonOperator.end(),
+                         els[cout]) != ComparisonOperator.end() ||
+               std::find(BooleanOperator.begin(), BooleanOperator.end(),
+                         els[cout]) != BooleanOperator.end() ||
+               std::find(LTLOperator.begin(), LTLOperator.end(), els[cout]) !=
+                   LTLOperator.end()) {
+      while (!opr_stack.empty() && precedence_of_op(els[cout]) <=
+                                       precedence_of_op(opr_stack.back())) {
+        opt_stack.push_back(opr_stack.back());
+        opr_stack.pop_back();
+      }
+      opr_stack.push_back(els[cout]);
+    } else {
+      opt_stack.push_back(els[cout]);
+    }
+    cout++;
+  }
+
+  while (!opr_stack.empty()) {
+    opt_stack.push_back(opr_stack.back());
+    opr_stack.pop_back();
+  }
+
+  return opt_stack;
+}
+
+std::vector<std::string> LTLTranslator::splitExpression(
+    const std::string& _exp) {
+  std::vector<std::string> result;
+  std::vector<char> temp;
+  int cout = 0;
+
+  while (cout < _exp.length()) {
+    if (_exp[cout] == '(' || _exp[cout] == ')' ||
+        std::find(BooleanOperator.begin(), BooleanOperator.end(),
+                  std::string(1, _exp[cout])) != BooleanOperator.end()) {
+      if (!temp.empty()) {
+        result.push_back(std::string(temp.begin(), temp.end()));
+        temp.clear();
+      }
+
+      result.push_back(std::string(1, _exp[cout]));
+    } else if (_exp[cout] == ' ' || _exp[cout] == '\n') {
+      if (!temp.empty()) {
+        result.push_back(std::string(temp.begin(), temp.end()));
+        temp.clear();
+      }
+    } else if (_exp[cout] == '{') {
+      if (!temp.empty()) {
+        result.push_back(std::string(temp.begin(), temp.end()));
+        temp.clear();
+      }
+
+      while (_exp[cout] != '}' && cout < _exp.length()) {
+        temp.push_back(_exp[cout]);
+        cout++;
+      }
+
+      if (cout < _exp.length()) {
+        temp.push_back('}');
+        result.push_back(std::string(temp.begin(), temp.end()));
+        temp.clear();
+      }
+
+    } else {
+      temp.push_back(_exp[cout]);
+    }
+    cout++;
+  }
+
+  if (!temp.empty()) {
+    result.push_back(std::string(temp.begin(), temp.end()));
+    temp.clear();
+  }
+
+  return result;
+}
+
+/** Analyse property definition
+ */
+void LTLTranslator::handlePropertyDefinition() {
+  std::string temp = *ptr_ltl_line;
+  trim_ex(temp);
+  std::string definition = split_ex(temp, " ", 2)[1];
+
+  std::string property_name = removeNoneAlnum(split_ex(definition, ":", 2)[0]);
+  std::string property_def = split_ex(definition, ":", 2)[1];
+  std::vector<std::string> els = splitExpression(property_def);
+
+  std::stringstream property;
+  for (auto it = els.begin(); it != els.end(); ++it) {
+    if ((*it).find("{") != std::string::npos) {
+      std::string prop_name = handleNoNamePropositionDefinition(*it);
+      property << prop_name << " ";
+    } else if (MappingOp.find(*it) != MappingOp.end()) {
+      property << MappingOp[*it] << " ";
+    } else {
+      property << *it << " ";
+    }
+  }
+
+  property_string =
+      "ltl property " + property_name + ":\n\t" + property.str() + ";\n";
 }
 
 std::vector<std::string> LTLTranslator::getListVariableFromFormula(
@@ -390,133 +508,6 @@ std::string LTLTranslator::handleNoNamePropositionDefinition(
   propositions.push_back("proposition " + proposition_name + ":\n\t" +
                          finnal_expression + ";\n");
   return proposition_name;
-}
-
-/** Analyse property definition
- */
-void LTLTranslator::handlePropertyDefinition() {
-  std::string temp = *ptr_ltl_line;
-  trim_ex(temp);
-  std::string definition = split_ex(temp, " ", 2)[1];
-
-  std::string property_name = removeNoneAlnum(split_ex(definition, ":", 2)[0]);
-  std::string property_def = split_ex(definition, ":", 2)[1];
-  std::vector<std::string> els = splitExpression(property_def);
-
-  std::stringstream property;
-  for (auto it = els.begin(); it != els.end(); ++it) {
-    if ((*it).find("{") != std::string::npos) {
-      std::string prop_name = handleNoNamePropositionDefinition(*it);
-      property << prop_name << " ";
-    } else if (MappingOp.find(*it) != MappingOp.end()) {
-      property << MappingOp[*it] << " ";
-    } else {
-      property << *it << " ";
-    }
-  }
-
-  property_string =
-      "ltl property " + property_name + ":\n\t" + property.str() + ";\n";
-}
-/** Convert proposition expression to proposition in lna file
- */
-std::vector<std::string> LTLTranslator::infixToPostfixExpression(
-    const std::string& _exp) {
-  std::vector<std::string> els = splitExpression(_exp);
-  std::vector<std::string> opt_stack;
-  std::vector<std::string> opr_stack;
-  int cout = 0;
-
-  while (cout < els.size()) {
-    if (els[cout] == OPEN_PARENTHESES) {
-      opr_stack.push_back(els[cout]);
-    } else if (els[cout] == CLOSE_PARENTHESES) {
-      while (opr_stack.back() != OPEN_PARENTHESES) {
-        opt_stack.push_back(opr_stack.back());
-        opr_stack.pop_back();
-      }
-      opr_stack.pop_back();
-    } else if (std::find(ComparisonOperator.begin(), ComparisonOperator.end(),
-                         els[cout]) != ComparisonOperator.end() ||
-               std::find(BooleanOperator.begin(), BooleanOperator.end(),
-                         els[cout]) != BooleanOperator.end() ||
-               std::find(LTLOperator.begin(), LTLOperator.end(), els[cout]) !=
-                   LTLOperator.end()) {
-      while (opr_stack.size() > 0 && precedence_of_op(els[cout]) <=
-                                         precedence_of_op(opr_stack.back())) {
-        opt_stack.push_back(opr_stack.back());
-        opr_stack.pop_back();
-      }
-      opr_stack.push_back(els[cout]);
-    } else {
-      opt_stack.push_back(els[cout]);
-    }
-    cout++;
-  }
-  while (opr_stack.size() > 0) {
-    opt_stack.push_back(opr_stack.back());
-    opr_stack.pop_back();
-  }
-
-  return opt_stack;
-}
-
-/** Split expression string into list of element
- *      example:
- *          std::string input = "(F(is_valid))";
- *          std::vector<std::string> out = splitExpression(input);
- *          output = {"(","F","(","is_valid",")",")"}
- */
-std::vector<std::string> LTLTranslator::splitExpression(
-    const std::string& _exp) {
-  std::vector<std::string> result;
-  std::vector<char> temp;
-  int cout = 0;
-
-  while (cout < _exp.length()) {
-    if (_exp[cout] == '(' || _exp[cout] == ')' ||
-        std::find(BooleanOperator.begin(), BooleanOperator.end(),
-                  std::string(1, _exp[cout])) != BooleanOperator.end()) {
-      if (temp.size() > 0) {
-        result.push_back(std::string(temp.begin(), temp.end()));
-        temp.clear();
-      }
-
-      result.push_back(std::string(1, _exp[cout]));
-    } else if (_exp[cout] == ' ' || _exp[cout] == '\n') {
-      if (temp.size() > 0) {
-        result.push_back(std::string(temp.begin(), temp.end()));
-        temp.clear();
-      }
-    } else if (_exp[cout] == '{') {
-      if (temp.size() > 0) {
-        result.push_back(std::string(temp.begin(), temp.end()));
-        temp.clear();
-      }
-
-      while (_exp[cout] != '}' && cout < _exp.length()) {
-        temp.push_back(_exp[cout]);
-        cout++;
-      }
-
-      if (cout < _exp.length()) {
-        temp.push_back('}');
-        result.push_back(std::string(temp.begin(), temp.end()));
-        temp.clear();
-      }
-
-    } else {
-      temp.push_back(_exp[cout]);
-    }
-    cout++;
-  }
-
-  if (temp.size() > 0) {
-    result.push_back(std::string(temp.begin(), temp.end()));
-    temp.clear();
-  }
-
-  return result;
 }
 
 }  // namespace LTL2PROP

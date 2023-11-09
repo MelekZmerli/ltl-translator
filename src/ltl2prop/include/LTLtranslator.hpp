@@ -82,8 +82,6 @@ class LTLTranslator {
    */
   std::map<std::string, std::string> translate();
 
-  static std::vector<std::string> splitExpression(const std::string& _exp);
-
   std::string handleNoNamePropositionDefinition(const std::string& _def);
 
   static std::vector<std::string> getListVariableFromFormula(
@@ -195,13 +193,34 @@ class LTLTranslator {
   /**
    * Parse the expression inside a proposition from Helena code
    *
+   * TODO: refactor since it's very complex
+   *
    * @param _exp expression code
-   * @return
+   * @return parsed expression
    */
   std::string analysePropositionExpression(const std::string& _exp);
 
+  /**
+   * Convert an infix expression into a postfix one
+   *
+   * @param _exp expression code
+   * @return postfix expression code
+   */
   static std::vector<std::string> infixToPostfixExpression(
       const std::string& _exp);
+
+  /**
+   * Split an expression into a list its elements
+   *
+   * @param _exp expression
+   * @return list of elements
+   *
+   * @example
+   *  std::string input = "(F(is_valid))";
+   *  std::vector<std::string> out = splitExpression(input);
+   *  output = {"(","F","(","is_valid",")",")"
+   */
+  static std::vector<std::string> splitExpression(const std::string& _exp);
 
   void handlePropertyDefinition();
 };
