@@ -431,8 +431,6 @@ std::vector<std::string> LTLTranslator::splitExpression(
   return result;
 }
 
-/** Analyse property definition
- */
 void LTLTranslator::handlePropertyDefinition() {
   std::string temp = *ptr_ltl_line;
   trim_ex(temp);
@@ -458,23 +456,35 @@ void LTLTranslator::handlePropertyDefinition() {
       "ltl property " + property_name + ":\n\t" + property.str() + ";\n";
 }
 
+std::string LTLTranslator::handleNoNamePropositionDefinition(
+    const std::string& _def) {
+  std::string proposition_name =
+      "proposition_number_" + std::to_string(current_noname_proposition);
+  current_noname_proposition++;
+
+  std::string expression = substr_by_edge(_def, "{", "}");
+  std::string final_expression = analysePropositionExpression(expression);
+
+  propositions.push_back("proposition " + proposition_name + ":\n\t" +
+                         final_expression + ";\n");
+  return proposition_name;
+}
+
 std::vector<std::string> LTLTranslator::getListVariableFromFormula(
     const std::string& _formula) {
   std::vector<std::string> lines = split(_formula, "\n");
   std::list<std::string> temp_ltl_lines;
 
-  for (size_t i = 0; i < lines.size(); i++) {
-    std::string line = lines[i];
+  // remove empty lines from the formula code
+  for (auto& line : lines) {
+    trim_ex(line);
     if (!line.empty()) {
-      std::string temp = std::string(line);
-      trim_ex(temp);
-      if (temp.length() > 0)
-        temp_ltl_lines.emplace_back(line);
+      temp_ltl_lines.emplace_back(line);
     }
   }
-  std::list<std::string>::iterator temp_ptr_ltl_line = temp_ltl_lines.begin();
 
   std::vector<std::string> ret;
+  std::list<std::string>::iterator temp_ptr_ltl_line = temp_ltl_lines.begin();
   while (temp_ptr_ltl_line != temp_ltl_lines.end()) {
     std::string keyword = retrieve_string_element(*temp_ptr_ltl_line, 0, " ");
     if (std::find(TokensDefine.begin(), TokensDefine.end(), keyword) !=
@@ -493,21 +503,8 @@ std::vector<std::string> LTLTranslator::getListVariableFromFormula(
     }
     ++temp_ptr_ltl_line;
   }
+
   return ret;
-}
-
-std::string LTLTranslator::handleNoNamePropositionDefinition(
-    const std::string& _def) {
-  std::string proposition_name =
-      "proposition_number_" + std::to_string(current_noname_proposition);
-  current_noname_proposition++;
-
-  std::string expression = substr_by_edge(_def, "{", "}");
-  std::string finnal_expression = analysePropositionExpression(expression);
-
-  propositions.push_back("proposition " + proposition_name + ":\n\t" +
-                         finnal_expression + ";\n");
-  return proposition_name;
 }
 
 }  // namespace LTL2PROP

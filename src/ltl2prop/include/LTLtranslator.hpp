@@ -76,14 +76,18 @@ class LTLTranslator {
   LTLTranslator(const nlohmann::json& lna_json, const nlohmann::json& ltl_json);
 
   /**
-   * Translate a LTL formula into Helena
+   * Translate a LTL formula into Helena code
    *
-   * @return
+   * @return the propositions and the property in Helena code
    */
   std::map<std::string, std::string> translate();
 
-  std::string handleNoNamePropositionDefinition(const std::string& _def);
-
+  /**
+   * Get the list of variables in a formula
+   *
+   * @param _formula Helena formula
+   * @return list of variables
+   */
   static std::vector<std::string> getListVariableFromFormula(
       const std::string& _formula);
 
@@ -212,17 +216,31 @@ class LTLTranslator {
   /**
    * Split an expression into a list its elements
    *
-   * @param _exp expression
-   * @return list of elements
+   * Example:
    *
-   * @example
+   * ```cpp
    *  std::string input = "(F(is_valid))";
    *  std::vector<std::string> out = splitExpression(input);
    *  output = {"(","F","(","is_valid",")",")"
+   * ```
+   *
+   * @param _exp expression
+   * @return list of elements
    */
   static std::vector<std::string> splitExpression(const std::string& _exp);
 
+  /**
+   * Parse property definitions from Helena code
+   */
   void handlePropertyDefinition();
+
+  /**
+   * Parse an anonymous proposition
+   *
+   * @param _def expression containing the proposition
+   * @return Helena code
+   */
+  std::string handleNoNamePropositionDefinition(const std::string& _def);
 };
 
 }  // namespace LTL2PROP
