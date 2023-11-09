@@ -102,7 +102,8 @@ StructuredNetNodePtr Unfolder::analyseLnaFile(
     if (!new_line.empty()) {
       std::string temp = std::string(new_line);
       trim_ex(temp);
-      if (temp.length() > 0) _sol_lines.emplace_back(new_line);
+      if (temp.length() > 0)
+        _sol_lines.emplace_back(new_line);
     }
   }
   std::list<std::string>::iterator ptr_pointer_end = _sol_lines.end();

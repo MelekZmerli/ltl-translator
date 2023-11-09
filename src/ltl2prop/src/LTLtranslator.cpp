@@ -1,5 +1,7 @@
 #include "LTLtranslator.hpp"
 
+namespace LTL2PROP {
+
 int precedence_of_op(std::string _op) {
   if (_op == NOT_OP || _op == GLOBAL_OP || _op == FINNALY_OP || _op == RUN_OP ||
       _op == EXEC_OP) {
@@ -534,3 +536,5 @@ std::vector<std::string> LTLTranslator::splitExpression(
 
   return result;
 }
+
+}  // namespace LTL2PROP

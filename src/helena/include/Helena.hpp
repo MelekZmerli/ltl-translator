@@ -1,5 +1,5 @@
-#ifndef HELENA_HELENA_H_
-#define HELENA_HELENA_H_
+#ifndef HELENA_H_
+#define HELENA_H_
 
 #include <stddef.h>
 
@@ -1692,4 +1692,4 @@ typedef std::shared_ptr<TransitionNode> TransitionNodePtr;
 
 }  // namespace HELENA
 
-#endif  // SOL2CPN_HELENA_H_
+#endif  // HELENA_H_

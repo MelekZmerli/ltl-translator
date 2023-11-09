@@ -17,6 +17,7 @@
 #include "utils.hpp"
 
 using namespace HELENA;
+using namespace LTL2PROP;
 
 class Unfolder {
  public:

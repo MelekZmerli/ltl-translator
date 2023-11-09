@@ -12,6 +12,8 @@
 
 #include "utils.hpp"
 
+namespace LTL2PROP {
+
 const std::string CONST_STRING = "const";
 const std::string PROPOSITION_STRING = "proposition";
 const std::string PROPERTY_STRING = "property";
@@ -110,4 +112,6 @@ class LTLTranslator {
   int current_noname_proposition = 1;
 };
 
-#endif
+}  // namespace LTL2PROP
+
+#endif  // LTLTTRANSLATOR_H_
