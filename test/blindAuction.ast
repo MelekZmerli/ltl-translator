@@ -6,7 +6,7 @@ PragmaDirective
    Gas costs: 0
    Source: "pragma solidity 0.4.25;"
 ContractDefinition "BlindAuction"
-   Source: "contract BlindAuction {\n    \n    struct Bid {\n        bytes32 blindedBid;\n        uint deposit;\n    }\n\n    mapping(address => Bid[]) bids;\n    mapping(address => uint) pendingReturns;\n    address highestBidder;\n    uint highestBid;\n\n    function bid(bytes32 blindedBid) public payable {\n        bids[msg.sender].push(Bid(blindedBid, msg.value));\n        pendingReturns[msg.sender] += msg.value;\n    }\n\n    function reveal(uint[] values, bytes32[] secrets) public {\n        require(values.length == secrets.length);\n        for (uint i = 0; i < values.length && i < bids[msg.sender].length; i++) {\n            Bid bid1 = bids[msg.sender][i];\n            uint value = values[i];\n            bytes32 secret = secrets[i];\n            if (bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n\n        }\n    }\n\n    function withdraw() public {\n        uint amount = pendingReturns[msg.sender];\n        if (amount > 0) {\n            if (msg.sender != highestBidder)             msg.sender.transfer(amount); else             msg.sender.transfer(amount - highestBid);\n\n            pendingReturns[msg.sender] = 0;\n        }\n    }\n}"
+   Source: "contract BlindAuction {\n    struct Bid {\n        bytes32 blindedBid;\n        uint deposit;\n    }\n    uint public biddingEnd;\n    uint public revealEnd;\n\n    mapping(address => Bid[]) public bids;\n    address public highestBidder;\n    uint public highestBid;\n    mapping(address => uint) pendingReturns;\n    modifier onlyBefore(uint _time) {\n        require(now < _time);\n        _;\n    }\n    modifier onlyAfter(uint _time) {\n        require(now > _time);\n        _;\n    }\n\n    constructor(uint _biddingTime, uint _revealTime) public {\n        biddingEnd = now + _biddingTime;\n        revealEnd = biddingEnd + _revealTime;\n    }\n\n    function bid(bytes32 _blindedBid) public payable onlyBefore(biddingEnd) {\n        bids[msg.sender].push(\n            Bid({blindedBid: _blindedBid, deposit: msg.value})\n        );\n    }\n\n    function reveal(\n        uint[] values,\n        bytes32[] secrets\n    ) public onlyAfter(biddingEnd) onlyBefore(revealEnd) {\n        require(values.length == secrets.length);\n        for (\n            uint i = 0;\n            i < values.length && i < bids[msg.sender].length;\n            i++\n        ) {\n            var bid_obj = bids[msg.sender][i];\n            var (value, secret) = (values[i], secrets[i]);\n            if (\n                bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid\n            ) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n        }\n    }\n\n    function withdraw() public onlyAfter(revealEnd) {\n        uint amount = pendingReturns[msg.sender];\n        if (amount > 0) {\n            if (msg.sender != highestBidder) msg.sender.transfer(amount);\n            else msg.sender.transfer(amount - highestBid);\n            pendingReturns[msg.sender] = 0;\n        }\n    }\n}"
   StructDefinition "Bid"
      Gas costs: 0
      Source: "struct Bid {\n        bytes32 blindedBid;\n        uint deposit;\n    }"
@@ -20,10 +20,22 @@ ContractDefinition "BlindAuction"
        Source: "uint deposit"
       ElementaryTypeName uint
          Source: "uint"
+  VariableDeclaration "biddingEnd"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public biddingEnd"
+    ElementaryTypeName uint
+       Source: "uint"
+  VariableDeclaration "revealEnd"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public revealEnd"
+    ElementaryTypeName uint
+       Source: "uint"
   VariableDeclaration "bids"
      Type: mapping(address => struct BlindAuction.Bid storage ref[] storage ref)
-     Gas costs: 0
-     Source: "mapping(address => Bid[]) bids"
+     Gas costs: 1024
+     Source: "mapping(address => Bid[]) public bids"
     Mapping
        Source: "mapping(address => Bid[])"
       ElementaryTypeName address
@@ -32,6 +44,18 @@ ContractDefinition "BlindAuction"
          Source: "Bid[]"
         UserDefinedTypeName "Bid"
            Source: "Bid"
+  VariableDeclaration "highestBidder"
+     Type: address
+     Gas costs: 335
+     Source: "address public highestBidder"
+    ElementaryTypeName address
+       Source: "address"
+  VariableDeclaration "highestBid"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public highestBid"
+    ElementaryTypeName uint
+       Source: "uint"
   VariableDeclaration "pendingReturns"
      Type: mapping(address => uint256)
      Gas costs: 0
@@ -42,39 +66,158 @@ ContractDefinition "BlindAuction"
          Source: "address"
       ElementaryTypeName uint
          Source: "uint"
-  VariableDeclaration "highestBidder"
-     Type: address
-     Gas costs: 0
-     Source: "address highestBidder"
-    ElementaryTypeName address
-       Source: "address"
-  VariableDeclaration "highestBid"
-     Type: uint256
-     Gas costs: 0
-     Source: "uint highestBid"
-    ElementaryTypeName uint
-       Source: "uint"
-  FunctionDefinition "bid" - public
-     Source: "function bid(bytes32 blindedBid) public payable {\n        bids[msg.sender].push(Bid(blindedBid, msg.value));\n        pendingReturns[msg.sender] += msg.value;\n    }"
+  ModifierDefinition "onlyBefore"
+     Source: "modifier onlyBefore(uint _time) {\n        require(now < _time);\n        _;\n    }"
     ParameterList
        Gas costs: 0
-       Source: "(bytes32 blindedBid)"
-      VariableDeclaration "blindedBid"
+       Source: "(uint _time)"
+      VariableDeclaration "_time"
+         Type: uint256
+         Source: "uint _time"
+        ElementaryTypeName uint
+           Source: "uint"
+    Block
+       Source: "{\n        require(now < _time);\n        _;\n    }"
+      ExpressionStatement
+         Gas costs: 68
+         Source: "require(now < _time)"
+        FunctionCall
+           Type: tuple()
+           Source: "require(now < _time)"
+          Identifier require
+             Type: function (bool) pure
+             Source: "require"
+          BinaryOperation using operator <
+             Type: bool
+             Source: "now < _time"
+            Identifier now
+               Type: uint256
+               Source: "now"
+            Identifier _time
+               Type: uint256
+               Source: "_time"
+      PlaceholderStatement
+         Gas costs: 0
+         Source: "_"
+  ModifierDefinition "onlyAfter"
+     Source: "modifier onlyAfter(uint _time) {\n        require(now > _time);\n        _;\n    }"
+    ParameterList
+       Gas costs: 0
+       Source: "(uint _time)"
+      VariableDeclaration "_time"
+         Type: uint256
+         Source: "uint _time"
+        ElementaryTypeName uint
+           Source: "uint"
+    Block
+       Source: "{\n        require(now > _time);\n        _;\n    }"
+      ExpressionStatement
+         Gas costs: 68
+         Source: "require(now > _time)"
+        FunctionCall
+           Type: tuple()
+           Source: "require(now > _time)"
+          Identifier require
+             Type: function (bool) pure
+             Source: "require"
+          BinaryOperation using operator >
+             Type: bool
+             Source: "now > _time"
+            Identifier now
+               Type: uint256
+               Source: "now"
+            Identifier _time
+               Type: uint256
+               Source: "_time"
+      PlaceholderStatement
+         Gas costs: 2
+         Source: "_"
+  FunctionDefinition "" - public
+     Source: "constructor(uint _biddingTime, uint _revealTime) public {\n        biddingEnd = now + _biddingTime;\n        revealEnd = biddingEnd + _revealTime;\n    }"
+    ParameterList
+       Gas costs: 0
+       Source: "(uint _biddingTime, uint _revealTime)"
+      VariableDeclaration "_biddingTime"
+         Type: uint256
+         Source: "uint _biddingTime"
+        ElementaryTypeName uint
+           Source: "uint"
+      VariableDeclaration "_revealTime"
+         Type: uint256
+         Source: "uint _revealTime"
+        ElementaryTypeName uint
+           Source: "uint"
+    ParameterList
+       Gas costs: 0
+       Source: ""
+    Block
+       Source: "{\n        biddingEnd = now + _biddingTime;\n        revealEnd = biddingEnd + _revealTime;\n    }"
+      ExpressionStatement
+         Gas costs: 0
+         Source: "biddingEnd = now + _biddingTime"
+        Assignment using operator =
+           Type: uint256
+           Source: "biddingEnd = now + _biddingTime"
+          Identifier biddingEnd
+             Type: uint256
+             Source: "biddingEnd"
+          BinaryOperation using operator +
+             Type: uint256
+             Source: "now + _biddingTime"
+            Identifier now
+               Type: uint256
+               Source: "now"
+            Identifier _biddingTime
+               Type: uint256
+               Source: "_biddingTime"
+      ExpressionStatement
+         Gas costs: 0
+         Source: "revealEnd = biddingEnd + _revealTime"
+        Assignment using operator =
+           Type: uint256
+           Source: "revealEnd = biddingEnd + _revealTime"
+          Identifier revealEnd
+             Type: uint256
+             Source: "revealEnd"
+          BinaryOperation using operator +
+             Type: uint256
+             Source: "biddingEnd + _revealTime"
+            Identifier biddingEnd
+               Type: uint256
+               Source: "biddingEnd"
+            Identifier _revealTime
+               Type: uint256
+               Source: "_revealTime"
+  FunctionDefinition "bid" - public
+     Source: "function bid(bytes32 _blindedBid) public payable onlyBefore(biddingEnd) {\n        bids[msg.sender].push(\n            Bid({blindedBid: _blindedBid, deposit: msg.value})\n        );\n    }"
+    ParameterList
+       Gas costs: 0
+       Source: "(bytes32 _blindedBid)"
+      VariableDeclaration "_blindedBid"
          Type: bytes32
-         Source: "bytes32 blindedBid"
+         Source: "bytes32 _blindedBid"
         ElementaryTypeName bytes32
            Source: "bytes32"
     ParameterList
        Gas costs: 0
        Source: ""
+    ModifierInvocation "onlyBefore"
+       Gas costs: 203
+       Source: "onlyBefore(biddingEnd)"
+      Identifier onlyBefore
+         Type: modifier (uint256)
+         Source: "onlyBefore"
+      Identifier biddingEnd
+         Type: uint256
+         Source: "biddingEnd"
     Block
-       Source: "{\n        bids[msg.sender].push(Bid(blindedBid, msg.value));\n        pendingReturns[msg.sender] += msg.value;\n    }"
+       Source: "{\n        bids[msg.sender].push(\n            Bid({blindedBid: _blindedBid, deposit: msg.value})\n        );\n    }"
       ExpressionStatement
          Gas costs: 40343
-         Source: "bids[msg.sender].push(Bid(blindedBid, msg.value))"
+         Source: "bids[msg.sender].push(\n            Bid({blindedBid: _blindedBid, deposit: msg.value})\n        )"
         FunctionCall
            Type: uint256
-           Source: "bids[msg.sender].push(Bid(blindedBid, msg.value))"
+           Source: "bids[msg.sender].push(\n            Bid({blindedBid: _blindedBid, deposit: msg.value})\n        )"
           MemberAccess to member push
              Type: function (struct BlindAuction.Bid storage ref) returns (uint256)
              Source: "bids[msg.sender].push"
@@ -92,48 +235,24 @@ ContractDefinition "BlindAuction"
                    Source: "msg"
           FunctionCall
              Type: struct BlindAuction.Bid memory
-             Source: "Bid(blindedBid, msg.value)"
+             Source: "Bid({blindedBid: _blindedBid, deposit: msg.value})"
             Identifier Bid
                Type: type(struct BlindAuction.Bid storage pointer)
                Source: "Bid"
-            Identifier blindedBid
+            Identifier _blindedBid
                Type: bytes32
-               Source: "blindedBid"
+               Source: "_blindedBid"
             MemberAccess to member value
                Type: uint256
                Source: "msg.value"
               Identifier msg
                  Type: msg
                  Source: "msg"
-      ExpressionStatement
-         Gas costs: 20321
-         Source: "pendingReturns[msg.sender] += msg.value"
-        Assignment using operator +=
-           Type: uint256
-           Source: "pendingReturns[msg.sender] += msg.value"
-          IndexAccess
-             Type: uint256
-             Source: "pendingReturns[msg.sender]"
-            Identifier pendingReturns
-               Type: mapping(address => uint256)
-               Source: "pendingReturns"
-            MemberAccess to member sender
-               Type: address
-               Source: "msg.sender"
-              Identifier msg
-                 Type: msg
-                 Source: "msg"
-          MemberAccess to member value
-             Type: uint256
-             Source: "msg.value"
-            Identifier msg
-               Type: msg
-               Source: "msg"
   FunctionDefinition "reveal" - public
-     Source: "function reveal(uint[] values, bytes32[] secrets) public {\n        require(values.length == secrets.length);\n        for (uint i = 0; i < values.length && i < bids[msg.sender].length; i++) {\n            Bid bid1 = bids[msg.sender][i];\n            uint value = values[i];\n            bytes32 secret = secrets[i];\n            if (bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n\n        }\n    }"
+     Source: "function reveal(\n        uint[] values,\n        bytes32[] secrets\n    ) public onlyAfter(biddingEnd) onlyBefore(revealEnd) {\n        require(values.length == secrets.length);\n        for (\n            uint i = 0;\n            i < values.length && i < bids[msg.sender].length;\n            i++\n        ) {\n            var bid_obj = bids[msg.sender][i];\n            var (value, secret) = (values[i], secrets[i]);\n            if (\n                bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid\n            ) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n        }\n    }"
     ParameterList
        Gas costs: 0
-       Source: "(uint[] values, bytes32[] secrets)"
+       Source: "(\n        uint[] values,\n        bytes32[] secrets\n    )"
       VariableDeclaration "values"
          Type: uint256[] memory
          Source: "uint[] values"
@@ -151,8 +270,26 @@ ContractDefinition "BlindAuction"
     ParameterList
        Gas costs: 0
        Source: ""
+    ModifierInvocation "onlyAfter"
+       Gas costs: 203
+       Source: "onlyAfter(biddingEnd)"
+      Identifier onlyAfter
+         Type: modifier (uint256)
+         Source: "onlyAfter"
+      Identifier biddingEnd
+         Type: uint256
+         Source: "biddingEnd"
+    ModifierInvocation "onlyBefore"
+       Gas costs: 203
+       Source: "onlyBefore(revealEnd)"
+      Identifier onlyBefore
+         Type: modifier (uint256)
+         Source: "onlyBefore"
+      Identifier revealEnd
+         Type: uint256
+         Source: "revealEnd"
     Block
-       Source: "{\n        require(values.length == secrets.length);\n        for (uint i = 0; i < values.length && i < bids[msg.sender].length; i++) {\n            Bid bid1 = bids[msg.sender][i];\n            uint value = values[i];\n            bytes32 secret = secrets[i];\n            if (bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n\n        }\n    }"
+       Source: "{\n        require(values.length == secrets.length);\n        for (\n            uint i = 0;\n            i < values.length && i < bids[msg.sender].length;\n            i++\n        ) {\n            var bid_obj = bids[msg.sender][i];\n            var (value, secret) = (values[i], secrets[i]);\n            if (\n                bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid\n            ) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n        }\n    }"
       ExpressionStatement
          Gas costs: [???]
          Source: "require(values.length == secrets.length)"
@@ -178,7 +315,7 @@ ContractDefinition "BlindAuction"
                  Type: bytes32[] memory
                  Source: "secrets"
       ForStatement
-         Source: "for (uint i = 0; i < values.length && i < bids[msg.sender].length; i++) {\n            Bid bid1 = bids[msg.sender][i];\n            uint value = values[i];\n            bytes32 secret = secrets[i];\n            if (bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n\n        }"
+         Source: "for (\n            uint i = 0;\n            i < values.length && i < bids[msg.sender].length;\n            i++\n        ) {\n            var bid_obj = bids[msg.sender][i];\n            var (value, secret) = (values[i], secrets[i]);\n            if (\n                bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid\n            ) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n        }"
         VariableDeclarationStatement
            Gas costs: 11
            Source: "uint i = 0"
@@ -237,15 +374,13 @@ ContractDefinition "BlindAuction"
                Type: uint256
                Source: "i"
         Block
-           Source: "{\n            Bid bid1 = bids[msg.sender][i];\n            uint value = values[i];\n            bytes32 secret = secrets[i];\n            if (bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n\n        }"
+           Source: "{\n            var bid_obj = bids[msg.sender][i];\n            var (value, secret) = (values[i], secrets[i]);\n            if (\n                bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid\n            ) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }\n        }"
           VariableDeclarationStatement
              Gas costs: 406
-             Source: "Bid bid1 = bids[msg.sender][i]"
-            VariableDeclaration "bid1"
+             Source: "var bid_obj = bids[msg.sender][i]"
+            VariableDeclaration "bid_obj"
                Type: struct BlindAuction.Bid storage pointer
-               Source: "Bid bid1"
-              UserDefinedTypeName "Bid"
-                 Source: "Bid"
+               Source: "var bid_obj"
             IndexAccess
                Type: struct BlindAuction.Bid storage ref
                Source: "bids[msg.sender][i]"
@@ -266,86 +401,73 @@ ContractDefinition "BlindAuction"
                  Source: "i"
           VariableDeclarationStatement
              Gas costs: [???]
-             Source: "uint value = values[i]"
+             Source: "var (value, secret) = (values[i], secrets[i])"
             VariableDeclaration "value"
                Type: uint256
-               Source: "uint value"
-              ElementaryTypeName uint
-                 Source: "uint"
-            IndexAccess
-               Type: uint256
-               Source: "values[i]"
-              Identifier values
-                 Type: uint256[] memory
-                 Source: "values"
-              Identifier i
-                 Type: uint256
-                 Source: "i"
-          VariableDeclarationStatement
-             Gas costs: [???]
-             Source: "bytes32 secret = secrets[i]"
+               Source: "value"
             VariableDeclaration "secret"
                Type: bytes32
-               Source: "bytes32 secret"
-              ElementaryTypeName bytes32
-                 Source: "bytes32"
-            IndexAccess
-               Type: bytes32
-               Source: "secrets[i]"
-              Identifier secrets
-                 Type: bytes32[] memory
-                 Source: "secrets"
-              Identifier i
+               Source: "secret"
+            TupleExpression
+               Type: tuple(uint256,bytes32)
+               Source: "(values[i], secrets[i])"
+              IndexAccess
                  Type: uint256
-                 Source: "i"
+                 Source: "values[i]"
+                Identifier values
+                   Type: uint256[] memory
+                   Source: "values"
+                Identifier i
+                   Type: uint256
+                   Source: "i"
+              IndexAccess
+                 Type: bytes32
+                 Source: "secrets[i]"
+                Identifier secrets
+                   Type: bytes32[] memory
+                   Source: "secrets"
+                Identifier i
+                   Type: uint256
+                   Source: "i"
           IfStatement
-             Source: "if (bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }"
+             Source: "if (\n                bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid\n            ) {\n                highestBid = value;\n                highestBidder = msg.sender;\n            }"
             BinaryOperation using operator &&
                Type: bool
                Gas costs: [???]
-               Source: "bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value && value > highestBid"
+               Source: "bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value &&\n                value > highestBid"
               BinaryOperation using operator &&
                  Type: bool
-                 Source: "bid1.blindedBid == keccak256(abi.encodePacked(value, secret)) && bid1.deposit >= value"
+                 Source: "bid_obj.blindedBid == keccak256(value, secret) &&\n                bid_obj.deposit >= value"
                 BinaryOperation using operator ==
                    Type: bool
-                   Source: "bid1.blindedBid == keccak256(abi.encodePacked(value, secret))"
+                   Source: "bid_obj.blindedBid == keccak256(value, secret)"
                   MemberAccess to member blindedBid
                      Type: bytes32
-                     Source: "bid1.blindedBid"
-                    Identifier bid1
+                     Source: "bid_obj.blindedBid"
+                    Identifier bid_obj
                        Type: struct BlindAuction.Bid storage pointer
-                       Source: "bid1"
+                       Source: "bid_obj"
                   FunctionCall
                      Type: bytes32
-                     Source: "keccak256(abi.encodePacked(value, secret))"
+                     Source: "keccak256(value, secret)"
                     Identifier keccak256
                        Type: function () pure returns (bytes32)
                        Source: "keccak256"
-                    FunctionCall
-                       Type: bytes memory
-                       Source: "abi.encodePacked(value, secret)"
-                      MemberAccess to member encodePacked
-                         Type: function () pure returns (bytes memory)
-                         Source: "abi.encodePacked"
-                        Identifier abi
-                           Type: abi
-                           Source: "abi"
-                      Identifier value
-                         Type: uint256
-                         Source: "value"
-                      Identifier secret
-                         Type: bytes32
-                         Source: "secret"
+                    Identifier value
+                       Type: uint256
+                       Source: "value"
+                    Identifier secret
+                       Type: bytes32
+                       Source: "secret"
                 BinaryOperation using operator >=
                    Type: bool
-                   Source: "bid1.deposit >= value"
+                   Source: "bid_obj.deposit >= value"
                   MemberAccess to member deposit
                      Type: uint256
-                     Source: "bid1.deposit"
-                    Identifier bid1
+                     Source: "bid_obj.deposit"
+                    Identifier bid_obj
                        Type: struct BlindAuction.Bid storage pointer
-                       Source: "bid1"
+                       Source: "bid_obj"
                   Identifier value
                      Type: uint256
                      Source: "value"
@@ -388,15 +510,24 @@ ContractDefinition "BlindAuction"
                        Type: msg
                        Source: "msg"
   FunctionDefinition "withdraw" - public
-     Source: "function withdraw() public {\n        uint amount = pendingReturns[msg.sender];\n        if (amount > 0) {\n            if (msg.sender != highestBidder)             msg.sender.transfer(amount); else             msg.sender.transfer(amount - highestBid);\n\n            pendingReturns[msg.sender] = 0;\n        }\n    }"
+     Source: "function withdraw() public onlyAfter(revealEnd) {\n        uint amount = pendingReturns[msg.sender];\n        if (amount > 0) {\n            if (msg.sender != highestBidder) msg.sender.transfer(amount);\n            else msg.sender.transfer(amount - highestBid);\n            pendingReturns[msg.sender] = 0;\n        }\n    }"
     ParameterList
        Gas costs: 0
        Source: "()"
     ParameterList
        Gas costs: 0
        Source: ""
+    ModifierInvocation "onlyAfter"
+       Gas costs: 203
+       Source: "onlyAfter(revealEnd)"
+      Identifier onlyAfter
+         Type: modifier (uint256)
+         Source: "onlyAfter"
+      Identifier revealEnd
+         Type: uint256
+         Source: "revealEnd"
     Block
-       Source: "{\n        uint amount = pendingReturns[msg.sender];\n        if (amount > 0) {\n            if (msg.sender != highestBidder)             msg.sender.transfer(amount); else             msg.sender.transfer(amount - highestBid);\n\n            pendingReturns[msg.sender] = 0;\n        }\n    }"
+       Source: "{\n        uint amount = pendingReturns[msg.sender];\n        if (amount > 0) {\n            if (msg.sender != highestBidder) msg.sender.transfer(amount);\n            else msg.sender.transfer(amount - highestBid);\n            pendingReturns[msg.sender] = 0;\n        }\n    }"
       VariableDeclarationStatement
          Gas costs: 306
          Source: "uint amount = pendingReturns[msg.sender]"
@@ -418,7 +549,7 @@ ContractDefinition "BlindAuction"
                Type: msg
                Source: "msg"
       IfStatement
-         Source: "if (amount > 0) {\n            if (msg.sender != highestBidder)             msg.sender.transfer(amount); else             msg.sender.transfer(amount - highestBid);\n\n            pendingReturns[msg.sender] = 0;\n        }"
+         Source: "if (amount > 0) {\n            if (msg.sender != highestBidder) msg.sender.transfer(amount);\n            else msg.sender.transfer(amount - highestBid);\n            pendingReturns[msg.sender] = 0;\n        }"
         BinaryOperation using operator >
            Type: bool
            Gas costs: 9
@@ -430,9 +561,9 @@ ContractDefinition "BlindAuction"
              Type: int_const 0
              Source: "0"
         Block
-           Source: "{\n            if (msg.sender != highestBidder)             msg.sender.transfer(amount); else             msg.sender.transfer(amount - highestBid);\n\n            pendingReturns[msg.sender] = 0;\n        }"
+           Source: "{\n            if (msg.sender != highestBidder) msg.sender.transfer(amount);\n            else msg.sender.transfer(amount - highestBid);\n            pendingReturns[msg.sender] = 0;\n        }"
           IfStatement
-             Source: "if (msg.sender != highestBidder)             msg.sender.transfer(amount); else             msg.sender.transfer(amount - highestBid)"
+             Source: "if (msg.sender != highestBidder) msg.sender.transfer(amount);\n            else msg.sender.transfer(amount - highestBid)"
             BinaryOperation using operator !=
                Type: bool
                Gas costs: 259
