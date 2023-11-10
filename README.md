@@ -44,14 +44,14 @@ cmake --build build --target doxygen --target install
 An example of execution is
 
 ```
-./unfolding \
-  --lna ./test/EtherGame.lna \
-  --context ./test/test.xml \
-  --context-type DCR \
-  --ltl ./test/ltl.json \
-  --sol-ast ./test/blindAuction.ast \
-  --lna-json ./test/etherGame.json \
-  --im-json ./test/test.im.json \
+./bin/unfolding \
+  --sol-ast ./test/etherGame/etherGame.ast \
+  --lna ./test/etherGame/etherGame.lna \
+  --lna-json ./test/etherGame/etherGame.json \
+  --im-json ./test/etherGame/initialMarking.json \
+  --context-type CPN \
+  --context ./test/etherGame/context.lna \
+  --ltl ./test/etherGame/formula.json \
   --output-path ./output/ \
   --output-name test
 ```
