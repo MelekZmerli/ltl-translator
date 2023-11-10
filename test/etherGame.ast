@@ -1,0 +1,368 @@
+Syntax trees:
+
+
+======= EtherGame.sol =======
+PragmaDirective
+   Gas costs: 0
+   Source: "pragma solidity 0.4.25;"
+ContractDefinition "EtherGame"
+   Source: "contract EtherGame {\n    uint public payoutMileStone1 = 6 ether;\n    uint public mileStone1Reward = 4 ether;\n    uint public payoutMileStone2 = 10 ether;\n    uint public mileStone2Reward = 6 ether;\n    uint public finalMileStone = 20 ether;\n    uint public finalReward = 10 ether;\n\n    mapping(address => uint) redeemableEther;\n\n    function play() public payable {\n        require(msg.value == 1 ether);\n        uint currentBalance = this.balance + msg.value;\n        require(currentBalance <= finalMileStone);\n        if (currentBalance == payoutMileStone1) {\n            redeemableEther[msg.sender] += mileStone1Reward;\n        } else if (currentBalance == payoutMileStone2) {\n            redeemableEther[msg.sender] += mileStone2Reward;\n        } else if (currentBalance == finalMileStone) {\n            redeemableEther[msg.sender] += finalReward;\n        }\n        return;\n    }\n\n    function claimReward() public {\n        require(this.balance == finalMileStone);\n        require(redeemableEther[msg.sender] > 0);\n        redeemableEther[msg.sender] = 0;\n        msg.sender.call.value(redeemableEther[msg.sender])(\" \");\n    }\n}"
+  VariableDeclaration "payoutMileStone1"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public payoutMileStone1 = 6 ether"
+    ElementaryTypeName uint
+       Source: "uint"
+    Literal, token: [no token] value: 6
+       Type: int_const 6000000000000000000
+       Source: "6 ether"
+  VariableDeclaration "mileStone1Reward"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public mileStone1Reward = 4 ether"
+    ElementaryTypeName uint
+       Source: "uint"
+    Literal, token: [no token] value: 4
+       Type: int_const 4000000000000000000
+       Source: "4 ether"
+  VariableDeclaration "payoutMileStone2"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public payoutMileStone2 = 10 ether"
+    ElementaryTypeName uint
+       Source: "uint"
+    Literal, token: [no token] value: 10
+       Type: int_const 10000000000000000000
+       Source: "10 ether"
+  VariableDeclaration "mileStone2Reward"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public mileStone2Reward = 6 ether"
+    ElementaryTypeName uint
+       Source: "uint"
+    Literal, token: [no token] value: 6
+       Type: int_const 6000000000000000000
+       Source: "6 ether"
+  VariableDeclaration "finalMileStone"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public finalMileStone = 20 ether"
+    ElementaryTypeName uint
+       Source: "uint"
+    Literal, token: [no token] value: 20
+       Type: int_const 20000000000000000000
+       Source: "20 ether"
+  VariableDeclaration "finalReward"
+     Type: uint256
+     Gas costs: 287
+     Source: "uint public finalReward = 10 ether"
+    ElementaryTypeName uint
+       Source: "uint"
+    Literal, token: [no token] value: 10
+       Type: int_const 10000000000000000000
+       Source: "10 ether"
+  VariableDeclaration "redeemableEther"
+     Type: mapping(address => uint256)
+     Gas costs: 0
+     Source: "mapping(address => uint) redeemableEther"
+    Mapping
+       Source: "mapping(address => uint)"
+      ElementaryTypeName address
+         Source: "address"
+      ElementaryTypeName uint
+         Source: "uint"
+  FunctionDefinition "play" - public
+     Source: "function play() public payable {\n        require(msg.value == 1 ether);\n        uint currentBalance = this.balance + msg.value;\n        require(currentBalance <= finalMileStone);\n        if (currentBalance == payoutMileStone1) {\n            redeemableEther[msg.sender] += mileStone1Reward;\n        } else if (currentBalance == payoutMileStone2) {\n            redeemableEther[msg.sender] += mileStone2Reward;\n        } else if (currentBalance == finalMileStone) {\n            redeemableEther[msg.sender] += finalReward;\n        }\n        return;\n    }"
+    ParameterList
+       Gas costs: 0
+       Source: "()"
+    ParameterList
+       Gas costs: 0
+       Source: ""
+    Block
+       Source: "{\n        require(msg.value == 1 ether);\n        uint currentBalance = this.balance + msg.value;\n        require(currentBalance <= finalMileStone);\n        if (currentBalance == payoutMileStone1) {\n            redeemableEther[msg.sender] += mileStone1Reward;\n        } else if (currentBalance == payoutMileStone2) {\n            redeemableEther[msg.sender] += mileStone2Reward;\n        } else if (currentBalance == finalMileStone) {\n            redeemableEther[msg.sender] += finalReward;\n        }\n        return;\n    }"
+      ExpressionStatement
+         Gas costs: 34
+         Source: "require(msg.value == 1 ether)"
+        FunctionCall
+           Type: tuple()
+           Source: "require(msg.value == 1 ether)"
+          Identifier require
+             Type: function (bool) pure
+             Source: "require"
+          BinaryOperation using operator ==
+             Type: bool
+             Source: "msg.value == 1 ether"
+            MemberAccess to member value
+               Type: uint256
+               Source: "msg.value"
+              Identifier msg
+                 Type: msg
+                 Source: "msg"
+            Literal, token: [no token] value: 1
+               Type: int_const 1000000000000000000
+               Source: "1 ether"
+      VariableDeclarationStatement
+         Gas costs: 421
+         Source: "uint currentBalance = this.balance + msg.value"
+        VariableDeclaration "currentBalance"
+           Type: uint256
+           Source: "uint currentBalance"
+          ElementaryTypeName uint
+             Source: "uint"
+        BinaryOperation using operator +
+           Type: uint256
+           Source: "this.balance + msg.value"
+          MemberAccess to member balance
+             Type: uint256
+             Source: "this.balance"
+            Identifier this
+               Type: contract EtherGame
+               Source: "this"
+          MemberAccess to member value
+             Type: uint256
+             Source: "msg.value"
+            Identifier msg
+               Type: msg
+               Source: "msg"
+      ExpressionStatement
+         Gas costs: 238
+         Source: "require(currentBalance <= finalMileStone)"
+        FunctionCall
+           Type: tuple()
+           Source: "require(currentBalance <= finalMileStone)"
+          Identifier require
+             Type: function (bool) pure
+             Source: "require"
+          BinaryOperation using operator <=
+             Type: bool
+             Source: "currentBalance <= finalMileStone"
+            Identifier currentBalance
+               Type: uint256
+               Source: "currentBalance"
+            Identifier finalMileStone
+               Type: uint256
+               Source: "finalMileStone"
+      IfStatement
+         Source: "if (currentBalance == payoutMileStone1) {\n            redeemableEther[msg.sender] += mileStone1Reward;\n        } else if (currentBalance == payoutMileStone2) {\n            redeemableEther[msg.sender] += mileStone2Reward;\n        } else if (currentBalance == finalMileStone) {\n            redeemableEther[msg.sender] += finalReward;\n        }"
+        BinaryOperation using operator ==
+           Type: bool
+           Gas costs: 209
+           Source: "currentBalance == payoutMileStone1"
+          Identifier currentBalance
+             Type: uint256
+             Source: "currentBalance"
+          Identifier payoutMileStone1
+             Type: uint256
+             Source: "payoutMileStone1"
+        Block
+           Source: "{\n            redeemableEther[msg.sender] += mileStone1Reward;\n        }"
+          ExpressionStatement
+             Gas costs: 20528
+             Source: "redeemableEther[msg.sender] += mileStone1Reward"
+            Assignment using operator +=
+               Type: uint256
+               Source: "redeemableEther[msg.sender] += mileStone1Reward"
+              IndexAccess
+                 Type: uint256
+                 Source: "redeemableEther[msg.sender]"
+                Identifier redeemableEther
+                   Type: mapping(address => uint256)
+                   Source: "redeemableEther"
+                MemberAccess to member sender
+                   Type: address
+                   Source: "msg.sender"
+                  Identifier msg
+                     Type: msg
+                     Source: "msg"
+              Identifier mileStone1Reward
+                 Type: uint256
+                 Source: "mileStone1Reward"
+        IfStatement
+           Source: "if (currentBalance == payoutMileStone2) {\n            redeemableEther[msg.sender] += mileStone2Reward;\n        } else if (currentBalance == finalMileStone) {\n            redeemableEther[msg.sender] += finalReward;\n        }"
+          BinaryOperation using operator ==
+             Type: bool
+             Gas costs: 209
+             Source: "currentBalance == payoutMileStone2"
+            Identifier currentBalance
+               Type: uint256
+               Source: "currentBalance"
+            Identifier payoutMileStone2
+               Type: uint256
+               Source: "payoutMileStone2"
+          Block
+             Source: "{\n            redeemableEther[msg.sender] += mileStone2Reward;\n        }"
+            ExpressionStatement
+               Gas costs: 20528
+               Source: "redeemableEther[msg.sender] += mileStone2Reward"
+              Assignment using operator +=
+                 Type: uint256
+                 Source: "redeemableEther[msg.sender] += mileStone2Reward"
+                IndexAccess
+                   Type: uint256
+                   Source: "redeemableEther[msg.sender]"
+                  Identifier redeemableEther
+                     Type: mapping(address => uint256)
+                     Source: "redeemableEther"
+                  MemberAccess to member sender
+                     Type: address
+                     Source: "msg.sender"
+                    Identifier msg
+                       Type: msg
+                       Source: "msg"
+                Identifier mileStone2Reward
+                   Type: uint256
+                   Source: "mileStone2Reward"
+          IfStatement
+             Source: "if (currentBalance == finalMileStone) {\n            redeemableEther[msg.sender] += finalReward;\n        }"
+            BinaryOperation using operator ==
+               Type: bool
+               Gas costs: 209
+               Source: "currentBalance == finalMileStone"
+              Identifier currentBalance
+                 Type: uint256
+                 Source: "currentBalance"
+              Identifier finalMileStone
+                 Type: uint256
+                 Source: "finalMileStone"
+            Block
+               Source: "{\n            redeemableEther[msg.sender] += finalReward;\n        }"
+              ExpressionStatement
+                 Gas costs: 20528
+                 Source: "redeemableEther[msg.sender] += finalReward"
+                Assignment using operator +=
+                   Type: uint256
+                   Source: "redeemableEther[msg.sender] += finalReward"
+                  IndexAccess
+                     Type: uint256
+                     Source: "redeemableEther[msg.sender]"
+                    Identifier redeemableEther
+                       Type: mapping(address => uint256)
+                       Source: "redeemableEther"
+                    MemberAccess to member sender
+                       Type: address
+                       Source: "msg.sender"
+                      Identifier msg
+                         Type: msg
+                         Source: "msg"
+                  Identifier finalReward
+                     Type: uint256
+                     Source: "finalReward"
+      Return
+         Gas costs: 0
+         Source: "return;"
+  FunctionDefinition "claimReward" - public
+     Source: "function claimReward() public {\n        require(this.balance == finalMileStone);\n        require(redeemableEther[msg.sender] > 0);\n        redeemableEther[msg.sender] = 0;\n        msg.sender.call.value(redeemableEther[msg.sender])(\" \");\n    }"
+    ParameterList
+       Gas costs: 0
+       Source: "()"
+    ParameterList
+       Gas costs: 0
+       Source: ""
+    Block
+       Source: "{\n        require(this.balance == finalMileStone);\n        require(redeemableEther[msg.sender] > 0);\n        redeemableEther[msg.sender] = 0;\n        msg.sender.call.value(redeemableEther[msg.sender])(\" \");\n    }"
+      ExpressionStatement
+         Gas costs: 640
+         Source: "require(this.balance == finalMileStone)"
+        FunctionCall
+           Type: tuple()
+           Source: "require(this.balance == finalMileStone)"
+          Identifier require
+             Type: function (bool) pure
+             Source: "require"
+          BinaryOperation using operator ==
+             Type: bool
+             Source: "this.balance == finalMileStone"
+            MemberAccess to member balance
+               Type: uint256
+               Source: "this.balance"
+              Identifier this
+                 Type: contract EtherGame
+                 Source: "this"
+            Identifier finalMileStone
+               Type: uint256
+               Source: "finalMileStone"
+      ExpressionStatement
+         Gas costs: 330
+         Source: "require(redeemableEther[msg.sender] > 0)"
+        FunctionCall
+           Type: tuple()
+           Source: "require(redeemableEther[msg.sender] > 0)"
+          Identifier require
+             Type: function (bool) pure
+             Source: "require"
+          BinaryOperation using operator >
+             Type: bool
+             Source: "redeemableEther[msg.sender] > 0"
+            IndexAccess
+               Type: uint256
+               Source: "redeemableEther[msg.sender]"
+              Identifier redeemableEther
+                 Type: mapping(address => uint256)
+                 Source: "redeemableEther"
+              MemberAccess to member sender
+                 Type: address
+                 Source: "msg.sender"
+                Identifier msg
+                   Type: msg
+                   Source: "msg"
+            Literal, token: [no token] value: 0
+               Type: int_const 0
+               Source: "0"
+      ExpressionStatement
+         Gas costs: 5109
+         Source: "redeemableEther[msg.sender] = 0"
+        Assignment using operator =
+           Type: uint256
+           Source: "redeemableEther[msg.sender] = 0"
+          IndexAccess
+             Type: uint256
+             Source: "redeemableEther[msg.sender]"
+            Identifier redeemableEther
+               Type: mapping(address => uint256)
+               Source: "redeemableEther"
+            MemberAccess to member sender
+               Type: address
+               Source: "msg.sender"
+              Identifier msg
+                 Type: msg
+                 Source: "msg"
+          Literal, token: [no token] value: 0
+             Type: int_const 0
+             Source: "0"
+      ExpressionStatement
+         Gas costs: [???]
+         Source: "msg.sender.call.value(redeemableEther[msg.sender])(\" \")"
+        FunctionCall
+           Type: bool
+           Source: "msg.sender.call.value(redeemableEther[msg.sender])(\" \")"
+          FunctionCall
+             Type: function () payable returns (bool)
+             Source: "msg.sender.call.value(redeemableEther[msg.sender])"
+            MemberAccess to member value
+               Type: function (uint256) returns (function () payable returns (bool))
+               Source: "msg.sender.call.value"
+              MemberAccess to member call
+                 Type: function () payable returns (bool)
+                 Source: "msg.sender.call"
+                MemberAccess to member sender
+                   Type: address
+                   Source: "msg.sender"
+                  Identifier msg
+                     Type: msg
+                     Source: "msg"
+            IndexAccess
+               Type: uint256
+               Source: "redeemableEther[msg.sender]"
+              Identifier redeemableEther
+                 Type: mapping(address => uint256)
+                 Source: "redeemableEther"
+              MemberAccess to member sender
+                 Type: address
+                 Source: "msg.sender"
+                Identifier msg
+                   Type: msg
+                   Source: "msg"
+          Literal, token: [no token] value:  
+             Type: literal_string " "
+             Source: "\" \""
