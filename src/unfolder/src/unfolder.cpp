@@ -23,14 +23,14 @@ std::vector<std::string> Unfolder::FindUnfoldedFunction() {
 
   std::string ltl_type = ltl_information.at("type");
   auto ltl_param = ltl_information.at("params");
-  if (ltl_type == "specific") {
+  if (ltl_type == "general") {
     std::string ltl_name = ltl_param.at("name");
     if (ltl_name == "under_over_flow") {
       auto inputs = ltl_param.at("inputs");
       std::string variable = inputs.at("selected_variable");
       list_required_variables.push_back(variable);
     }
-  } else if (ltl_type == "general") {
+  } else if (ltl_type == "specific") {
     std::vector<std::string> temp =
         LTLTranslator::getListVariableFromFormula(ltl_param.at("formula"));
     for (auto it = temp.begin(); it != temp.end(); it++) {

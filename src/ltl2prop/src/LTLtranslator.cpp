@@ -89,13 +89,13 @@ std::map<std::string, std::string> LTLTranslator::translate() {
   std::string formula_type = formula_json.at("type");
   auto formula_params = formula_json.at("params");
 
-  // parse a specific formula
-  if (formula_type == "general") {
+  // parse a specific contract formula (i.e., from template)
+  if (formula_type == "specific") {
     return createVulMapFromFormula(formula_params.at("formula"));
   }
 
-  // parse a general formula
-  if (formula_type == "specific") {
+  // parse a vulnerability formula
+  if (formula_type == "general") {
     std::string vulnerability_name = formula_params.at("name");
     if (vulnerability_name == "under_over_flow") {
       auto inputs = formula_params.at("inputs");
