@@ -1,5 +1,5 @@
 {
-    "type": "general",
+    "type": "specific",
     "params": {
         "name": "under_over_flow",
         "formula": "const minThreshold = 0;\nconst maxThreshold = 10\nproposition outOfRange: run 'play'.func\nproperty prop: G(! outOfRange)"
