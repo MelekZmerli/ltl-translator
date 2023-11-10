@@ -2,10 +2,12 @@ pragma solidity 0.4.25;
 
 contract EtherLotto {
     address public bank;
+
     struct GameRecord {
         address winner;
         uint amount;
     }
+
     uint8 gameNum;
     GameRecord[] LottoLog;
     bool won;
