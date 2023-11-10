@@ -1,0 +1,50 @@
+{
+	"name": "EtherGame",
+	"globalVariables": [
+		{
+			"name": "payoutMileStone1",
+			"placeType": "STATE.payoutMileStone1"
+		},
+		{
+			"name": "mileStone1Reward",
+			"placeType": "STATE.mileStone1Reward"
+		},
+		{
+			"name": "payoutMileStone2",
+			"placeType": "STATE.payoutMileStone2"
+		},
+		{
+			"name": "mileStone2Reward",
+			"placeType": "STATE.mileStone2Reward"
+		},
+		{
+			"name": "finalMileStone",
+			"placeType": "STATE.finalMileStone"
+		},
+		{
+			"name": "finalReward",
+			"placeType": "STATE.finalReward"
+		},
+		{
+			"name": "redeemableEther",
+			"placeType": "STATE.redeemableEther"
+		}
+	],
+	"functions": [
+		{
+			"name": "play",
+			"arguments": [],
+			"localVariables": [
+				{
+					"name": "currentBalance",
+					"place": "PLAY_currentBalance"
+				}
+			]
+		},
+		{
+			"name": "claimReward",
+			"arguments": [],
+			"localVariables": []
+		}
+	]
+}
