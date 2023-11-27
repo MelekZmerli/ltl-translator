@@ -27,8 +27,9 @@ Unfolder::Unfolder(const HELENA::StructuredNetNodePtr& _context,
 std::vector<std::string> Unfolder::FindUnfoldedFunction() {
   std::vector<std::string> unfolded_func;
   unfolded_func.push_back("state");
-  std::vector<std::string> list_required_variables;
 
+  // Get the variables involved in the property
+  std::vector<std::string> list_required_variables;
   std::string ltl_type = ltl_information.at("type");
   auto ltl_param = ltl_information.at("params");
   if (ltl_type == "general") {
@@ -44,6 +45,7 @@ std::vector<std::string> Unfolder::FindUnfoldedFunction() {
             ltl_param.at("formula"));
     for (auto it = temp.begin(); it != temp.end(); it++) {
       std::string op = *it;
+      std::cout << op << std::endl;
       std::string opr_type;
       std::vector<std::string> temp_split = split_ex(op, ".", 2);
       if (temp_split.size() == 2) {
