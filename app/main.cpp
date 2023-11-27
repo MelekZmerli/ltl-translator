@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
   std::string CONTEXT_FILE_PATH;
   app.add_option("--context", CONTEXT_FILE_PATH,
                  "CONTEXT file (.xml), context of model")
-      ->required()
       ->check(CLI::ExistingFile);
 
   std::string CONTEXT_TYPE;
