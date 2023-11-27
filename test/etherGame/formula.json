@@ -2,8 +2,10 @@
     "type": "general",
     "params": {
         "name": "under_over_flow",
-        "min_threshold": "0",
-        "max_threshold": "4",
-        "selected_variable": "currentBalance"
+        "inputs": {
+            "min_threshold": "0",
+            "max_threshold": "4",
+            "selected_variable": "currentBalance"
+        }
     }
 }
