@@ -1,6 +1,17 @@
 #include "unfolder.hpp"
 
-Unfolder::Unfolder(const StructuredNetNodePtr& _context,
+#include <stddef.h>
+
+#include <algorithm>
+#include <iostream>
+#include <list>
+#include <memory>
+#include <random>
+
+#include "LNAAnalyser.hpp"
+#include "utils.hpp"
+
+Unfolder::Unfolder(const HELENA::StructuredNetNodePtr& _context,
                    std::stringstream& _sol_lna_stream,
                    const nlohmann::json& lna_json,
                    const nlohmann::json& ltl_json,
@@ -8,12 +19,10 @@ Unfolder::Unfolder(const StructuredNetNodePtr& _context,
   sol_information = lna_json;
   ltl_information = ltl_json;
   im_information = im_json;
+  cpn_context = _context;
 
   unfolded_func = FindUnfoldedFunction();
-
   cpn_model = analyseLnaFile(_sol_lna_stream);
-
-  cpn_context = _context;
 }
 
 std::vector<std::string> Unfolder::FindUnfoldedFunction() {
@@ -32,7 +41,8 @@ std::vector<std::string> Unfolder::FindUnfoldedFunction() {
     }
   } else if (ltl_type == "specific") {
     std::vector<std::string> temp =
-        LTLTranslator::getListVariableFromFormula(ltl_param.at("formula"));
+        LTL2PROP::LTLTranslator::getListVariableFromFormula(
+            ltl_param.at("formula"));
     for (auto it = temp.begin(); it != temp.end(); it++) {
       std::string op = *it;
       std::string opr_type;
@@ -92,9 +102,10 @@ std::vector<std::string> Unfolder::FindUnfoldedFunction() {
   return unfolded_func;
 }
 
-StructuredNetNodePtr Unfolder::analyseLnaFile(
+HELENA::StructuredNetNodePtr Unfolder::analyseLnaFile(
     std::stringstream& _sol_lna_stream) {
-  StructuredNetNodePtr model = std::make_shared<StructuredNetNode>();
+  HELENA::StructuredNetNodePtr model =
+      std::make_shared<HELENA::StructuredNetNode>();
   std::list<std::string> _sol_lines;
 
   std::string new_line;
@@ -111,19 +122,20 @@ StructuredNetNodePtr Unfolder::analyseLnaFile(
 
   while (ptr_pointer_line != ptr_pointer_end) {
     std::string model_name = get_first_alpha_only_string(*ptr_pointer_line);
-    if (model_name.length() > 0) {
+    if (!model_name.empty()) {
       model->set_name(model_name);
 
       std::string parameter_def = substr_by_edge(*ptr_pointer_line, "(", ")");
       std::vector<std::string> parameters = split(parameter_def, ",");
-      if (parameters.size() > 0) {
+      if (!parameters.empty()) {
         for (auto it = parameters.begin(); it != parameters.end(); ++it) {
           std::vector<std::string> param = split_ex(*it, ":=", 2);
           if (param.size() == 2) {
             trim_ex(param[0]);
             trim_ex(param[1]);
 
-            ParameterNodePtr mpr = std::make_shared<ParameterNode>();
+            HELENA::ParameterNodePtr mpr =
+                std::make_shared<HELENA::ParameterNode>();
             mpr->set_name(param[0]);
             mpr->set_number(param[1]);
             model->add_parameter(mpr);
@@ -144,29 +156,32 @@ StructuredNetNodePtr Unfolder::analyseLnaFile(
       wait2set = true;
     } else {
       std::string keyword = get_first_alpha_only_string(*ptr_pointer_line);
-      if (keyword == TRANSITION_TOKEN) {
-        TransitionNodePtr transition =
-            handleTransition(ptr_pointer_line, ptr_pointer_end);
+      if (keyword == HELENA::TRANSITION_TOKEN) {
+        HELENA::TransitionNodePtr transition =
+            HELENA::handleTransition(ptr_pointer_line, ptr_pointer_end);
         if (wait2set) {
-          model->add_transition(std::make_shared<CommentNode>(
+          model->add_transition(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
           wait2set = false;
         }
         model->add_transition(transition);
-      } else if (keyword == PLACE_TOKEN) {
-        PlaceNodePtr place = handlePlace(ptr_pointer_line, ptr_pointer_end);
+      } else if (keyword == HELENA::PLACE_TOKEN) {
+        HELENA::PlaceNodePtr place =
+            HELENA::handlePlace(ptr_pointer_line, ptr_pointer_end);
         if (wait2set) {
-          model->add_place(std::make_shared<CommentNode>(
+          model->add_place(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
           wait2set = false;
         }
         model->add_place(place);
-      } else if (keyword == TYPE_TOKEN || keyword == SUBTYPE_TOKEN) {
-        ColorNodePtr color = handleColor(ptr_pointer_line, ptr_pointer_end);
+      } else if (keyword == HELENA::TYPE_TOKEN ||
+                 keyword == HELENA::SUBTYPE_TOKEN) {
+        HELENA::ColorNodePtr color =
+            HELENA::handleColor(ptr_pointer_line, ptr_pointer_end);
         model->add_color(color);
-      } else if (keyword == FUNCTION_TOKEN) {
-        FunctionNodePtr function =
-            handleFunction(ptr_pointer_line, ptr_pointer_end);
+      } else if (keyword == HELENA::FUNCTION_TOKEN) {
+        HELENA::FunctionNodePtr function =
+            HELENA::handleFunction(ptr_pointer_line, ptr_pointer_end);
         model->add_function(function);
       }
     }
@@ -177,16 +192,17 @@ StructuredNetNodePtr Unfolder::analyseLnaFile(
 }
 
 void Unfolder::initialMarkingSetting() {
-  ListColorNodePtr uint_array = std::make_shared<ListColorNode>();
+  HELENA::ListColorNodePtr uint_array =
+      std::make_shared<HELENA::ListColorNode>();
   uint_array->set_name("UINT_ARRAY");
   uint_array->set_index_type("UINT");
   uint_array->set_element_type("UINT");
   uint_array->set_capacity("1000");
-  cpn_model->add_color(std::static_pointer_cast<ColorNode>(uint_array));
+  cpn_model->add_color(std::static_pointer_cast<HELENA::ColorNode>(uint_array));
   std::string s_numberOfUser = im_information.at("NumberOfUser");
   int numberOfUser = std::stoi(s_numberOfUser);
 
-  ParameterNodePtr users = std::make_shared<ParameterNode>();
+  HELENA::ParameterNodePtr users = std::make_shared<HELENA::ParameterNode>();
   users->set_name("users");
   users->set_number(s_numberOfUser);
   cpn_model->add_parameter(users);
@@ -220,7 +236,8 @@ void Unfolder::initialMarkingSetting() {
     }
   }
 
-  ConstantNodePtr user_balance = std::make_shared<ConstantNode>();
+  HELENA::ConstantNodePtr user_balance =
+      std::make_shared<HELENA::ConstantNode>();
   user_balance->set_name("user_balance");
   user_balance->set_type("UINT_ARRAY");
   user_balance->set_expression("|" + balance_value + "|");
@@ -247,14 +264,14 @@ void Unfolder::initialMarkingSetting() {
           fs_sender_value += "," + std::to_string(k);
         }
 
-        ParameterNodePtr function_sender_range =
-            std::make_shared<ParameterNode>();
+        HELENA::ParameterNodePtr function_sender_range =
+            std::make_shared<HELENA::ParameterNode>();
         function_sender_range->set_name(function_name + "_sdr");
         function_sender_range->set_number(std::to_string(f_to - f_from + 1));
         cpn_model->add_parameter(function_sender_range);
 
-        ConstantNodePtr function_sender_value =
-            std::make_shared<ConstantNode>();
+        HELENA::ConstantNodePtr function_sender_value =
+            std::make_shared<HELENA::ConstantNode>();
         function_sender_value->set_name(function_name + "_sender_value");
         function_sender_value->set_type("UINT_ARRAY");
         function_sender_value->set_expression("|" + fs_sender_value + "|");
@@ -269,9 +286,10 @@ void Unfolder::initialMarkingSetting() {
   }
 
   for (size_t i = 0; i < cpn_model->num_places(); i++) {
-    LnaNodePtr node = cpn_model->get_place(i);
-    if (node->get_node_type() == LnaNodeTypePlace) {
-      PlaceNodePtr place = std::static_pointer_cast<PlaceNode>(node);
+    HELENA::LnaNodePtr node = cpn_model->get_place(i);
+    if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
+      HELENA::PlaceNodePtr place =
+          std::static_pointer_cast<HELENA::PlaceNode>(node);
       std::string place_name = place->get_name();
       if (P_functions.find(place_name) != P_functions.end()) {
         std::string func_name = P_functions[place_name];
@@ -293,21 +311,21 @@ std::map<std::string, std::string> Unfolder::UnfoldModel(
     const std::string& _context) {
   initialMarkingSetting();
 
-  StructuredNetNodePtr unfold_model;
+  HELENA::StructuredNetNodePtr unfold_model;
   if (_context == "DCR" || _context == "CPN") {
     unfold_model = unfoldModelWithDCRContext();
   } else if (_context == "FREE") {
     unfold_model = unfoldModelWithFreeContext();
   } else {
-    unfold_model = std::make_shared<StructuredNetNode>();
+    unfold_model = std::make_shared<HELENA::StructuredNetNode>();
   }
 
-  LTLTranslator ltl_translator =
-      LTLTranslator(sol_information, ltl_information);
+  LTL2PROP::LTLTranslator ltl_translator =
+      LTL2PROP::LTLTranslator(sol_information, ltl_information);
   std::map<std::string, std::string> ltl_result = ltl_translator.translate();
 
   unfold_model->add_transition(
-      std::make_shared<CommentNode>(ltl_result["propositions"]));
+      std::make_shared<HELENA::CommentNode>(ltl_result["propositions"]));
 
   std::map<std::string, std::string> result;
   result["lna"] = unfold_model->source_code();
@@ -315,11 +333,12 @@ std::map<std::string, std::string> Unfolder::UnfoldModel(
 
   return result;
 }
-StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
-  StructuredNetNodePtr unfold_model = std::make_shared<StructuredNetNode>();
+HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
+  HELENA::StructuredNetNodePtr unfold_model =
+      std::make_shared<HELENA::StructuredNetNode>();
 
   unfold_model->set_name(cpn_model->get_name());
-  if (unfolded_func.size() > 0) {
+  if (!unfolded_func.empty()) {
     std::string current_submodel_name;
 
     for (size_t i = 0; i < cpn_model->num_parameters(); i++) {
@@ -334,18 +353,18 @@ StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
 
     std::vector<std::string> list_func;
     for (size_t i = 0; i < cpn_model->num_places(); i++) {
-      LnaNodePtr node = cpn_model->get_place(i);
-      if (node->get_node_type() == LnaNodeTypeComment) {
+      HELENA::LnaNodePtr node = cpn_model->get_place(i);
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<CommentNode>(node));
+            std::static_pointer_cast<HELENA::CommentNode>(node));
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(std::make_shared<CommentNode>(
+          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
           if (std::find(list_func.begin(), list_func.end(),
                         current_submodel_name) == list_func.end()) {
             list_func.push_back(current_submodel_name);
-            PlaceNodePtr cflow = std::make_shared<PlaceNode>();
+            HELENA::PlaceNodePtr cflow = std::make_shared<HELENA::PlaceNode>();
             cflow->set_name(current_submodel_name + "_cflow");
             cflow->set_domain("epsilon");
             if (current_submodel_name == "state") {
@@ -354,8 +373,9 @@ StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
             unfold_model->add_place(cflow);
           }
         }
-      } else if (node->get_node_type() == LnaNodeTypePlace) {
-        PlaceNodePtr place = std::static_pointer_cast<PlaceNode>(node);
+      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
+        HELENA::PlaceNodePtr place =
+            std::static_pointer_cast<HELENA::PlaceNode>(node);
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
           unfold_model->add_place(place);
@@ -366,27 +386,30 @@ StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
     list_func.clear();
 
     for (size_t i = 0; i < cpn_model->num_transitions(); i++) {
-      LnaNodePtr node = cpn_model->get_transition(i);
-      if (node->get_node_type() == LnaNodeTypeComment) {
+      HELENA::LnaNodePtr node = cpn_model->get_transition(i);
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<CommentNode>(node));
+            std::static_pointer_cast<HELENA::CommentNode>(node));
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_transition(std::make_shared<CommentNode>(
+          unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
           if (std::find(list_func.begin(), list_func.end(),
                         current_submodel_name) == list_func.end()) {
             list_func.push_back(current_submodel_name);
 
-            TransitionNodePtr transition = std::make_shared<TransitionNode>();
+            HELENA::TransitionNodePtr transition =
+                std::make_shared<HELENA::TransitionNode>();
             transition->set_name(current_submodel_name);
 
-            ArcNodePtr cflow_arc_in = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_in =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_in->set_placeName("state_cflow");
             cflow_arc_in->set_label("epsilon");
             transition->add_inArc(cflow_arc_in);
 
-            ArcNodePtr cflow_arc_out = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_out =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_out->set_placeName(current_submodel_name + "_cflow");
             cflow_arc_out->set_label("epsilon");
             transition->add_outArc(cflow_arc_out);
@@ -394,21 +417,24 @@ StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
             unfold_model->add_transition(transition);
           }
         } else {
-          unfold_model->add_transition(std::make_shared<CommentNode>(
+          unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
           if (std::find(list_func.begin(), list_func.end(),
                         current_submodel_name) == list_func.end()) {
             list_func.push_back(current_submodel_name);
 
-            TransitionNodePtr transition = std::make_shared<TransitionNode>();
+            HELENA::TransitionNodePtr transition =
+                std::make_shared<HELENA::TransitionNode>();
             transition->set_name(current_submodel_name);
 
-            ArcNodePtr cflow_arc_in = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_in =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_in->set_placeName("state_cflow");
             cflow_arc_in->set_label("epsilon");
             transition->add_inArc(cflow_arc_in);
 
-            ArcNodePtr cflow_arc_out = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_out =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_out->set_placeName("state_cflow");
             cflow_arc_out->set_label("epsilon");
             transition->add_outArc(cflow_arc_out);
@@ -416,20 +442,22 @@ StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
             unfold_model->add_transition(transition);
           }
         }
-      } else if (node->get_node_type() == LnaNodeTypeTransition) {
-        TransitionNodePtr transition =
-            std::static_pointer_cast<TransitionNode>(node);
+      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
+        HELENA::TransitionNodePtr transition =
+            std::static_pointer_cast<HELENA::TransitionNode>(node);
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
           if (transition->get_in_arc_by_name("S") != nullptr) {
-            ArcNodePtr cflow_arc_in = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_in =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_in->set_placeName(current_submodel_name + "_cflow");
             cflow_arc_in->set_label("epsilon");
             transition->add_inArc(cflow_arc_in);
           }
 
           if (transition->get_out_arc_by_name("S") != nullptr) {
-            ArcNodePtr cflow_arc_out = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_out =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_out->set_placeName("state_cflow");
             cflow_arc_out->set_label("epsilon");
             transition->add_outArc(cflow_arc_out);
@@ -443,12 +471,13 @@ StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
   return unfold_model;
 }
 
-StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
-  StructuredNetNodePtr unfold_model = std::make_shared<StructuredNetNode>();
+HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
+  HELENA::StructuredNetNodePtr unfold_model =
+      std::make_shared<HELENA::StructuredNetNode>();
 
   unfold_model->set_name(cpn_model->get_name());
 
-  if (unfolded_func.size() > 0) {
+  if (!unfolded_func.empty()) {
     std::string current_submodel_name;
 
     for (size_t i = 0; i < cpn_context->num_parameters(); i++) {
@@ -462,17 +491,18 @@ StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
     }
 
     for (size_t i = 0; i < cpn_context->num_places(); i++) {
-      LnaNodePtr node = cpn_context->get_place(i);
-      if (node->get_node_type() == LnaNodeTypeComment) {
+      HELENA::LnaNodePtr node = cpn_context->get_place(i);
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<CommentNode>(node));
+            std::static_pointer_cast<HELENA::CommentNode>(node));
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(std::make_shared<CommentNode>(
+          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
         }
-      } else if (node->get_node_type() == LnaNodeTypePlace) {
-        PlaceNodePtr place = std::static_pointer_cast<PlaceNode>(node);
+      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
+        HELENA::PlaceNodePtr place =
+            std::static_pointer_cast<HELENA::PlaceNode>(node);
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
           unfold_model->add_place(place);
@@ -480,35 +510,37 @@ StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
       }
     }
     for (size_t i = 0; i < cpn_context->num_transitions(); i++) {
-      LnaNodePtr node = cpn_context->get_transition(i);
-      if (node->get_node_type() == LnaNodeTypeComment) {
+      HELENA::LnaNodePtr node = cpn_context->get_transition(i);
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<CommentNode>(node));
-        unfold_model->add_transition(std::make_shared<CommentNode>(
+            std::static_pointer_cast<HELENA::CommentNode>(node));
+        unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
             "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
-      } else if (node->get_node_type() == LnaNodeTypeTransition) {
-        TransitionNodePtr transition =
-            std::static_pointer_cast<TransitionNode>(node);
+      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
+        HELENA::TransitionNodePtr transition =
+            std::static_pointer_cast<HELENA::TransitionNode>(node);
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
-          ArcNodePtr cflow_arc_in = std::make_shared<ArcNode>();
+          HELENA::ArcNodePtr cflow_arc_in = std::make_shared<HELENA::ArcNode>();
           cflow_arc_in->set_placeName("state_cflow");
           cflow_arc_in->set_label("epsilon");
           transition->add_inArc(cflow_arc_in);
 
-          ArcNodePtr cflow_arc_out = std::make_shared<ArcNode>();
+          HELENA::ArcNodePtr cflow_arc_out =
+              std::make_shared<HELENA::ArcNode>();
           cflow_arc_out->set_placeName(current_submodel_name + "_cflow");
           cflow_arc_out->set_label("epsilon");
           transition->add_outArc(cflow_arc_out);
 
           unfold_model->add_transition(transition);
         } else {
-          ArcNodePtr cflow_arc_in = std::make_shared<ArcNode>();
+          HELENA::ArcNodePtr cflow_arc_in = std::make_shared<HELENA::ArcNode>();
           cflow_arc_in->set_placeName("state_cflow");
           cflow_arc_in->set_label("epsilon");
           transition->add_inArc(cflow_arc_in);
 
-          ArcNodePtr cflow_arc_out = std::make_shared<ArcNode>();
+          HELENA::ArcNodePtr cflow_arc_out =
+              std::make_shared<HELENA::ArcNode>();
           cflow_arc_out->set_placeName("state_cflow");
           cflow_arc_out->set_label("epsilon");
           transition->add_outArc(cflow_arc_out);
@@ -530,17 +562,17 @@ StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
 
     std::vector<std::string> list_func;
     for (size_t i = 0; i < cpn_model->num_places(); i++) {
-      LnaNodePtr node = cpn_model->get_place(i);
-      if (node->get_node_type() == LnaNodeTypeComment) {
+      HELENA::LnaNodePtr node = cpn_model->get_place(i);
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<CommentNode>(node));
+            std::static_pointer_cast<HELENA::CommentNode>(node));
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(std::make_shared<CommentNode>(
+          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
           if (std::find(list_func.begin(), list_func.end(),
                         current_submodel_name) == list_func.end()) {
-            PlaceNodePtr cflow = std::make_shared<PlaceNode>();
+            HELENA::PlaceNodePtr cflow = std::make_shared<HELENA::PlaceNode>();
             cflow->set_name(current_submodel_name + "_cflow");
             cflow->set_domain("epsilon");
             if (current_submodel_name == "state") {
@@ -550,8 +582,9 @@ StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
             list_func.push_back(current_submodel_name);
           }
         }
-      } else if (node->get_node_type() == LnaNodeTypePlace) {
-        PlaceNodePtr place = std::static_pointer_cast<PlaceNode>(node);
+      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
+        HELENA::PlaceNodePtr place =
+            std::static_pointer_cast<HELENA::PlaceNode>(node);
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
           unfold_model->add_place(place);
@@ -559,29 +592,31 @@ StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
       }
     }
     for (size_t i = 0; i < cpn_model->num_transitions(); i++) {
-      LnaNodePtr node = cpn_model->get_transition(i);
-      if (node->get_node_type() == LnaNodeTypeComment) {
+      HELENA::LnaNodePtr node = cpn_model->get_transition(i);
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<CommentNode>(node));
+            std::static_pointer_cast<HELENA::CommentNode>(node));
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_transition(std::make_shared<CommentNode>(
+          unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
               "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
         }
-      } else if (node->get_node_type() == LnaNodeTypeTransition) {
-        TransitionNodePtr transition =
-            std::static_pointer_cast<TransitionNode>(node);
+      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
+        HELENA::TransitionNodePtr transition =
+            std::static_pointer_cast<HELENA::TransitionNode>(node);
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
           if (transition->get_in_arc_by_name("S") != nullptr) {
-            ArcNodePtr cflow_arc_in = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_in =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_in->set_placeName(current_submodel_name + "_cflow");
             cflow_arc_in->set_label("epsilon");
             transition->add_inArc(cflow_arc_in);
           }
 
           if (transition->get_out_arc_by_name("S") != nullptr) {
-            ArcNodePtr cflow_arc_out = std::make_shared<ArcNode>();
+            HELENA::ArcNodePtr cflow_arc_out =
+                std::make_shared<HELENA::ArcNode>();
             cflow_arc_out->set_placeName("state_cflow");
             cflow_arc_out->set_label("epsilon");
             transition->add_outArc(cflow_arc_out);
@@ -596,7 +631,7 @@ StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
 }
 
 std::string Unfolder::get_model_name_from_comment(
-    const CommentNodePtr& _comment) {
+    const HELENA::CommentNodePtr& _comment) {
   std::string name = substr_by_edge(_comment->get_comment(), "Function:", "*/");
   trim_ex(name);
   return name;

@@ -93,13 +93,13 @@ int main(int argc, char **argv) {
       ->check(CLI::ExistingFile);
 
   std::string LNA_JSON_FILE_PATH;
-  app.add_option("--lna-json", LNA_JSON_FILE_PATH,
+  app.add_option("--lna-info", LNA_JSON_FILE_PATH,
                  "JSON file (.json), output of solidity2cpn tool")
       ->required()
       ->check(CLI::ExistingFile);
 
   std::string IM_JSON_FILE_PATH;
-  app.add_option("--im-json", IM_JSON_FILE_PATH,
+  app.add_option("--im", IM_JSON_FILE_PATH,
                  "JSON file (.json), initial marking settings")
       ->required()
       ->check(CLI::ExistingFile);
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
     context_net = Unfolder::analyseLnaFile(context_text_stream);
   } else {
     // free context by default
-    context_net = std::make_shared<StructuredNetNode>();
+    context_net = std::make_shared<HELENA::StructuredNetNode>();
   }
 
   save_content(full_outpath + ".context.lna", context_net->source_code());
