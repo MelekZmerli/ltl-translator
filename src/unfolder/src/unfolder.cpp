@@ -15,12 +15,11 @@ Unfolder::Unfolder(const HELENA::StructuredNetNodePtr& _context,
                    std::stringstream& _sol_lna_stream,
                    const nlohmann::json& lna_json,
                    const nlohmann::json& ltl_json,
-                   const nlohmann::json& im_json) {
-  sol_information = lna_json;
-  ltl_information = ltl_json;
-  im_information = im_json;
-  cpn_context = _context;
-
+                   const nlohmann::json& im_json)
+    : sol_information(lna_json),
+      ltl_information(ltl_json),
+      im_information(im_json),
+      cpn_context(_context) {
   unfolded_func = FindUnfoldedFunction();
   cpn_model = analyseLnaFile(_sol_lna_stream);
 }
