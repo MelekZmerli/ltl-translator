@@ -25,12 +25,18 @@ class Unfolder {
            std::stringstream& _sol_lna_stream, const nlohmann::json& lna_json,
            const nlohmann::json& ltl_json, const nlohmann::json& im_json);
 
-  std::vector<std::string> FindUnfoldedFunction();
-
-  void initialMarkingSetting();
+  /**
+   * Return all the functions needed to be unfolded depending on the property to
+   * be verified.
+   *
+   * @return vector with the name of the function to be unfolded
+   */
+  std::vector<std::string> FindUnfoldedFunctions();
 
   static HELENA::StructuredNetNodePtr analyseLnaFile(
       std::stringstream& _sol_lna_stream);
+
+  void initialMarkingSetting();
 
   HELENA::StructuredNetNodePtr unfoldModelWithDCRContext();
   HELENA::StructuredNetNodePtr unfoldModelWithFreeContext();

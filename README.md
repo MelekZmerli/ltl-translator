@@ -47,8 +47,8 @@ An example of execution is
 ./bin/unfolding \
   --sol-ast ./test/etherGame/etherGame.ast \
   --lna ./test/etherGame/etherGame.lna \
-  --lna-json ./test/etherGame/etherGame.json \
-  --im-json ./test/etherGame/initialMarking.json \
+  --lna-info ./test/etherGame/etherGame.json \
+  --im ./test/etherGame/initialMarking.json \
   --context-type CPN \
   --context ./test/etherGame/context.lna \
   --ltl ./test/etherGame/formula.json \

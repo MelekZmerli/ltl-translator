@@ -20,11 +20,11 @@ Unfolder::Unfolder(const HELENA::StructuredNetNodePtr& _context,
       ltl_information(ltl_json),
       im_information(im_json),
       cpn_context(_context) {
-  unfolded_func = FindUnfoldedFunction();
+  unfolded_func = FindUnfoldedFunctions();
   cpn_model = analyseLnaFile(_sol_lna_stream);
 }
 
-std::vector<std::string> Unfolder::FindUnfoldedFunction() {
+std::vector<std::string> Unfolder::FindUnfoldedFunctions() {
   std::vector<std::string> unfolded_func;
   unfolded_func.push_back("state");
 
@@ -43,17 +43,9 @@ std::vector<std::string> Unfolder::FindUnfoldedFunction() {
     std::vector<std::string> temp =
         LTL2PROP::LTLTranslator::getListVariableFromFormula(
             ltl_param.at("formula"));
-    for (auto it = temp.begin(); it != temp.end(); it++) {
-      std::string op = *it;
-      std::cout << op << std::endl;
-      std::string opr_type;
+    for (const auto& op : temp) {
       std::vector<std::string> temp_split = split_ex(op, ".", 2);
-      if (temp_split.size() == 2) {
-        opr_type = temp_split[1];
-      } else {
-        opr_type = "var";
-      }
-
+      std::string opr_type = (temp_split.size() == 2) ? temp_split[1] : "var";
       std::string opr_name = substr_by_edge(op, "'", "'");
 
       if (opr_type == "func") {
@@ -64,37 +56,37 @@ std::vector<std::string> Unfolder::FindUnfoldedFunction() {
     }
   }
 
+  // Get the global variables in the smart contract
   std::map<std::string, std::string> global_variables;
-  auto gvs = sol_information.at("globalVariables");
-  for (size_t i = 0; i < gvs.size(); i++) {
-    auto gv = gvs[i];
+  for (const auto& gv : sol_information.at("globalVariables")) {
     std::string gv_name = gv.at("name");
     global_variables[gv_name] = gv.at("placeType");
   }
 
+  // Get the functions with the local variables involved in the LTL property
   auto functions = sol_information.at("functions");
-  for (size_t i = 0; i < functions.size(); i++) {
+  for (const auto& function : functions) {
+    // Get local variables in the smart contract
     std::map<std::string, std::string> local_var;
-    auto lvs = functions[i].at("localVariables");
-    for (size_t i = 0; i < lvs.size(); i++) {
-      auto lv = lvs[i];
+    for (const auto& lv : function.at("localVariables")) {
       std::string lv_name = lv.at("name");
       local_var[lv_name] = lv.at("place");
     }
-    for (auto it = list_required_variables.begin();
-         it != list_required_variables.end(); ++it) {
-      if (local_var.find(*it) != local_var.end()) {
-        unfolded_func.push_back(functions[i].at("name"));
+
+    // Get the function of the local variables involved in the LTL property
+    for (const auto var : list_required_variables) {
+      if (local_var.find(var) != local_var.end()) {
+        unfolded_func.push_back(function.at("name"));
         break;
       }
     }
   }
 
-  for (auto it = list_required_variables.begin();
-       it != list_required_variables.end(); ++it) {
-    if (global_variables.find(*it) != global_variables.end()) {
-      for (size_t i = 0; i < functions.size(); i++) {
-        unfolded_func.push_back(functions[i].at("name"));
+  // Add all the functions if a global variable is involved in the property
+  for (const auto var : list_required_variables) {
+    if (global_variables.find(var) != global_variables.end()) {
+      for (const auto& function : functions) {
+        unfolded_func.push_back(function.at("name"));
       }
       break;
     }
@@ -109,38 +101,41 @@ HELENA::StructuredNetNodePtr Unfolder::analyseLnaFile(
       std::make_shared<HELENA::StructuredNetNode>();
   std::list<std::string> _sol_lines;
 
+  // read the CPN model of the smart contract (.lna file)
   std::string new_line;
   while (std::getline(_sol_lna_stream, new_line)) {
     if (!new_line.empty()) {
       std::string temp = std::string(new_line);
       trim_ex(temp);
-      if (temp.length() > 0)
+      if (!temp.empty()) {
         _sol_lines.emplace_back(new_line);
+      }
     }
   }
-  std::list<std::string>::iterator ptr_pointer_end = _sol_lines.end();
-  std::list<std::string>::iterator ptr_pointer_line = _sol_lines.begin();
 
+  std::list<std::string>::iterator ptr_pointer_line = _sol_lines.begin();
+  std::list<std::string>::iterator ptr_pointer_end = _sol_lines.end();
+
+  // Get name and parameters of the CPN model
   while (ptr_pointer_line != ptr_pointer_end) {
     std::string model_name = get_first_alpha_only_string(*ptr_pointer_line);
     if (!model_name.empty()) {
       model->set_name(model_name);
 
+      // parse parameters of the CPN model
       std::string parameter_def = substr_by_edge(*ptr_pointer_line, "(", ")");
       std::vector<std::string> parameters = split(parameter_def, ",");
-      if (!parameters.empty()) {
-        for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-          std::vector<std::string> param = split_ex(*it, ":=", 2);
-          if (param.size() == 2) {
-            trim_ex(param[0]);
-            trim_ex(param[1]);
+      for (const auto& parameter : parameters) {
+        std::vector<std::string> param = split_ex(parameter, ":=", 2);
+        if (param.size() == 2) {
+          trim_ex(param[0]);
+          trim_ex(param[1]);
 
-            HELENA::ParameterNodePtr mpr =
-                std::make_shared<HELENA::ParameterNode>();
-            mpr->set_name(param[0]);
-            mpr->set_number(param[1]);
-            model->add_parameter(mpr);
-          }
+          HELENA::ParameterNodePtr mpr =
+              std::make_shared<HELENA::ParameterNode>();
+          mpr->set_name(param[0]);
+          mpr->set_number(param[1]);
+          model->add_parameter(mpr);
         }
       }
       break;

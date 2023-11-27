@@ -1,0 +1,2 @@
+ltl property prop:
+	[] ( not outOfRange ) ; ;
