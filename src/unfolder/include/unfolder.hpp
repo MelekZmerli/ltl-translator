@@ -26,27 +26,38 @@ class Unfolder {
            const nlohmann::json& ltl_json, const nlohmann::json& im_json);
 
   /**
-   * Return all the functions needed to be unfolded depending on the property to
-   * be verified.
+   * Anotate the CPN model of the smart contract
    *
-   * @return vector with the name of the function to be unfolded
+   * @param _sol_lna_stream CPN model
+   * @return anotated CPN model
    */
-  std::vector<std::string> FindUnfoldedFunctions();
-
   static HELENA::StructuredNetNodePtr analyseLnaFile(
       std::stringstream& _sol_lna_stream);
 
-  void initialMarkingSetting();
+  std::map<std::string, std::string> unfoldModel(const std::string& _context);
 
   HELENA::StructuredNetNodePtr unfoldModelWithDCRContext();
   HELENA::StructuredNetNodePtr unfoldModelWithFreeContext();
-
-  std::map<std::string, std::string> UnfoldModel(const std::string& _context);
 
   std::string get_model_name_from_comment(
       const HELENA::CommentNodePtr& _comment);
 
  private:
+  /**
+   * Return all the functions needed to be unfolded depending on the property to
+   * be verified.
+   *
+   * @return vector with the name of the functions to be unfolded
+   */
+  std::vector<std::string> FindUnfoldedFunctions();
+
+  /**
+   * Read the initial marking file and initializes the CPN model with the number
+   * of users, the balance, and the sender values. Also, it sets the initial
+   * marking of the places related to the unfolded functions.
+   */
+  void initialMarkingSetting();
+
   nlohmann::json sol_information;
   nlohmann::json ltl_information;
   nlohmann::json im_information;

@@ -51,7 +51,7 @@ An example of execution is
   --im ./test/etherGame/initialMarking.json \
   --context-type CPN \
   --context ./test/etherGame/context.lna \
-  --ltl ./test/etherGame/formula.json \
+  --ltl ./test/etherGame/formula_general.json \
   --output-path ./output/ \
   --output-name test
 ```

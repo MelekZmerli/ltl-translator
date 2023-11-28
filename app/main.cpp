@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
   Unfolder unfolder =
       Unfolder(context_net, model_lna_text_stream, sol_json, ltl_json, im_json);
   std::map<std::string, std::string> unfold_model =
-      unfolder.UnfoldModel(CONTEXT_TYPE);
+      unfolder.unfoldModel(CONTEXT_TYPE);
 
   save_content(full_outpath + ".lna", unfold_model["lna"]);
   save_content(full_outpath + ".prop.lna", unfold_model["prop"]);

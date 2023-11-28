@@ -358,7 +358,7 @@ transition PLAY_return {
 		state_cflow : epsilon;
 	}
 }
-proposition outOfRange:
+proposition oFut:
 	;
 
 

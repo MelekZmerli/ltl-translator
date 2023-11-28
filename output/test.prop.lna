@@ -1,2 +1,2 @@
-ltl property prop:
-	[] ( not outOfRange ) ; ;
+ltl property outOfRange:
+	[] ( not oFut ) ; ;

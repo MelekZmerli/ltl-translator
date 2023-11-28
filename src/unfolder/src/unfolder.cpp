@@ -146,11 +146,13 @@ HELENA::StructuredNetNodePtr Unfolder::analyseLnaFile(
   bool wait2set = false;
   std::string current_submodel_name;
   while (ptr_pointer_line != ptr_pointer_end) {
+    // Get name of a submodel (i.e., function)
     if (retrieve_string_element(*ptr_pointer_line, 1, " ") == "Function:") {
       current_submodel_name =
           retrieve_string_element(*ptr_pointer_line, 2, " ");
       wait2set = true;
     } else {
+      // Get content of a submodel
       std::string keyword = get_first_alpha_only_string(*ptr_pointer_line);
       if (keyword == HELENA::TRANSITION_TOKEN) {
         HELENA::TransitionNodePtr transition =
@@ -184,10 +186,12 @@ HELENA::StructuredNetNodePtr Unfolder::analyseLnaFile(
 
     ptr_pointer_line++;
   }
+
   return model;
 }
 
 void Unfolder::initialMarkingSetting() {
+  // create array color
   HELENA::ListColorNodePtr uint_array =
       std::make_shared<HELENA::ListColorNode>();
   uint_array->set_name("UINT_ARRAY");
@@ -195,23 +199,24 @@ void Unfolder::initialMarkingSetting() {
   uint_array->set_element_type("UINT");
   uint_array->set_capacity("1000");
   cpn_model->add_color(std::static_pointer_cast<HELENA::ColorNode>(uint_array));
+
+  // get number of users from the initial marking file
   std::string s_numberOfUser = im_information.at("NumberOfUser");
   int numberOfUser = std::stoi(s_numberOfUser);
 
+  // create parameter node with the number of users
   HELENA::ParameterNodePtr users = std::make_shared<HELENA::ParameterNode>();
   users->set_name("users");
   users->set_number(s_numberOfUser);
   cpn_model->add_parameter(users);
 
+  // parse balance parameter of the initial marking
   std::string balance_value;
   auto balance = im_information.at("balance");
   std::string balance_type = balance.at("type");
   if (balance_type == "fixed") {
     std::string fixed_value = balance.at("fixed");
-    balance_value = fixed_value;
-    for (int i = 1; i < numberOfUser; i++) {
-      balance_value += "," + fixed_value;
-    }
+    balance_value = repeat_word(fixed_value, numberOfUser);
   } else if (balance_type == "map") {
     std::string map_value = balance.at("map");
     balance_value = map_value;
@@ -219,12 +224,10 @@ void Unfolder::initialMarkingSetting() {
     auto random_value = balance.at("random");
     std::string s_from = random_value.at("from");
     std::string s_to = random_value.at("to");
-    int from = std::stoi(s_from);
-    int to = std::stoi(s_to);
 
     std::random_device rd;   // obtain a random number from hardware
     std::mt19937 gen(rd());  // seed the generator
-    std::uniform_int_distribution<> distr(from, to);  // define the range
+    std::uniform_int_distribution<> distr(std::stoi(s_from), std::stoi(s_to));
 
     balance_value = std::to_string(distr(gen));
     for (int i = 1; i < numberOfUser; i++) {
@@ -232,6 +235,7 @@ void Unfolder::initialMarkingSetting() {
     }
   }
 
+  // create constant node with the user balance value
   HELENA::ConstantNodePtr user_balance =
       std::make_shared<HELENA::ConstantNode>();
   user_balance->set_name("user_balance");
@@ -239,26 +243,20 @@ void Unfolder::initialMarkingSetting() {
   user_balance->set_expression("|" + balance_value + "|");
   cpn_model->add_color(user_balance);
 
-  auto smart_contract = im_information.at("smart_contract");
-  for (size_t i = 0; i < smart_contract.size(); i++) {
-    auto sc = smart_contract[i];
+  // parse the functions and their arguments in the initial marking
+  for (const auto& sc : im_information.at("smart_contract")) {
     std::string sc_name = sc.at("name");
     if (sc_name == cpn_model->get_name()) {
-      auto functions = sc.at("functions");
-      for (size_t j = 0; j < functions.size(); j++) {
-        auto function = functions[j];
+      for (const auto& function : sc.at("functions")) {
         std::string function_name = function.at("name");
         auto f_sender_value = function.at("sender_value");
         std::string sf_from = f_sender_value.at("from");
         std::string sf_to = f_sender_value.at("to");
+
         int f_from = std::stoi(sf_from);
         int f_to = std::stoi(sf_to);
 
-        std::string fs_sender_value;
-        fs_sender_value = sf_from;
-        for (int k = f_from + 1; k <= f_to; k++) {
-          fs_sender_value += "," + std::to_string(k);
-        }
+        std::string fs_sender_value = generate_seq(f_from, f_to);
 
         HELENA::ParameterNodePtr function_sender_range =
             std::make_shared<HELENA::ParameterNode>();
@@ -276,11 +274,13 @@ void Unfolder::initialMarkingSetting() {
     }
   }
 
+  // create map with unfolded functions
   std::map<std::string, std::string> P_functions;
-  for (auto it = unfolded_func.begin(); it != unfolded_func.end(); it++) {
-    P_functions["P_" + *it] = *it;
+  for (const auto& f : unfolded_func) {
+    P_functions["P_" + f] = f;
   }
 
+  // initialize places related to the unfolded functions
   for (size_t i = 0; i < cpn_model->num_places(); i++) {
     HELENA::LnaNodePtr node = cpn_model->get_place(i);
     if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
@@ -303,7 +303,7 @@ void Unfolder::initialMarkingSetting() {
   }
 }
 
-std::map<std::string, std::string> Unfolder::UnfoldModel(
+std::map<std::string, std::string> Unfolder::unfoldModel(
     const std::string& _context) {
   initialMarkingSetting();
 

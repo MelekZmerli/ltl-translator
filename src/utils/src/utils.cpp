@@ -221,8 +221,25 @@ std::string join(const std::vector<std::string>& lst,
                  const std::string& delim) {
   std::string ret;
   for (const auto& s : lst) {
-    if (!ret.empty()) ret += delim;
+    if (!ret.empty())
+      ret += delim;
     ret += s;
   }
   return ret;
+}
+
+std::string repeat_word(const std::string& word, int n) {
+  std::string tmp = word;
+  for (int i = 1; i < n; i++) {
+    tmp += "," + word;
+  }
+  return tmp;
+}
+
+std::string generate_seq(int from, int to) {
+  std::string tmp = std::to_string(from);
+  for (int k = from + 1; k <= to; k++) {
+    tmp += "," + std::to_string(k);
+  }
+  return tmp;
 }
