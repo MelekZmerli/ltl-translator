@@ -55,3 +55,10 @@ An example of execution is
   --output-path ./output/ \
   --output-name test
 ```
+
+You can generate the `.ast` files from the solidity code with:
+
+```
+./bin/solc-linux --ast <.sol file>
+./bin/solc-linux --ast-compact-json <.sol file>
+```
