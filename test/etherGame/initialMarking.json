@@ -24,7 +24,7 @@
   ],
   "balance": {
     "type": "fixed",
-    "fixed": "10",
+    "fixed": "5",
     "map": "",
     "random": {
       "from": "",

@@ -1,2 +1,0 @@
-ltl property outOfRange:
-	[] ( not oFut ) ; ;

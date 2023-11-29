@@ -4,8 +4,8 @@
         "name": "under_over_flow",
         "inputs": {
             "min_threshold": "0",
-            "max_threshold": "4",
-            "selected_variable": "currentBalance"
+            "max_threshold": "65535",
+            "selected_variable": "mileStone1Reward"
         }
     }
 }
