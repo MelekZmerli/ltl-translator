@@ -56,7 +56,7 @@ An example of execution is
   --output-name test
 ```
 
-You can generate the `.ast` files from the solidity code with:
+You can generate the `.ast` files from the solidity code (`v 0.4.25`) with:
 
 ```
 ./bin/solc-linux --ast <.sol file>
