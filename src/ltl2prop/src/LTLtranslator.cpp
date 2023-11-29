@@ -120,7 +120,7 @@ std::map<std::string, std::string> LTLTranslator::createUnderOverFlowVul(
        << "const maxThreshold = " + max_threshold + ""
        << "\n";
   code << "proposition oFut: ('" + variable + "' < minThreshold) | ('" +
-              variable + "' > maxThreshold);"
+              variable + "' > maxThreshold)"
        << "\n";
   code << "property outOfRange: G ( ! oFut );";
   return createVulMapFromFormula(code.str());

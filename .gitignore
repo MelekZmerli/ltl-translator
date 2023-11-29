@@ -57,6 +57,7 @@
 build
 bin
 .vscode
+output
 
 .DS_Store
 
