@@ -41,7 +41,7 @@ nlohmann::json parse_json_file(const std::string &filename) {
   std::ifstream file_stream(filename);
 
   while (std::getline(file_stream, new_line)) {
-    content = content + new_line + "\n";
+    content += new_line + "\n";
   }
 
   return nlohmann::json::parse(content);
