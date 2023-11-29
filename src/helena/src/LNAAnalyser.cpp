@@ -106,7 +106,6 @@ TransitionNodePtr handleTransition(std::list<std::string>::iterator& _iter,
         std::string let = handleElementBody(_iter, _end_iter);
         transition->add_let(let);
       } else if (keyword == GUARD_TOKEN) {
-        std::cout << *_iter << "\n";
         std::string guard = trim_copy(split_ex(*_iter, ":", 2)[1]);
         transition->set_guard(guard);
       } else if (keyword == PRIORITY_TOKEN) {
