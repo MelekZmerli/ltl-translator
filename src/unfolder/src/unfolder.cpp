@@ -12,6 +12,7 @@
 #include "utils.hpp"
 
 Unfolder::Unfolder(const HELENA::StructuredNetNodePtr& _context,
+                   const std::string& _context_type,
                    std::stringstream& _sol_lna_stream,
                    const nlohmann::json& lna_json,
                    const nlohmann::json& ltl_json,
@@ -19,7 +20,8 @@ Unfolder::Unfolder(const HELENA::StructuredNetNodePtr& _context,
     : sol_information(lna_json),
       ltl_information(ltl_json),
       im_information(im_json),
-      cpn_context(_context) {
+      cpn_context(_context),
+      context_type(_context_type) {
   unfolded_func = FindUnfoldedFunctions();
   cpn_model = analyseLnaFile(_sol_lna_stream);
 }
@@ -303,32 +305,37 @@ void Unfolder::initialMarkingSetting() {
   }
 }
 
-std::map<std::string, std::string> Unfolder::unfoldModel(
-    const std::string& _context) {
+std::map<std::string, std::string> Unfolder::unfoldModel() {
+  // apply initial marking
   initialMarkingSetting();
 
+  // unfold the behavioral context
   HELENA::StructuredNetNodePtr unfold_model;
-  if (_context == "DCR" || _context == "CPN") {
-    unfold_model = unfoldModelWithDCRContext();
-  } else if (_context == "FREE") {
+  if (context_type == "DCR" || context_type == "CPN") {
+    unfold_model = unfoldModelWithCPNContext();
+  } else if (context_type == "FREE") {
     unfold_model = unfoldModelWithFreeContext();
   } else {
     unfold_model = std::make_shared<HELENA::StructuredNetNode>();
   }
 
+  // parse the LTL formula taking into account the CPN model
   LTL2PROP::LTLTranslator ltl_translator =
       LTL2PROP::LTLTranslator(sol_information, ltl_information);
   std::map<std::string, std::string> ltl_result = ltl_translator.translate();
 
+  // add the propositions to the final CPN model
   unfold_model->add_transition(
       std::make_shared<HELENA::CommentNode>(ltl_result["propositions"]));
 
+  // return the final CPN model and the LTL property to verify
   std::map<std::string, std::string> result;
   result["lna"] = unfold_model->source_code();
   result["prop"] = ltl_result["property"];
 
   return result;
 }
+
 HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
   HELENA::StructuredNetNodePtr unfold_model =
       std::make_shared<HELENA::StructuredNetNode>();
@@ -467,7 +474,7 @@ HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
   return unfold_model;
 }
 
-HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithDCRContext() {
+HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithCPNContext() {
   HELENA::StructuredNetNodePtr unfold_model =
       std::make_shared<HELENA::StructuredNetNode>();
 

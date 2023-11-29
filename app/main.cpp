@@ -150,10 +150,9 @@ int main(int argc, char **argv) {
   /****************************************************************************
    * UNFOLD CPN MODEL AND PROPERTY
    ****************************************************************************/
-  Unfolder unfolder =
-      Unfolder(context_net, model_lna_text_stream, sol_json, ltl_json, im_json);
-  std::map<std::string, std::string> unfold_model =
-      unfolder.unfoldModel(CONTEXT_TYPE);
+  Unfolder unfolder = Unfolder(context_net, CONTEXT_TYPE, model_lna_text_stream,
+                               sol_json, ltl_json, im_json);
+  std::map<std::string, std::string> unfold_model = unfolder.unfoldModel();
 
   save_content(full_outpath + ".lna", unfold_model["lna"]);
   save_content(full_outpath + ".prop.lna", unfold_model["prop"]);
