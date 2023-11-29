@@ -336,6 +336,223 @@ std::map<std::string, std::string> Unfolder::unfoldModel() {
   return result;
 }
 
+std::string Unfolder::get_model_name_from_comment(
+    const HELENA::CommentNodePtr& _comment) {
+  std::string name = substr_by_edge(_comment->get_comment(), "Function:", "*/");
+  trim_ex(name);
+  return name;
+}
+
+HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithCPNContext() {
+  HELENA::StructuredNetNodePtr unfold_model =
+      std::make_shared<HELENA::StructuredNetNode>();
+
+  unfold_model->set_name(cpn_model->get_name());
+
+  if (!unfolded_func.empty()) {
+    std::string current_submodel_name;
+
+    /**************************************************************************
+     * Handling context CPN model
+     **************************************************************************/
+
+    // add parameters from context model to the unfolded model
+    for (size_t i = 0; i < cpn_context->num_parameters(); i++) {
+      unfold_model->add_parameter(cpn_context->get_parameter(i));
+    }
+
+    // add colors from context model to the unfolded model
+    for (size_t i = 0; i < cpn_context->num_colors(); i++) {
+      unfold_model->add_color(cpn_context->get_color(i));
+    }
+
+    // add functions from context to the unfolded model
+    for (size_t i = 0; i < cpn_context->num_functions(); i++) {
+      unfold_model->add_function(cpn_context->get_function(i));
+    }
+
+    // add places from context involded in the formula to the unfolded model
+    for (size_t i = 0; i < cpn_context->num_places(); i++) {
+      HELENA::LnaNodePtr node = cpn_context->get_place(i);
+
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
+        // get name of the submodel
+        current_submodel_name = get_model_name_from_comment(
+            std::static_pointer_cast<HELENA::CommentNode>(node));
+
+        // check if the submodel need to be unfolded
+        // i.e., it's involved in the property
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
+              "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
+        }
+      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
+        // check if the  place need to be unfolded
+        // i.e., it's involved in the property
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          unfold_model->add_place(
+              std::static_pointer_cast<HELENA::PlaceNode>(node));
+        }
+      }
+    }
+
+    // add transitions from context involded in the formula to the unfolded
+    // model
+    for (size_t i = 0; i < cpn_context->num_transitions(); i++) {
+      HELENA::LnaNodePtr node = cpn_context->get_transition(i);
+
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
+        // add transition to the unfolded model
+        current_submodel_name = get_model_name_from_comment(
+            std::static_pointer_cast<HELENA::CommentNode>(node));
+        unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
+            "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
+      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
+        HELENA::TransitionNodePtr transition =
+            std::static_pointer_cast<HELENA::TransitionNode>(node);
+        // check if the transition is involded in the formula
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          // add incoming arc to the transition
+          HELENA::ArcNodePtr cflow_arc_in = std::make_shared<HELENA::ArcNode>();
+          cflow_arc_in->set_placeName("state_cflow");
+          cflow_arc_in->set_label("epsilon");
+          transition->add_inArc(cflow_arc_in);
+
+          // add outgoing arc to the transition
+          HELENA::ArcNodePtr cflow_arc_out =
+              std::make_shared<HELENA::ArcNode>();
+          cflow_arc_out->set_placeName(current_submodel_name + "_cflow");
+          cflow_arc_out->set_label("epsilon");
+          transition->add_outArc(cflow_arc_out);
+
+          // add transition to the unfolded model
+          unfold_model->add_transition(transition);
+        } else {
+          // add incoming arc to the transition
+          HELENA::ArcNodePtr cflow_arc_in = std::make_shared<HELENA::ArcNode>();
+          cflow_arc_in->set_placeName("state_cflow");
+          cflow_arc_in->set_label("epsilon");
+          transition->add_inArc(cflow_arc_in);
+
+          // add outgoing arc to the transition
+          HELENA::ArcNodePtr cflow_arc_out =
+              std::make_shared<HELENA::ArcNode>();
+          cflow_arc_out->set_placeName("state_cflow");
+          cflow_arc_out->set_label("epsilon");
+          transition->add_outArc(cflow_arc_out);
+
+          // add transition to the unfolded model
+          unfold_model->add_transition(transition);
+        }
+      }
+    }
+
+    /**************************************************************************
+     * Handling CPN model
+     **************************************************************************/
+
+    // add parameters from CPN model to the unfolded model
+    for (size_t i = 0; i < cpn_model->num_parameters(); i++) {
+      unfold_model->add_parameter(cpn_model->get_parameter(i));
+    }
+
+    // add colors from CPN model to the unfolded model
+    for (size_t i = 0; i < cpn_model->num_colors(); i++) {
+      unfold_model->add_color(cpn_model->get_color(i));
+    }
+
+    // add functions from CPN model to the unfolded model
+    for (size_t i = 0; i < cpn_model->num_functions(); i++) {
+      unfold_model->add_function(cpn_model->get_function(i));
+    }
+
+    // add places from CPN model involded in the formula to the unfolded model
+    std::vector<std::string> list_func;
+    for (size_t i = 0; i < cpn_model->num_places(); i++) {
+      HELENA::LnaNodePtr node = cpn_model->get_place(i);
+
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
+        current_submodel_name = get_model_name_from_comment(
+            std::static_pointer_cast<HELENA::CommentNode>(node));
+        // check if it is involded in the property
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
+              "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
+          // add if it has not been already done
+          if (std::find(list_func.begin(), list_func.end(),
+                        current_submodel_name) == list_func.end()) {
+            HELENA::PlaceNodePtr cflow = std::make_shared<HELENA::PlaceNode>();
+            cflow->set_name(current_submodel_name + "_cflow");
+            cflow->set_domain("epsilon");
+            if (current_submodel_name == "state") {
+              cflow->set_init("epsilon");
+            }
+            unfold_model->add_place(cflow);
+            list_func.push_back(current_submodel_name);
+          }
+        }
+      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
+        HELENA::PlaceNodePtr place =
+            std::static_pointer_cast<HELENA::PlaceNode>(node);
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          unfold_model->add_place(place);
+        }
+      }
+    }
+
+    // add transitions from CPN model involded in the formula to the unfolded
+    // model
+    for (size_t i = 0; i < cpn_model->num_transitions(); i++) {
+      HELENA::LnaNodePtr node = cpn_model->get_transition(i);
+
+      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
+        current_submodel_name = get_model_name_from_comment(
+            std::static_pointer_cast<HELENA::CommentNode>(node));
+        // check if it is involved in the formula
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
+              "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
+        }
+      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
+        HELENA::TransitionNodePtr transition =
+            std::static_pointer_cast<HELENA::TransitionNode>(node);
+
+        // check if it is involded in the formula
+        if (std::find(unfolded_func.begin(), unfolded_func.end(),
+                      current_submodel_name) != unfolded_func.end()) {
+          // add incoming arc to the transition
+          if (transition->get_in_arc_by_name("S") != nullptr) {
+            HELENA::ArcNodePtr cflow_arc_in =
+                std::make_shared<HELENA::ArcNode>();
+            cflow_arc_in->set_placeName(current_submodel_name + "_cflow");
+            cflow_arc_in->set_label("epsilon");
+            transition->add_inArc(cflow_arc_in);
+          }
+
+          // add outgoing arc to the transition
+          if (transition->get_out_arc_by_name("S") != nullptr) {
+            HELENA::ArcNodePtr cflow_arc_out =
+                std::make_shared<HELENA::ArcNode>();
+            cflow_arc_out->set_placeName("state_cflow");
+            cflow_arc_out->set_label("epsilon");
+            transition->add_outArc(cflow_arc_out);
+          }
+
+          unfold_model->add_transition(transition);
+        }
+      }
+    }
+  }
+
+  return unfold_model;
+}
+
 HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
   HELENA::StructuredNetNodePtr unfold_model =
       std::make_shared<HELENA::StructuredNetNode>();
@@ -472,170 +689,4 @@ HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
     }
   }
   return unfold_model;
-}
-
-HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithCPNContext() {
-  HELENA::StructuredNetNodePtr unfold_model =
-      std::make_shared<HELENA::StructuredNetNode>();
-
-  unfold_model->set_name(cpn_model->get_name());
-
-  if (!unfolded_func.empty()) {
-    std::string current_submodel_name;
-
-    for (size_t i = 0; i < cpn_context->num_parameters(); i++) {
-      unfold_model->add_parameter(cpn_context->get_parameter(i));
-    }
-    for (size_t i = 0; i < cpn_context->num_colors(); i++) {
-      unfold_model->add_color(cpn_context->get_color(i));
-    }
-    for (size_t i = 0; i < cpn_context->num_functions(); i++) {
-      unfold_model->add_function(cpn_context->get_function(i));
-    }
-
-    for (size_t i = 0; i < cpn_context->num_places(); i++) {
-      HELENA::LnaNodePtr node = cpn_context->get_place(i);
-      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
-        current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<HELENA::CommentNode>(node));
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
-              "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
-        }
-      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
-        HELENA::PlaceNodePtr place =
-            std::static_pointer_cast<HELENA::PlaceNode>(node);
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(place);
-        }
-      }
-    }
-    for (size_t i = 0; i < cpn_context->num_transitions(); i++) {
-      HELENA::LnaNodePtr node = cpn_context->get_transition(i);
-      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
-        current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<HELENA::CommentNode>(node));
-        unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
-            "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
-      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
-        HELENA::TransitionNodePtr transition =
-            std::static_pointer_cast<HELENA::TransitionNode>(node);
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          HELENA::ArcNodePtr cflow_arc_in = std::make_shared<HELENA::ArcNode>();
-          cflow_arc_in->set_placeName("state_cflow");
-          cflow_arc_in->set_label("epsilon");
-          transition->add_inArc(cflow_arc_in);
-
-          HELENA::ArcNodePtr cflow_arc_out =
-              std::make_shared<HELENA::ArcNode>();
-          cflow_arc_out->set_placeName(current_submodel_name + "_cflow");
-          cflow_arc_out->set_label("epsilon");
-          transition->add_outArc(cflow_arc_out);
-
-          unfold_model->add_transition(transition);
-        } else {
-          HELENA::ArcNodePtr cflow_arc_in = std::make_shared<HELENA::ArcNode>();
-          cflow_arc_in->set_placeName("state_cflow");
-          cflow_arc_in->set_label("epsilon");
-          transition->add_inArc(cflow_arc_in);
-
-          HELENA::ArcNodePtr cflow_arc_out =
-              std::make_shared<HELENA::ArcNode>();
-          cflow_arc_out->set_placeName("state_cflow");
-          cflow_arc_out->set_label("epsilon");
-          transition->add_outArc(cflow_arc_out);
-
-          unfold_model->add_transition(transition);
-        }
-      }
-    }
-
-    for (size_t i = 0; i < cpn_model->num_parameters(); i++) {
-      unfold_model->add_parameter(cpn_model->get_parameter(i));
-    }
-    for (size_t i = 0; i < cpn_model->num_colors(); i++) {
-      unfold_model->add_color(cpn_model->get_color(i));
-    }
-    for (size_t i = 0; i < cpn_model->num_functions(); i++) {
-      unfold_model->add_function(cpn_model->get_function(i));
-    }
-
-    std::vector<std::string> list_func;
-    for (size_t i = 0; i < cpn_model->num_places(); i++) {
-      HELENA::LnaNodePtr node = cpn_model->get_place(i);
-      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
-        current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<HELENA::CommentNode>(node));
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
-              "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
-          if (std::find(list_func.begin(), list_func.end(),
-                        current_submodel_name) == list_func.end()) {
-            HELENA::PlaceNodePtr cflow = std::make_shared<HELENA::PlaceNode>();
-            cflow->set_name(current_submodel_name + "_cflow");
-            cflow->set_domain("epsilon");
-            if (current_submodel_name == "state") {
-              cflow->set_init("epsilon");
-            }
-            unfold_model->add_place(cflow);
-            list_func.push_back(current_submodel_name);
-          }
-        }
-      } else if (node->get_node_type() == HELENA::LnaNodeTypePlace) {
-        HELENA::PlaceNodePtr place =
-            std::static_pointer_cast<HELENA::PlaceNode>(node);
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_place(place);
-        }
-      }
-    }
-    for (size_t i = 0; i < cpn_model->num_transitions(); i++) {
-      HELENA::LnaNodePtr node = cpn_model->get_transition(i);
-      if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
-        current_submodel_name = get_model_name_from_comment(
-            std::static_pointer_cast<HELENA::CommentNode>(node));
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          unfold_model->add_transition(std::make_shared<HELENA::CommentNode>(
-              "\n/*\n * Function: " + current_submodel_name + "\n */\n"));
-        }
-      } else if (node->get_node_type() == HELENA::LnaNodeTypeTransition) {
-        HELENA::TransitionNodePtr transition =
-            std::static_pointer_cast<HELENA::TransitionNode>(node);
-        if (std::find(unfolded_func.begin(), unfolded_func.end(),
-                      current_submodel_name) != unfolded_func.end()) {
-          if (transition->get_in_arc_by_name("S") != nullptr) {
-            HELENA::ArcNodePtr cflow_arc_in =
-                std::make_shared<HELENA::ArcNode>();
-            cflow_arc_in->set_placeName(current_submodel_name + "_cflow");
-            cflow_arc_in->set_label("epsilon");
-            transition->add_inArc(cflow_arc_in);
-          }
-
-          if (transition->get_out_arc_by_name("S") != nullptr) {
-            HELENA::ArcNodePtr cflow_arc_out =
-                std::make_shared<HELENA::ArcNode>();
-            cflow_arc_out->set_placeName("state_cflow");
-            cflow_arc_out->set_label("epsilon");
-            transition->add_outArc(cflow_arc_out);
-          }
-
-          unfold_model->add_transition(transition);
-        }
-      }
-    }
-  }
-  return unfold_model;
-}
-
-std::string Unfolder::get_model_name_from_comment(
-    const HELENA::CommentNodePtr& _comment) {
-  std::string name = substr_by_edge(_comment->get_comment(), "Function:", "*/");
-  trim_ex(name);
-  return name;
 }

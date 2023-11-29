@@ -45,9 +45,6 @@ class Unfolder {
    */
   std::map<std::string, std::string> unfoldModel();
 
-  std::string get_model_name_from_comment(
-      const HELENA::CommentNodePtr& _comment);
-
  private:
   /**
    * Return all the functions needed to be unfolded depending on the property to
@@ -64,7 +61,28 @@ class Unfolder {
    */
   void initialMarkingSetting();
 
+  /**
+   * Get the name of a CPN submodel from comment object
+   *
+   * @param _comment Comment object
+   * @return submodel name
+   */
+  std::string get_model_name_from_comment(
+      const HELENA::CommentNodePtr& _comment);
+
+  /**
+   * Return the final CPN model from a CPN model and a behavioral context
+   * specified as a CPN
+   *
+   * @return final CPN model
+   */
   HELENA::StructuredNetNodePtr unfoldModelWithCPNContext();
+
+  /**
+   * Return the final CPN model from a CPN model and a free context
+   *
+   * @return final CPN model
+   */
   HELENA::StructuredNetNodePtr unfoldModelWithFreeContext();
 
   nlohmann::json sol_information;
