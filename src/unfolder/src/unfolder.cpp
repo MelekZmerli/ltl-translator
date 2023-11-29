@@ -561,22 +561,30 @@ HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
   if (!unfolded_func.empty()) {
     std::string current_submodel_name;
 
+    // add parameters from the CPN model to the unfolded model
     for (size_t i = 0; i < cpn_model->num_parameters(); i++) {
       unfold_model->add_parameter(cpn_model->get_parameter(i));
     }
+
+    // add colors from the CPN model to the unfolded model
     for (size_t i = 0; i < cpn_model->num_colors(); i++) {
       unfold_model->add_color(cpn_model->get_color(i));
     }
+
+    // add function from the CPN model to the unfolded model
     for (size_t i = 0; i < cpn_model->num_functions(); i++) {
       unfold_model->add_function(cpn_model->get_function(i));
     }
 
+    // add the places involded in the formula to the unfolded model
     std::vector<std::string> list_func;
     for (size_t i = 0; i < cpn_model->num_places(); i++) {
       HELENA::LnaNodePtr node = cpn_model->get_place(i);
       if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
         current_submodel_name = get_model_name_from_comment(
             std::static_pointer_cast<HELENA::CommentNode>(node));
+
+        // check if it's involved in the property
         if (std::find(unfolded_func.begin(), unfolded_func.end(),
                       current_submodel_name) != unfolded_func.end()) {
           unfold_model->add_place(std::make_shared<HELENA::CommentNode>(
@@ -605,6 +613,7 @@ HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
 
     list_func.clear();
 
+    // add the transitions involved in the formula to the unfolded model
     for (size_t i = 0; i < cpn_model->num_transitions(); i++) {
       HELENA::LnaNodePtr node = cpn_model->get_transition(i);
       if (node->get_node_type() == HELENA::LnaNodeTypeComment) {
@@ -688,5 +697,6 @@ HELENA::StructuredNetNodePtr Unfolder::unfoldModelWithFreeContext() {
       }
     }
   }
+
   return unfold_model;
 }
