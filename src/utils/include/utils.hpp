@@ -1,11 +1,7 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#include <algorithm>
-#include <cctype>
 #include <cstdlib>
-#include <iostream>
-#include <list>
 #include <map>
 #include <string>
 #include <vector>

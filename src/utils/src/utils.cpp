@@ -1,5 +1,9 @@
 #include "utils.hpp"
 
+#include <algorithm>
+#include <cctype>
+#include <iostream>
+
 // remove non-alphabetic characters, numbers and '_'
 std::string removeNoneAlnum(const std::string& inp_string) {
   std::string s = inp_string;

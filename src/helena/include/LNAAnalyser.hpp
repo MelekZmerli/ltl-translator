@@ -1,8 +1,11 @@
 #ifndef HELENA_LNAANALYSER_H_
 #define HELENA_LNAANALYSER_H_
 
+#include <list>
+#include <string>
+#include <vector>
+
 #include "Helena.hpp"
-#include "utils.hpp"
 
 namespace HELENA {
 
