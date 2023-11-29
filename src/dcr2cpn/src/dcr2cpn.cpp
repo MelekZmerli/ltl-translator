@@ -6,7 +6,6 @@
 
 #include "utils.hpp"
 
-using namespace HELENA;
 namespace DCR2CPN {
 
 bool isSubOf2(const std::string& ParentNameInput,
@@ -251,9 +250,13 @@ DCRClass readDCRFromXML(const std::string& DCR_XML_FILE) {
 
 /** Declare the getters of the class
  */
-std::string SubNet::get_name() { return name; }
+std::string SubNet::get_name() {
+  return name;
+}
 
-std::string SubNet::get_id() { return id; }
+std::string SubNet::get_id() {
+  return id;
+}
 /** Add the executed parametters to the subnet
  */
 void SubNet::add_executecvparams(const std::string& param) {
@@ -302,11 +305,11 @@ void SubNet::add_ccondition(const std::string& param) {
  *
  *           -new_condition: based on condition and milestone relations
  */
-TransitionNodePtr SubNet::createTransition() {
-  TransitionNodePtr trans = std::make_shared<TransitionNode>();
+HELENA::TransitionNodePtr SubNet::createTransition() {
+  HELENA::TransitionNodePtr trans = std::make_shared<HELENA::TransitionNode>();
   trans->set_name(name);
 
-  ArcNodePtr marking_in = std::make_shared<ArcNode>();
+  HELENA::ArcNodePtr marking_in = std::make_shared<HELENA::ArcNode>();
   marking_in->set_placeName("marking");
   marking_in->set_label("<(execute,response,include)>");
   trans->add_inArc(marking_in);
@@ -349,7 +352,7 @@ TransitionNodePtr SubNet::createTransition() {
   }
   out_arc_label << ")>";
 
-  ArcNodePtr marking_out = std::make_shared<ArcNode>();
+  HELENA::ArcNodePtr marking_out = std::make_shared<HELENA::ArcNode>();
   marking_out->set_placeName("marking");
   marking_out->set_label(out_arc_label.str());
   trans->add_outArc(marking_out);
@@ -412,8 +415,8 @@ std::string Dcr2CpnTranslator::get_subnet_id(const std::string& subnet_name) {
  *   NetNode class is a class that handle all information about a helena code
  * file.
  */
-StructuredNetNodePtr Dcr2CpnTranslator::translate() {
-  net = std::make_shared<StructuredNetNode>();
+HELENA::StructuredNetNodePtr Dcr2CpnTranslator::translate() {
+  net = std::make_shared<HELENA::StructuredNetNode>();
   net->set_name("test");
 
   generateInitColours();
@@ -483,8 +486,8 @@ StructuredNetNodePtr Dcr2CpnTranslator::translate() {
   /** Get transitions from subnet and add it to a NetNode
    */
   for (auto it = vsubnets.begin(); it != vsubnets.end(); ++it) {
-    TransitionNodePtr trans = (*it)->createTransition();
-    net->add_transition(std::make_shared<CommentNode>(
+    HELENA::TransitionNodePtr trans = (*it)->createTransition();
+    net->add_transition(std::make_shared<HELENA::CommentNode>(
         "\n/*\n * Function: " + trans->get_name() + "\n */\n"));
     net->add_transition(trans);
   }
@@ -494,80 +497,85 @@ StructuredNetNodePtr Dcr2CpnTranslator::translate() {
 /** Generate the initial colours for the net
  */
 void Dcr2CpnTranslator::generateInitColours() {
-  ParameterNodePtr n_param = std::make_shared<ParameterNode>();
+  HELENA::ParameterNodePtr n_param = std::make_shared<HELENA::ParameterNode>();
   n_param->set_name("N");
   n_param->set_number(std::to_string(dcrClass.getListEvent().size()));
   net->add_parameter(n_param);
 
-  ColorNodePtr boolean = std::make_shared<ColorNode>();
+  HELENA::ColorNodePtr boolean = std::make_shared<HELENA::ColorNode>();
   boolean->set_name("boolean");
   boolean->set_typeDef("range 0 .. 1");
   net->add_color(boolean);
 
-  ColorNodePtr count = std::make_shared<ColorNode>();
+  HELENA::ColorNodePtr count = std::make_shared<HELENA::ColorNode>();
   count->set_name("count");
   count->set_typeDef("range 0 .. N");
   net->add_color(count);
 
-  SubColorNodePtr event_id = std::make_shared<SubColorNode>(count);
+  HELENA::SubColorNodePtr event_id =
+      std::make_shared<HELENA::SubColorNode>(count);
   event_id->set_name("event_id");
   event_id->set_typeDef("range 0 .. (count'last-1)");
-  net->add_color(std::static_pointer_cast<ColorNode>(event_id));
+  net->add_color(std::static_pointer_cast<HELENA::ColorNode>(event_id));
 
-  ListColorNodePtr marking_value = std::make_shared<ListColorNode>();
+  HELENA::ListColorNodePtr marking_value =
+      std::make_shared<HELENA::ListColorNode>();
   marking_value->set_name("marking_value");
   marking_value->set_index_type("event_id");
   marking_value->set_element_type("boolean");
   marking_value->set_capacity("N");
-  net->add_color(std::static_pointer_cast<ColorNode>(marking_value));
+  net->add_color(std::static_pointer_cast<HELENA::ColorNode>(marking_value));
 
-  StructColorNodePtr mvalue = std::make_shared<StructColorNode>();
+  HELENA::StructColorNodePtr mvalue =
+      std::make_shared<HELENA::StructColorNode>();
   mvalue->set_name("mvalue");
 
-  ComponentNodePtr id = std::make_shared<ComponentNode>();
+  HELENA::ComponentNodePtr id = std::make_shared<HELENA::ComponentNode>();
   id->set_name("id");
   id->set_type("event_id");
   mvalue->add_component(id);
 
-  ComponentNodePtr vl = std::make_shared<ComponentNode>();
+  HELENA::ComponentNodePtr vl = std::make_shared<HELENA::ComponentNode>();
   vl->set_name("vl");
   vl->set_type("boolean");
   mvalue->add_component(vl);
-  net->add_color(std::static_pointer_cast<ColorNode>(mvalue));
+  net->add_color(std::static_pointer_cast<HELENA::ColorNode>(mvalue));
 
-  ListColorNodePtr vchange = std::make_shared<ListColorNode>();
+  HELENA::ListColorNodePtr vchange = std::make_shared<HELENA::ListColorNode>();
   vchange->set_name("vchange");
   vchange->set_index_type("event_id");
   vchange->set_element_type("mvalue");
   vchange->set_capacity("N");
-  net->add_color(std::static_pointer_cast<ColorNode>(vchange));
+  net->add_color(std::static_pointer_cast<HELENA::ColorNode>(vchange));
 
-  StructColorNodePtr cvalue = std::make_shared<StructColorNode>();
+  HELENA::StructColorNodePtr cvalue =
+      std::make_shared<HELENA::StructColorNode>();
   cvalue->set_name("cvalue");
 
-  ComponentNodePtr cv1 = std::make_shared<ComponentNode>();
+  HELENA::ComponentNodePtr cv1 = std::make_shared<HELENA::ComponentNode>();
   cv1->set_name("cv1");
   cv1->set_type("boolean");
   cvalue->add_component(cv1);
 
-  ComponentNodePtr cv2 = std::make_shared<ComponentNode>();
+  HELENA::ComponentNodePtr cv2 = std::make_shared<HELENA::ComponentNode>();
   cv2->set_name("cv2");
   cv2->set_type("boolean");
   cvalue->add_component(cv2);
-  net->add_color(std::static_pointer_cast<ColorNode>(cvalue));
+  net->add_color(std::static_pointer_cast<HELENA::ColorNode>(cvalue));
 
-  ListColorNodePtr vcondition = std::make_shared<ListColorNode>();
+  HELENA::ListColorNodePtr vcondition =
+      std::make_shared<HELENA::ListColorNode>();
   vcondition->set_name("vcondition");
   vcondition->set_index_type("event_id");
   vcondition->set_element_type("cvalue");
   vcondition->set_capacity("N");
-  net->add_color(std::static_pointer_cast<ColorNode>(vcondition));
+  net->add_color(std::static_pointer_cast<HELENA::ColorNode>(vcondition));
 }
 
 /** Generate the initial places for the net
  */
 void Dcr2CpnTranslator::generateInitPlaces() {
-  PlaceNodePtr marking = std::make_shared<PlaceNode>();
+  HELENA::PlaceNodePtr marking = std::make_shared<HELENA::PlaceNode>();
   marking->set_name("marking");
   marking->set_domain("marking_value*marking_value*marking_value");
 
@@ -583,20 +591,20 @@ void Dcr2CpnTranslator::generateInitPlaces() {
 
   marking->set_init("<(|" + exer + "|,|" + exer + "|,|" + inc + "|)>");
   net->add_place(
-      std::make_shared<CommentNode>("\n/*\n * Function: state\n */\n"));
+      std::make_shared<HELENA::CommentNode>("\n/*\n * Function: state\n */\n"));
   net->add_place(marking);
 }
 /** Generate the initial functions for the net
  */
 void Dcr2CpnTranslator::generateInitFunctions() {
-  FunctionNodePtr cvalue = std::make_shared<FunctionNode>();
+  HELENA::FunctionNodePtr cvalue = std::make_shared<HELENA::FunctionNode>();
   cvalue->set_name("cvalue");
   cvalue->set_returnType("marking_value");
-  ParamNodePtr mv = std::make_shared<ParamNode>();
+  HELENA::ParamNodePtr mv = std::make_shared<HELENA::ParamNode>();
   mv->set_name("mv");
   mv->set_type("marking_value");
   cvalue->add_parameter(mv);
-  ParamNodePtr lc = std::make_shared<ParamNode>();
+  HELENA::ParamNodePtr lc = std::make_shared<HELENA::ParamNode>();
   lc->set_name("lc");
   lc->set_type("vchange");
   cvalue->add_parameter(lc);
@@ -605,10 +613,11 @@ void Dcr2CpnTranslator::generateInitFunctions() {
       "v;\n\t}\n\tfor(v in lc){\n\t\tm[v.id] := v.vl;\n\t}\n\treturn m;");
   net->add_function(cvalue);
 
-  FunctionNodePtr confirm_condition = std::make_shared<FunctionNode>();
+  HELENA::FunctionNodePtr confirm_condition =
+      std::make_shared<HELENA::FunctionNode>();
   confirm_condition->set_name("confirm_condition");
   confirm_condition->set_returnType("boolean");
-  ParamNodePtr vc_c = std::make_shared<ParamNode>();
+  HELENA::ParamNodePtr vc_c = std::make_shared<HELENA::ParamNode>();
   vc_c->set_name("vc");
   vc_c->set_type("vcondition");
   confirm_condition->add_parameter(vc_c);
@@ -617,10 +626,11 @@ void Dcr2CpnTranslator::generateInitFunctions() {
       "ret := 0;\n\t}\n\treturn ret;");
   net->add_function(confirm_condition);
 
-  FunctionNodePtr confirm_milestone = std::make_shared<FunctionNode>();
+  HELENA::FunctionNodePtr confirm_milestone =
+      std::make_shared<HELENA::FunctionNode>();
   confirm_milestone->set_name("confirm_milestone");
   confirm_milestone->set_returnType("boolean");
-  ParamNodePtr vc_m = std::make_shared<ParamNode>();
+  HELENA::ParamNodePtr vc_m = std::make_shared<HELENA::ParamNode>();
   vc_m->set_name("vc");
   vc_m->set_type("vcondition");
   confirm_milestone->add_parameter(vc_m);
