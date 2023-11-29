@@ -31,4 +31,4 @@ std::vector<ArcNodePtr> handleArcs(std::list<std::string>::iterator& _iter,
                                    std::list<std::string>::iterator _end_iter);
 }  // namespace HELENA
 
-#endif
+#endif  // HELENA_LNAANALYSER_H_
