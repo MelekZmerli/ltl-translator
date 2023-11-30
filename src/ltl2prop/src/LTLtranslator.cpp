@@ -97,7 +97,7 @@ std::map<std::string, std::string> LTLTranslator::translate() {
   // parse a general vulnerability formula
   if (formula_type == "general") {
     std::string vulnerability_name = formula_params.at("name");
-    if (vulnerability_name == "under_over_flow") {
+    if (vulnerability_name == "Interger Overflow/Underflow") {
       auto inputs = formula_params.at("inputs");
       std::string min_threshold = inputs.at("min_threshold");
       std::string max_threshold = inputs.at("max_threshold");

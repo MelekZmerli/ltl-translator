@@ -164,7 +164,7 @@ class LTLTranslator {
   std::string get_local_variable_placetype(const std::string& _name);
 
   /**
-   * Return the Helena code for the under_over_flow vulnerability
+   * Return the Helena code for the "Interger Overflow/Underflow" vulnerability
    *
    * @param min_threshold minimum threshold value
    * @param max_threshold maximum threshold value

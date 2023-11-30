@@ -36,7 +36,7 @@ std::vector<std::string> Unfolder::FindUnfoldedFunctions() {
   auto ltl_param = ltl_information.at("params");
   if (ltl_type == "general") {
     std::string ltl_name = ltl_param.at("name");
-    if (ltl_name == "under_over_flow") {
+    if (ltl_name == "Interger Overflow/Underflow") {
       auto inputs = ltl_param.at("inputs");
       std::string variable = inputs.at("selected_variable");
       list_required_variables.push_back(variable);
