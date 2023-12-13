@@ -162,6 +162,7 @@ std::map<std::string, std::string> LTLTranslator::createVulMapFromFormula(
   }
 
   std::map<std::string, std::string> result;
+  std::cout << property_string << std::endl;
   result["propositions"] = prop_result.str();
   result["property"] = property_string;
   return result;
@@ -453,7 +454,7 @@ void LTLTranslator::handlePropertyDefinition() {
   }
 
   property_string =
-      "ltl property " + property_name + ":\n\t" + property.str() + ";\n";
+      "ltl property " + property_name + ":\n\t" + property.str() + "\n";
 }
 
 std::string LTLTranslator::handleNoNamePropositionDefinition(
