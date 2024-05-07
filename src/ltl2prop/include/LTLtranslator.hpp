@@ -1,5 +1,5 @@
-#ifndef LTLTRANSLATOR_H_
-#define LTLTRANSLATOR_H_
+#ifndef LTLTRANSLATOR_HPP_
+#define LTLTRANSLATOR_HPP_
 
 #include <json.hpp>
 #include <list>
@@ -9,50 +9,6 @@
 
 namespace LTL2PROP {
 
-const std::string CONST_STRING = "const";
-const std::string PROPOSITION_STRING = "proposition";
-const std::string PROPERTY_STRING = "property";
-const std::list<std::string> TokensDefine = {CONST_STRING, PROPOSITION_STRING,
-                                             PROPERTY_STRING};
-
-const std::string GREATER_THAN = ">";
-const std::string GREATER_THAN_OR_EQUAL_TO = ">=";
-const std::string LESS_THAN = "<";
-const std::string LESS_THAN_OR_EQUAL_TO = "<=";
-const std::string NOT_EQUAL_TO = "!=";
-const std::string EQUAL_TO = "==";
-const std::list<std::string> ComparisonOperator = {
-    GREATER_THAN, GREATER_THAN_OR_EQUAL_TO,
-    LESS_THAN,    LESS_THAN_OR_EQUAL_TO,
-    NOT_EQUAL_TO, EQUAL_TO};
-
-const std::string OR_OP = "|";
-const std::string AND_OP = "&";
-const std::string NOT_OP = "!";
-const std::string OPEN_PARENTHESES = "(";
-const std::string CLOSE_PARENTHESES = ")";
-const std::list<std::string> BooleanOperator = {
-    OR_OP,
-    AND_OP,
-    NOT_OP,
-};
-
-const std::string GLOBAL_OP = "G";
-const std::string FINALLY_OP = "F";
-const std::string UNTIL_OP = "U";
-const std::string RUN_OP = "run";
-const std::string EXEC_OP = "exec";
-const std::list<std::string> LTLOperator = {GLOBAL_OP, FINALLY_OP, UNTIL_OP,
-                                            RUN_OP, EXEC_OP};
-
-const std::string OR_OP_PROP = "or";
-const std::string AND_OP_PROP = "and";
-const std::string NOT_OP_PROP = "not";
-const std::string GLOBAL_OP_PROP = "[]";
-const std::string FINALLY_OP_PROP = "<>";
-const std::string UNTIL_OP_PROP = "until";
-
-const std::string PROPOSITION_AREA = "proposition";
 
 /**
  * Return the precedence level of an operator
@@ -93,7 +49,6 @@ class LTLTranslator {
 
  private:
   nlohmann::json formula_json;
-  std::map<std::string, std::string> MappingOp;
   std::list<std::string> ltl_lines;
   std::list<std::string>::iterator ptr_ltl_line;
   std::map<std::string, std::string> constDefinitions;
@@ -102,6 +57,20 @@ class LTLTranslator {
   std::vector<std::string> propositions;
   std::string property_string;
   int current_noname_proposition = 1;
+
+  enum vulnerabilities {
+    IntegerOverflowUnderflow,
+    Reentrancy,
+    TimestampDependence,
+    SelfDestruction,
+    SkipEmptyStringLiteral,
+    UninitializedStorageVariable,
+    AlwaysLessThan,
+    AlwaysMoreThan,
+    IsConstant
+};
+
+  vulnerabilities getVulnerability(std::string vulnerability);
 
   /**
    * Create a map between the syntax of LTL operators and Helena
@@ -164,83 +133,71 @@ class LTLTranslator {
   std::string get_local_variable_placetype(const std::string& _name);
 
   /**
-   * Return the Helena code for the "Interger Overflow/Underflow" vulnerability
-   *
-   * @param min_threshold minimum threshold value
-   * @param max_threshold maximum threshold value
-   * @param variable variable being tested
+   * Return the Helena code for the "Integer Overflow/Underflow" vulnerability
+   * @param inputs a json file that holds the following params:
+        * 1. min_threshold minimum threshold value
+        * 2. max_threshold maximum threshold value
+        * 3. variable variable being tested
    * @return Helena code
    */
-  std::map<std::string, std::string> createUnderOverFlowVul(
-      const std::string& min_threshold, const std::string& max_threshold,
-      const std::string& variable);
-
+    std::map<std::string, std::string> detectUnderOverFlowVul(
+      nlohmann::json inputs);
+      
   /**
-   * Return the Helena code from an formula
-   *
-   * @param _formula Helena formula
-   * @return mapping of propositions and the property
-   */
-  std::map<std::string, std::string> createVulMapFromFormula(
-      const std::string& _formula);
-
-  /**
-   * Parse const definitions from Helena code
-   */
-  void handleConstDefinition();
-
-  /**
-   * Parse proposition definitions from Helena code
-   */
-  void handlePropositionDefinition();
-
-  /**
-   * Parse the expression inside a proposition from Helena code
-   *
-   * TODO: refactor since it's very complex
-   *
-   * @param _exp expression code
-   * @return parsed expression
-   */
-  std::string analysePropositionExpression(const std::string& _exp);
-
-  /**
-   * Convert an infix expression into a postfix one
-   *
-   * @param _exp expression code
-   * @return postfix expression code
-   */
-  static std::vector<std::string> infixToPostfixExpression(
-      const std::string& _exp);
-
-  /**
-   * Split an expression into a list its elements
-   *
-   * Example:
-   *
-   * ```cpp
-   *  std::string input = "(F(is_valid))";
-   *  std::vector<std::string> out = splitExpression(input);
-   *  output = {"(","F","(","is_valid",")",")"
-   * ```
-   *
-   * @param _exp expression
-   * @return list of elements
-   */
-  static std::vector<std::string> splitExpression(const std::string& _exp);
-
-  /**
-   * Parse property definitions from Helena code
-   */
-  void handlePropertyDefinition();
-
-  /**
-   * Parse an anonymous proposition
-   *
-   * @param _def expression containing the proposition
+   * Return the Helena code for the "Reentrancy" vulnerability
+   * @param inputs a json file that holds the following params:
+   * if contract is totally free:     
+        * variable: variable being tested
+   * if rival contract is available:
+        * rival contract:   
    * @return Helena code
    */
-  std::string handleNoNamePropositionDefinition(const std::string& _def);
+    std::map<std::string, std::string> detectReentrancy(
+    nlohmann::json inputs);
+
+    
+
+  /**
+   * Return the Helena code for the "TimestampDestruction" vulnerability
+   * @param inputs a json file that holds the following params:
+   * @return Helena code
+   */
+    std::map<std::string, std::string> detectTimestampDependance(
+    nlohmann::json inputs);
+
+  /**
+   * Return the Helena code for the "Skip Empty String Literal" vulnerability
+   * @param inputs a json file that holds the following params:
+   * @return Helena code
+   */
+    std::map<std::string, std::string> detectSkipEmptyStringLiteral(
+    nlohmann::json inputs);
+
+  /**
+   * Return the Helena code for the "Uninitialized Storage Variable" vulnerability
+   * @param inputs a json file that holds the following params:
+   * @return Helena code
+   */
+    std::map<std::string, std::string> detectUninitializedStorageVariable(
+    nlohmann::json inputs);
+
+  /**
+   * Return the Helena code for the "Self Destruction" vulnerability
+   * @param inputs a json file that holds the following params:
+        * @param variable variable being tested
+   * @return Helena code
+   */
+    std::map<std::string, std::string> detectSelfDestruction(
+    nlohmann::json inputs);
+ 
+
+    std::map<std::string, std::string> checkAlwaysLessThan(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkAlwaysMoreThan(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsConstant(nlohmann::json inputs);
+
+
 };
 
 }  // namespace LTL2PROP

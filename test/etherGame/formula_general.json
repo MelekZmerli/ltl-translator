@@ -1,7 +1,7 @@
 {
     "type": "general",
     "params": {
-        "name": "Interger Overflow/Underflow",
+        "name": "Integer Overflow/Underflow",
         "inputs": {
             "min_threshold": "0",
             "max_threshold": "65535",

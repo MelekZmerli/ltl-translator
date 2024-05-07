@@ -1,15 +1,13 @@
+#include "LTLtranslator.hpp"
 #include <CLI11.hpp>
 #include <fstream>
 #include <json.hpp>
+#include <regex>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "DCR.hpp"
-#include "Helena.hpp"
-#include "dcr2cpn.hpp"
-#include "unfolder.hpp"
 
 /**
  * Read a file from the filesystem
@@ -17,7 +15,7 @@
  * @param filename path to the file to be read
  * @return string buffer
  */
-std::stringstream read_file(const std::string &filename) {
+  std::stringstream read_file(const std::string &filename) {
   std::string new_line;
   std::stringstream text_stream;
   std::ifstream file_stream(filename);
@@ -54,30 +52,14 @@ nlohmann::json parse_json_file(const std::string &filename) {
  * @param content string to the be saved
  */
 void save_content(const std::string &filename, const std::string &content) {
-  std::ofstream output_file;
-  output_file.open(filename);
-  output_file << content;
-  output_file.close();
+
+      std::ofstream output_file(filename);
+      output_file << content;
+      output_file.close();  
 }
 
 int main(int argc, char **argv) {
-  CLI::App app{"Unfolding tool"};
-
-  std::string MODEL_LNA_FILE_PATH;
-  app.add_option("--lna", MODEL_LNA_FILE_PATH,
-                 "LNA file (.lna), output of solidity2cpn tool")
-      ->required()
-      ->check(CLI::ExistingFile);
-
-  std::string CONTEXT_FILE_PATH;
-  app.add_option("--context", CONTEXT_FILE_PATH,
-                 "CONTEXT file (.xml), context of model")
-      ->check(CLI::ExistingFile);
-
-  std::string CONTEXT_TYPE;
-  app.add_option("--context-type", CONTEXT_TYPE, "Context type")
-      ->check(CLI::IsMember({"DCR", "CPN", "FREE"}))
-      ->required();
+  CLI::App app{"LTLTranslator tool"};
 
   std::string LTL_FILE_PATH;
   app.add_option("--ltl", LTL_FILE_PATH,
@@ -85,22 +67,9 @@ int main(int argc, char **argv) {
       ->required()
       ->check(CLI::ExistingFile);
 
-  std::string AST_FILE_PATH;
-  app.add_option(
-         "--sol-ast", AST_FILE_PATH,
-         "AST file (.ast), output of solidity compiler in mode --ast-json")
-      ->required()
-      ->check(CLI::ExistingFile);
-
   std::string LNA_JSON_FILE_PATH;
   app.add_option("--lna-info", LNA_JSON_FILE_PATH,
                  "JSON file (.json), output of solidity2cpn tool")
-      ->required()
-      ->check(CLI::ExistingFile);
-
-  std::string IM_JSON_FILE_PATH;
-  app.add_option("--im", IM_JSON_FILE_PATH,
-                 "JSON file (.json), initial marking settings")
       ->required()
       ->check(CLI::ExistingFile);
 
@@ -121,41 +90,15 @@ int main(int argc, char **argv) {
   /****************************************************************************
    * READ FILES
    ****************************************************************************/
-  std::stringstream model_lna_text_stream = read_file(MODEL_LNA_FILE_PATH);
-  std::stringstream ast_text_stream = read_file(AST_FILE_PATH);
 
   nlohmann::json ltl_json = parse_json_file(LTL_FILE_PATH);
   nlohmann::json sol_json = parse_json_file(LNA_JSON_FILE_PATH);
-  nlohmann::json im_json = parse_json_file(IM_JSON_FILE_PATH);
 
-  /****************************************************************************
-   * PROCESS CONTEXT
-   ****************************************************************************/
-  HELENA::StructuredNetNodePtr context_net;
-  if (CONTEXT_TYPE == "DCR") {
-    DCR2CPN::DCRClass dcrClass = DCR2CPN::readDCRFromXML(CONTEXT_FILE_PATH);
-    DCR2CPN::Dcr2CpnTranslator contextTranslator =
-        DCR2CPN::Dcr2CpnTranslator(dcrClass);
-    context_net = contextTranslator.translate();
-  } else if (CONTEXT_TYPE == "CPN") {
-    std::stringstream context_text_stream = read_file(CONTEXT_FILE_PATH);
-    context_net = Unfolder::analyseLnaFile(context_text_stream);
-  } else {
-    // free context by default
-    context_net = std::make_shared<HELENA::StructuredNetNode>();
-  }
+  LTL2PROP::LTLTranslator ltl_translator = LTL2PROP::LTLTranslator(sol_json, ltl_json);
 
-  save_content(full_outpath + ".context.lna", context_net->source_code());
-
-  /****************************************************************************
-   * UNFOLD CPN MODEL AND PROPERTY
-   ****************************************************************************/
-  Unfolder unfolder = Unfolder(context_net, CONTEXT_TYPE, model_lna_text_stream,
-                               sol_json, ltl_json, im_json);
-  std::map<std::string, std::string> unfold_model = unfolder.unfoldModel();
-
-  save_content(full_outpath + ".lna", unfold_model["lna"]);
-  save_content(full_outpath + ".prop.lna", unfold_model["prop"]);
+  std::map<std::string, std::string> ltl_result = ltl_translator.translate();
+  save_content(full_outpath + ".prop.lna", ltl_result["property"]);
+  save_content(full_outpath + ".propositions.lna", ltl_result["propositions"]);
 
   return 0;
 }

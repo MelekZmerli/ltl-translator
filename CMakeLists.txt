@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(INSTALL_FOLDER ${CMAKE_SOURCE_DIR}/bin)
 
 # project information
-project(unfolding CXX)
+project(LTLTranslator CXX)
 
 # Third-party libraries
 add_subdirectory(third-party)
