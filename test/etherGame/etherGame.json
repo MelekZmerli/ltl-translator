@@ -2,49 +2,68 @@
 	"name": "EtherGame",
 	"globalVariables": [
 		{
-			"name": "payoutMileStone1",
-			"placeType": "STATE.payoutMileStone1"
+			"name": "payoutMileStone1"
 		},
 		{
-			"name": "mileStone1Reward",
-			"placeType": "STATE.mileStone1Reward"
+			"name": "mileStone1Reward"
 		},
 		{
-			"name": "payoutMileStone2",
-			"placeType": "STATE.payoutMileStone2"
+			"name": "payoutMileStone2"
 		},
 		{
-			"name": "mileStone2Reward",
-			"placeType": "STATE.mileStone2Reward"
+			"name": "mileStone2Reward"
 		},
 		{
-			"name": "finalMileStone",
-			"placeType": "STATE.finalMileStone"
+			"name": "finalMileStone"
 		},
 		{
-			"name": "finalReward",
-			"placeType": "STATE.finalReward"
+			"name": "finalReward"
 		},
 		{
-			"name": "redeemableEther",
-			"placeType": "STATE.redeemableEther"
+			"name": "redeemableEther"
 		}
 	],
-	"functions": [
+	"functions":[
 		{
-			"name": "play",
-			"arguments": [],
-			"localVariables": [
-				{
-					"name": "currentBalance",
-					"place": "PLAY_currentBalance"
-				}
-			]
+		"name":"func1",
+		"params":[]
 		},
 		{
-			"name": "claimReward",
-			"arguments": [],
-			"localVariables": []
+			"name":"func2",
+			"params":[]
+		},
+		{
+			"name":"func3",
+			"params":[]
 		}
-	]
+	],
+	"statements":{
+		"assignement":[
+			{"variable":"x",
+			"parent":"func1",
+			"output_place":"P_out",
+			"right_hand_variables":[],
+			"timestamp_place": true
+			},
+			{"variable":"y",
+			"parent":"func3",
+			"output_place":"P23_out",
+			"right_hand_variables":["x"]
+			}
+		],
+		"sending":[{
+			"variable":"variable_name",
+			"parent": "func1",
+			"output_place":"P_023"
+		}],
+		"functioncall":[{
+			"parent":"func0",
+			"function_name":"func1",
+			"output_place":"Pfunc_15"
+			},{
+			"parent":"func1",
+			"function_name":"func3",
+			"output_place":"Pfunc_15"
+			}]
+	}
 }
