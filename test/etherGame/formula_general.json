@@ -6,7 +6,9 @@
             "min_threshold": "0",
             "max_threshold": "65535",
             "selected_variable": "mileStone1Reward",
-            "rival_contract":""
+            "rival_variable": "",
+            "rival_contract":"",
+            "constant":""
         }
     }
 }

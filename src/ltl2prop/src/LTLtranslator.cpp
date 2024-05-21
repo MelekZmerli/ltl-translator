@@ -273,51 +273,114 @@ namespace LTL2PROP {
 
 
   std::map<std::string, std::string> LTLTranslator::checkAlwaysLessThan(nlohmann::json inputs){
-    std::string max_threshold = inputs.at("constant");
     std::string variable = inputs.at("selected_variable");
     result["property"] = "ltl property smaller: [] not more;";
 
-    if (is_global_variable(variable)) {
-      result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > " + max_threshold +");";
+    if(inputs.at("rival_variable").empty()){
+      std::string max_threshold = inputs.at("constant");
+      if (is_global_variable(variable)) {
+        result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > " + max_threshold +");";
+      }
+      else
+      {
+        std::string variable_place = local_variables[variable];
+        result["propositions"] = "proposition more: exists (t in "+ variable_place + " | (t->1)." + variable + " > " + max_threshold +");";
+      }
     }
-    else
-    {
-      std::string variable_place = local_variables[variable];
-      result["propositions"] = "proposition more: exists (t in "+ variable_place + " | (t->1)." + variable + " > " + max_threshold +");";
-    }
+    else {
+      std::string rival_variable = inputs.at("rival_variable");
+      if (is_global_variable(variable) && is_global_variable(rival_variable)) {
+        result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > (t->1)." + rival_variable +");";
+      }
+      else if(is_global_variable(variable)) {
+        std::string rival_variable_place = local_variables[rival_variable];
+        result["propositions"] = "proposition more: exists (t in S, t2 in "+ rival_variable_place + " | (t->1)." + variable + " > (t2->1)." + rival_variable +");";
+      }
+      else if(is_global_variable(rival_variable)) {
+        std::string variable_place = local_variables[variable];
+        result["propositions"] = "proposition more: exists (t in "+ variable_place + ", t2 in S | (t->1)." + variable + " > (t2->1)." + rival_variable +");";
+      }
+      else {
+        std::string variable_place = local_variables[variable];
+        std::string rival_variable_place = local_variables[rival_variable];
+        result["propositions"] = "proposition more: exists (t in "+ variable_place + ", t2 in "+ rival_variable_place +" | (t->1)." + variable + " > (t2->1)." + rival_variable +");";
+      }   
+    }  
     return result;
   }
 
 
   std::map<std::string, std::string> LTLTranslator::checkAlwaysMoreThan(nlohmann::json inputs){
-    std::string min_threshold = inputs.at("constant");
-    std::string variable = inputs.at("selected_variable");
     result["property"] = "ltl property bigger: [] not less;";
-
-    if (is_global_variable(variable)) {
-      result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < " + min_threshold +");";
+    std::string variable = inputs.at("selected_variable");
+    
+    if(inputs.at("rival_variable").empty()){
+      std::string min_threshold = inputs.at("constant");
+      if (is_global_variable(variable)) {
+        result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < " + min_threshold +");";
+      }
+      else
+      {
+        std::string variable_place = local_variables[variable];
+        result["propositions"] = "proposition less: exists (t in "+ variable_place + " | (t->1)." + variable + " < " + min_threshold +");";
+      }
     }
-    else
-    {
-      std::string variable_place = local_variables[variable];
-      result["propositions"] = "proposition less: exists (t in "+ variable_place + " | (t->1)." + variable + " < " + min_threshold +");";
-    }
+    else {
+      std::string rival_variable = inputs.at("rival_variable");
+      if (is_global_variable(variable) && is_global_variable(rival_variable)) {
+        result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < (t->1)." + rival_variable +");";
+      }
+      else if(is_global_variable(variable)) {
+        std::string rival_variable_place = local_variables[rival_variable];
+        result["propositions"] = "proposition less: exists (t in S, t2 in "+ rival_variable_place + " | (t->1)." + variable + " < (t2->1)." + rival_variable +");";
+      }
+      else if(is_global_variable(rival_variable)) {
+        std::string variable_place = local_variables[variable];
+        result["propositions"] = "proposition less: exists (t in "+ variable_place + ", t2 in S | (t->1)." + variable + " < (t2->1)." + rival_variable +");";
+      }
+      else {
+        std::string variable_place = local_variables[variable];
+        std::string rival_variable_place = local_variables[rival_variable];
+        result["propositions"] = "proposition less: exists (t in "+ variable_place + ", t2 in "+ rival_variable_place +" | (t->1)." + variable + " < (t2->1)." + rival_variable +");";
+      }   
+    }  
     return result;
   }
 
   std::map<std::string, std::string> LTLTranslator::checkIsConstant(nlohmann::json inputs) {
-    std::string constant = inputs.at("constant");
     std::string variable = inputs.at("selected_variable");
     result["property"] = "ltl property equals: [] not different;";
-
-    if (is_global_variable(variable)) {
-      result["propositions"] = "proposition different: exists (t in S | (t->1)." + variable + " != " + constant +");";
+    
+    if(inputs.at("rival_variable").empty()){
+      std::string constant = inputs.at("constant");
+      if (is_global_variable(variable)) {
+        result["propositions"] = "proposition different: exists (t in S | (t->1)." + variable + " != " + constant +");";
+      }
+      else
+      {
+        std::string variable_place = local_variables[variable];
+        result["propositions"] = "proposition different: exists (t in "+ variable_place + " | (t->1)." + variable + " != " + constant +");";
+      }
     }
-    else
-    {
-      std::string variable_place = local_variables[variable];
-      result["propositions"] = "proposition different: exists (t in "+ variable_place + " | (t->1)." + variable + " != " + constant +");";
+    else {
+      std::string rival_variable = inputs.at("rival_variable");
+      if (is_global_variable(variable) && is_global_variable(rival_variable)) {
+        result["propositions"] = "proposition different: exists (t in S | (t->1)." + variable + " != (t->1)." + rival_variable +");";
+      }
+      else if(is_global_variable(variable)) {
+        std::string rival_variable_place = local_variables[rival_variable];
+        result["propositions"] = "proposition different: exists (t in S, t2 in "+ rival_variable_place + " | (t->1)." + variable + " != (t2->1)." + rival_variable +");";
+      }
+      else if(is_global_variable(rival_variable)) {
+        std::string variable_place = local_variables[variable];
+        result["propositions"] = "proposition different: exists (t in "+ variable_place + ", t2 in S | (t->1)." + variable + " != (t2->1)." + rival_variable +");";
+      }
+      else {
+        std::string variable_place = local_variables[variable];
+        std::string rival_variable_place = local_variables[rival_variable];
+        result["propositions"] = "proposition different: exists (t in "+ variable_place + ", t2 in "+ rival_variable_place +" | (t->1)." + variable + " != (t2->1)." + rival_variable +");";
+      }   
     }
-    return result;
+    return result;  
   }
 }  // namespace LTL2PROP
