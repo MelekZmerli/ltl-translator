@@ -50,7 +50,7 @@ class LTLTranslator {
   nlohmann::json formula_json;
   nlohmann::json statements;
   std::map<std::string, std::string> local_variables;
-  std::map<std::string, std::string> global_variables;
+  std::list<std::string> global_variables;
   std::map<std::string, ASSIGNMENT> assignments;
   std::map<std::string, std::string> sendings;
   std::map<std::string, std::string> branchings;
@@ -108,13 +108,7 @@ class LTLTranslator {
    */
   bool is_global_variable(const std::string& _name) const;
 
-  /**
-   * Return the place modeling the global variable _name
-   *
-   * @param _name global variable
-   * @return name of the place
-   */
-  std::string get_global_variable_placetype(const std::string& _name);
+
 
   /**
    * Check if _name is a local variable

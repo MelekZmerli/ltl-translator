@@ -27,29 +27,29 @@ namespace LTL2PROP {
 
   void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
     // get global variables
-    for (const auto& global_var : lna_json.at("globalVariables")) {
-      global_variables[global_var.at("name")] = global_var.at("placeType");
+    for (const auto& global_var : lna_json.at("global_variables")) {
+      global_variables.push_back(global_var.at("name"));
     }
 
     // get local variables from functions
     for (const auto& function : lna_json.at("functions")) {
-      for (const auto& local_var : function.at("localVariables")) {
+      for (const auto& local_var : function.at("local_variables")) {
         local_variables[local_var.at("name")] = local_var.at("place");
       }
     }
 
     statements = lna_json.at("statements");
     // get assignments
-    for (const auto& assignment : statements.at("assignments")) {
+    for (const auto& assignment : statements.at("assignment")) {
       assignments[assignment.at("output_place")].variable = assignment.at("variable");
       assignments[assignment.at("output_place")].parent = assignment.at("parent");
-      assignments[assignment.at("output_place")].RHV.assign(assignment.at("right_hand_variables"));
+      // assignments[assignment.at("output_place")].RHV.assign(assignment.at("right_hand_variables"));
       assignments[assignment.at("output_place")].timestamp = assignment.at("timestamp");
 
     }
 
     // get sendings
-    for (const auto& sending : statements.at("sendings")) {
+    for (const auto& sending : statements.at("sending")) {
       sendings[sending.at("output_place")] = sending.at("variable");
     }
 
@@ -65,12 +65,7 @@ namespace LTL2PROP {
   }
 
   bool LTLTranslator::is_global_variable(const std::string& _name) const {
-    return global_variables.find(_name) != global_variables.end();
-  }
-
-  std::string LTLTranslator::get_global_variable_placetype(
-      const std::string& _name) {
-    return is_global_variable(_name) ? global_variables[_name] : "";
+    return (std::find(global_variables.begin(), global_variables.end(), _name) != global_variables.end());
   }
 
   bool LTLTranslator::is_local_variable(const std::string& _name) const {
@@ -153,7 +148,7 @@ namespace LTL2PROP {
         case(TimestampDependence):
           return detectTimestampDependance(inputs);
         case(SkipEmptyStringLiteral):
-          // return detectSkipEmptyStringLiteral(inputs);
+          return detectSkipEmptyStringLiteral(inputs);
         case(UninitializedStorageVariable):
           // return detectUninitializedStorageVariable(inputs);
         case(AlwaysLessThan):
@@ -211,7 +206,7 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(nlohmann::json inputs) {
-    if(timestamp_exists){
+    if(timestamp_exists()){
       std::string timestamp_place = get_timestamp_output_place();
       result["property"] = "ltl property tsindependant: [] not timestampstatement;";
       result["propositions"] = "property timestampstatement: "+ timestamp_place +"'card > 0";
@@ -228,6 +223,8 @@ namespace LTL2PROP {
     std::string min_threshold = inputs.at("min_threshold");
     std::string max_threshold = inputs.at("max_threshold");
     std::string variable = inputs.at("selected_variable");
+    std::cout << result["propositions"]<< std::endl;
+    std::cout << result["property"] << std::endl; 
     result["property"] = "ltl property outOfRange: [] ( not OUFlow ) ;";
     if (is_global_variable(variable)) {
       result["propositions"] = "proposition OUFlow: exists (t in S | (t->1)." + variable + " < " + min_threshold +") or exists (t in S | (t->1)." + variable + " > " + max_threshold + ");";
@@ -246,7 +243,7 @@ namespace LTL2PROP {
 
   }
 
-  std::map<std::string, std::string> detectSkipEmptyStringLiteral(nlohmann::json inputs){
+  std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(nlohmann::json inputs){
       std::string function = inputs.at("selected_function");
       result["property"] = "ltl property skipempty: [] not emptyparam;";
       result["propositions"] = "exists (t in " + function + "_PAR | ((t->1)'space > 0) and ((t->1)'last'card > 0));";

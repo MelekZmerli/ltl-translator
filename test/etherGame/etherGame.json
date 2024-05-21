@@ -1,6 +1,6 @@
 {
 	"name": "EtherGame",
-	"globalVariables": [
+	"global_variables": [
 		{
 			"name": "payoutMileStone1"
 		},
@@ -41,7 +41,7 @@
 		}
 	],
 	"statements":{
-		"assignement":[
+		"assignment":[
 			{"variable":"x",
 			"parent":"func1",
 			"output_place":"P_out",
