@@ -40,12 +40,18 @@ class LTLTranslator {
       const std::string& _formula);
 
  private:
-  std::map<std::string, std::string> result;
+  struct ASSIGNMENT{
+     std::string variable;
+     std::string parent;
+	std::list<std::string> RHV;
+	bool	timestamp;
+  };
+  std::map<std::string, std::string> result = { {"property", ""}, {"propositions", ""}};
   nlohmann::json formula_json;
   nlohmann::json statements;
   std::map<std::string, std::string> local_variables;
   std::map<std::string, std::string> global_variables;
-  std::map<std::string, std::string> assignments;
+  std::map<std::string, ASSIGNMENT> assignments;
   std::map<std::string, std::string> sendings;
   std::map<std::string, std::string> branchings;
   std::map<std::string, std::string> function_calls;
@@ -195,6 +201,9 @@ class LTLTranslator {
     std::string get_assignment_output_place(std::string variable);
     std::string get_branching_output_place(std::string variable);
     std::string get_function_call_output_place(std::string function_name);
+    std::string get_timestamp_output_place();
+    bool timestamp_exists();
+
 };
 
 }  // namespace LTL2PROP

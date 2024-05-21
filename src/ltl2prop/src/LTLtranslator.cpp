@@ -41,7 +41,11 @@ namespace LTL2PROP {
     statements = lna_json.at("statements");
     // get assignments
     for (const auto& assignment : statements.at("assignments")) {
-      assignments[assignment.at("output_place")] = assignment.at("variable");
+      assignments[assignment.at("output_place")].variable = assignment.at("variable");
+      assignments[assignment.at("output_place")].parent = assignment.at("parent");
+      assignments[assignment.at("output_place")].RHV.assign(assignment.at("right_hand_variables"));
+      assignments[assignment.at("output_place")].timestamp = assignment.at("timestamp");
+
     }
 
     // get sendings
@@ -88,7 +92,7 @@ namespace LTL2PROP {
 
   std::string LTLTranslator::get_assignment_output_place(std::string variable){
     for (const auto& assignment: assignments) {
-      if (assignment.second == variable){
+      if (assignment.second.variable == variable){
           return assignment.first;
         }
       }      
@@ -110,6 +114,24 @@ namespace LTL2PROP {
       }     
   }
 
+  std::string LTLTranslator::get_timestamp_output_place(){
+    for (const auto& assignment: assignments) {
+      if (assignment.second.timestamp){
+        return assignment.first;
+      }
+    }
+    return "";     
+  }
+
+  bool LTLTranslator::timestamp_exists(){
+    for (const auto& assignment: assignments) {
+      if (assignment.second.timestamp){
+        return true;
+      }
+    }
+    return false;     
+
+  }
   std::map<std::string, std::string> LTLTranslator::translate() {
     // get the type of formula : general or specific
     std::string formula_type = formula_json.at("type");
@@ -129,7 +151,7 @@ namespace LTL2PROP {
         case(Reentrancy):
           return detectReentrancy(inputs);
         case(TimestampDependence):
-          // return detectTimestampDependance(inputs);
+          return detectTimestampDependance(inputs);
         case(SkipEmptyStringLiteral):
           // return detectSkipEmptyStringLiteral(inputs);
         case(UninitializedStorageVariable):
@@ -146,6 +168,7 @@ namespace LTL2PROP {
     // throw an exception since the type cannot be handled
     throw std::runtime_error("formula type " + vulnerability_name + " is not handled by LTLTranslator");
   }
+  
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(nlohmann::json inputs) {
     std::string branching_output_place = get_branching_output_place(inputs.at("selected_variable"));
 
@@ -163,6 +186,7 @@ namespace LTL2PROP {
                                 proposition selfdestruct:"+ function_call_output_place +"'card > 0; \
                                 proposition start: ??????;"; // TODO: start proposition
     }
+    return result;
   }
 
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(nlohmann::json inputs) {
@@ -183,7 +207,20 @@ namespace LTL2PROP {
       result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0 \
                                 proposition end_fallback: " + fallback_output_place + "'card > 0";
     }
+    return result;
+  }
+
+  std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(nlohmann::json inputs) {
+    if(timestamp_exists){
+      std::string timestamp_place = get_timestamp_output_place();
+      result["property"] = "ltl property tsindependant: [] not timestampstatement;";
+      result["propositions"] = "property timestampstatement: "+ timestamp_place +"'card > 0";
+    }
+    else {
+      result["property"] = "ltl property tsindependant: true;";
+    }
     
+    return result;
   }
 
 
@@ -213,6 +250,8 @@ namespace LTL2PROP {
       std::string function = inputs.at("selected_function");
       result["property"] = "ltl property skipempty: [] not emptyparam;";
       result["propositions"] = "exists (t in " + function + "_PAR | ((t->1)'space > 0) and ((t->1)'last'card > 0));";
+      return result;
+
   }
 
 
@@ -229,6 +268,7 @@ namespace LTL2PROP {
       std::string variable_place = local_variables[variable];
       result["propositions"] = "proposition more: exists (t in "+ variable_place + " | (t->1)." + variable + " > " + max_threshold +");";
     }
+    return result;
   }
 
 
@@ -245,6 +285,7 @@ namespace LTL2PROP {
       std::string variable_place = local_variables[variable];
       result["propositions"] = "proposition less: exists (t in "+ variable_place + " | (t->1)." + variable + " < " + min_threshold +");";
     }
+    return result;
   }
 
   std::map<std::string, std::string> LTLTranslator::checkIsConstant(nlohmann::json inputs) {
@@ -260,5 +301,6 @@ namespace LTL2PROP {
       std::string variable_place = local_variables[variable];
       result["propositions"] = "proposition different: exists (t in "+ variable_place + " | (t->1)." + variable + " != " + constant +");";
     }
+    return result;
   }
 }  // namespace LTL2PROP

@@ -46,24 +46,28 @@
 			"parent":"func1",
 			"output_place":"P_out",
 			"right_hand_variables":[],
-			"timestamp_place": true
+			"timestamp": true
 			},
 			{"variable":"y",
 			"parent":"func3",
 			"output_place":"P23_out",
-			"right_hand_variables":["x"]
+			"right_hand_variables":["x"],
+			"timestamp": false
 			}
 		],
 		"sending":[{
 			"variable":"variable_name",
 			"parent": "func1",
-			"output_place":"P_023"
+			"output_place":"P_023",
+			"timestamp": false
 		}],
-		"function_call":[{
+		"function_call":[
+			{
 			"parent":"func0",
 			"function_name":"func1",
 			"output_place":"Pfunc_15"
-			},{
+			},
+			{
 			"parent":"func1",
 			"function_name":"func3",
 			"output_place":"Pfunc_15"
