@@ -11,14 +11,6 @@ namespace LTL2PROP {
 
 
 /**
- * Return the precedence level of an operator
- *
- * @param _op operator
- * @return precedence level
- */
-int precedence_of_op(const std::string& _op);
-
-/**
  * @brief Class encapsulating the parser from LTL to Helena
  */
 class LTLTranslator {
@@ -48,15 +40,10 @@ class LTLTranslator {
       const std::string& _formula);
 
  private:
+  std::map<std::string, std::string> result;
   nlohmann::json formula_json;
-  std::list<std::string> ltl_lines;
-  std::list<std::string>::iterator ptr_ltl_line;
-  std::map<std::string, std::string> constDefinitions;
   std::map<std::string, std::string> local_variables;
   std::map<std::string, std::string> global_variables;
-  std::vector<std::string> propositions;
-  std::string property_string;
-  int current_noname_proposition = 1;
 
   enum vulnerabilities {
     IntegerOverflowUnderflow,

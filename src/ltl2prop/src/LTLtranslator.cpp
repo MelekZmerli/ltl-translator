@@ -74,7 +74,7 @@ std::map<std::string, std::string> LTLTranslator::translate() {
       case(IntegerOverflowUnderflow):
         return detectUnderOverFlowVul(inputs);
       case(SelfDestruction):
-        // return detectSelfDestruction(inputs);
+        return detectSelfDestruction(inputs);
       case(Reentrancy):
         // return detectReentrancy(inputs);
       case(TimestampDependence):
@@ -84,16 +84,20 @@ std::map<std::string, std::string> LTLTranslator::translate() {
       case(UninitializedStorageVariable):
         // return detectUninitializedStorageVariable(inputs);
       case(AlwaysLessThan):
-        return checkAlwaysLessThan(inputs);
+        return checkAlwaysLessThan(inputs); // TODO: add variable 2 case
       case(AlwaysMoreThan):
-        return checkAlwaysLessThan(inputs);
+        return checkAlwaysLessThan(inputs); // TODO: add variable 2 case
       case(IsConstant):
-        return checkIsConstant(inputs);
+        return checkIsConstant(inputs); // TODO: add variable 2 case
     }
   }
 
   // throw an exception since the type cannot be handled
   throw std::runtime_error("formula type " + vulnerability_name + " is not handled by LTLTranslator");
+}
+std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(nlohmann::json inputs) {
+      std::map<std::string, std::string> result;
+
 }
 
 std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(nlohmann::json inputs) {
