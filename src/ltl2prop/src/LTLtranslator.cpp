@@ -78,6 +78,38 @@ namespace LTL2PROP {
     return is_local_variable(_name) ? local_variables[_name] : "";
   }
 
+  std::string LTLTranslator::get_sending_output_place(std::string variable){
+    for (const auto& sending: sendings) {
+      if (sending.second == variable){
+          return sending.first;
+        }
+      }      
+  }
+
+  std::string LTLTranslator::get_assignment_output_place(std::string variable){
+    for (const auto& assignment: assignments) {
+      if (assignment.second == variable){
+          return assignment.first;
+        }
+      }      
+  }
+
+  std::string LTLTranslator::get_branching_output_place(std::string variable){
+    for (const auto& branching: branchings) {
+      if (branching.second == variable){
+          return branching.first;
+        }
+      }      
+  }
+
+  std::string LTLTranslator::get_function_call_output_place(std::string function_name){
+    for (const auto& function_call: function_calls) {
+      if (function_call.second == function_name){
+          return function_call.first;
+        }
+      }     
+  }
+
   std::map<std::string, std::string> LTLTranslator::translate() {
     // get the type of formula : general or specific
     std::string formula_type = formula_json.at("type");
@@ -115,26 +147,21 @@ namespace LTL2PROP {
     throw std::runtime_error("formula type " + vulnerability_name + " is not handled by LTLTranslator");
   }
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(nlohmann::json inputs) {
+    std::string branching_output_place = get_branching_output_place(inputs.at("selected_variable"));
+
     // First Formula 
     if (inputs.at("rival_contract").empty()){
-      std::string output_place;
-      for (const auto& branching : sendings) {
-        if (branching.second == inputs.at("selected_variable")){
-          output_place = branching.first;
-          break;
-        }
-      }      
-    
       result["property"] = "ltl property selfdestruction: not testonbalance";
-      result["proposition"] = "proposition testonbalance:  "+ output_place +"'card > 0";
+      result["proposition"] = "proposition testonbalance:  "+ branching_output_place +"'card > 0;";
     }
     // Second Formula
     else{
-      
+      std::string function_call_output_place = get_function_call_output_place("selfdestruct");
+
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
-      result["propositions"] = "proposition testonbalance: branching_statement_output(balance)'card > 0 \
-                                proposition selfdestruct: function_call_statement_output(seldfdestruct)'card > 0 \
-                                proposition start: ??????";
+      result["propositions"] = "proposition testonbalance:"+ branching_output_place +"'card > 0; \
+                                proposition selfdestruct:"+ function_call_output_place +"'card > 0; \
+                                proposition start: ??????"; // TODO: start proposition
     }
   }
 

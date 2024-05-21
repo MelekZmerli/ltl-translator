@@ -191,7 +191,10 @@ class LTLTranslator {
 
     std::map<std::string, std::string> checkIsConstant(nlohmann::json inputs);
 
-
+    std::string get_sending_output_place(std::string variable);
+    std::string get_assignment_output_place(std::string variable);
+    std::string get_branching_output_place(std::string variable);
+    std::string get_function_call_output_place(std::string function_name);
 };
 
 }  // namespace LTL2PROP
