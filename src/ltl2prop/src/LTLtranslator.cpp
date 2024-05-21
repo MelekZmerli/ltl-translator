@@ -43,7 +43,7 @@ namespace LTL2PROP {
     for (const auto& assignment : statements.at("assignment")) {
       assignments[assignment.at("output_place")].variable = assignment.at("variable");
       assignments[assignment.at("output_place")].parent = assignment.at("parent");
-      // assignments[assignment.at("output_place")].RHV.assign(assignment.at("right_hand_variables"));
+      assignments[assignment.at("output_place")].RHV = assignment["right_hand_variables"].get<std::list<std::string>>();
       assignments[assignment.at("output_place")].timestamp = assignment.at("timestamp");
 
     }
