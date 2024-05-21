@@ -127,6 +127,18 @@ namespace LTL2PROP {
     return false;     
 
   }
+
+  std::string LTLTranslator::get_read_output_place(std::string variable){
+    for (const auto& assignment: assignments) {
+      for (const auto& RHVariable: assignment.second.RHV){
+        if (RHVariable == variable){
+          return assignment.first;
+        } 
+      }
+    }
+    return "";     
+  }
+
   std::map<std::string, std::string> LTLTranslator::translate() {
     // get the type of formula : general or specific
     std::string formula_type = formula_json.at("type");
@@ -150,7 +162,7 @@ namespace LTL2PROP {
         case(SkipEmptyStringLiteral):
           return detectSkipEmptyStringLiteral(inputs);
         case(UninitializedStorageVariable):
-          // return detectUninitializedStorageVariable(inputs);
+          return detectUninitializedStorageVariable(inputs);
         case(AlwaysLessThan):
           return checkAlwaysLessThan(inputs); // TODO: add variable 2 case
         case(AlwaysMoreThan):
@@ -218,6 +230,14 @@ namespace LTL2PROP {
     return result;
   }
 
+  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(nlohmann::json inputs) {
+    std::string write_output_place = get_assignment_output_place(inputs.at("selected_variable"));
+    std::string read_output_place = get_read_output_place(inputs.at("selected_variable"));
+
+    result["property"] = "ltl property usv: not read until write;";
+    result["propostions"] = "proposition read: exists(t in " + read_output_place + ") | (t->1).X'card > 0) \
+                             proposition write: exists(t in " + write_output_place +" | (t->1).X'card > 0)";
+  }
 
   std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(nlohmann::json inputs) {
     std::string min_threshold = inputs.at("min_threshold");

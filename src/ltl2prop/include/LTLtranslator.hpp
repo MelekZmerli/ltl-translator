@@ -196,7 +196,9 @@ class LTLTranslator {
     std::string get_branching_output_place(std::string variable);
     std::string get_function_call_output_place(std::string function_name);
     std::string get_timestamp_output_place();
+    std::string LTLTranslator::get_read_output_place(std::string variable);
     bool timestamp_exists();
+    
 
 };
 
