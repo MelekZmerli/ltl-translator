@@ -25,16 +25,19 @@
 	],
 	"functions":[
 		{
-		"name":"func1",
-		"params":[]
+			"name":"func1",
+			"params":[],
+			"local_variables":[]
 		},
 		{
 			"name":"func2",
-			"params":[]
+			"params":[],
+			"local_variables":[]
 		},
 		{
 			"name":"func3",
-			"params":[]
+			"params":[],
+			"local_variables":[]
 		}
 	],
 	"statements":{
@@ -56,7 +59,7 @@
 			"parent": "func1",
 			"output_place":"P_023"
 		}],
-		"functioncall":[{
+		"function_call":[{
 			"parent":"func0",
 			"function_name":"func1",
 			"output_place":"Pfunc_15"
@@ -64,6 +67,11 @@
 			"parent":"func1",
 			"function_name":"func3",
 			"output_place":"Pfunc_15"
+			}],
+		"branching":[{
+				"variable":"variable_name",
+				"parent": "func1",
+				"output_place":"P_023"
 			}]
 	}
 }

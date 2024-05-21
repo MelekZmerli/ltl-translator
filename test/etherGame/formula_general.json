@@ -5,7 +5,8 @@
         "inputs": {
             "min_threshold": "0",
             "max_threshold": "65535",
-            "selected_variable": "mileStone1Reward"
+            "selected_variable": "mileStone1Reward",
+            "rival_contract":""
         }
     }
 }

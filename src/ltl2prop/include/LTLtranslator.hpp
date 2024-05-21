@@ -42,8 +42,15 @@ class LTLTranslator {
  private:
   std::map<std::string, std::string> result;
   nlohmann::json formula_json;
+  nlohmann::json statements;
   std::map<std::string, std::string> local_variables;
   std::map<std::string, std::string> global_variables;
+  std::map<std::string, std::string> assignments;
+  std::map<std::string, std::string> sendings;
+  std::map<std::string, std::string> branchings;
+  std::map<std::string, std::string> function_calls;
+
+
 
   enum vulnerabilities {
     IntegerOverflowUnderflow,
