@@ -127,7 +127,7 @@ namespace LTL2PROP {
         case(SelfDestruction):
           return detectSelfDestruction(inputs);
         case(Reentrancy):
-          // return detectReentrancy(inputs);
+          return detectReentrancy(inputs);
         case(TimestampDependence):
           // return detectTimestampDependance(inputs);
         case(SkipEmptyStringLiteral):
@@ -161,9 +161,31 @@ namespace LTL2PROP {
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
       result["propositions"] = "proposition testonbalance:"+ branching_output_place +"'card > 0; \
                                 proposition selfdestruct:"+ function_call_output_place +"'card > 0; \
-                                proposition start: ??????"; // TODO: start proposition
+                                proposition start: ??????;"; // TODO: start proposition
     }
   }
+
+  std::map<std::string, std::string> LTLTranslator::detectReentrancy(nlohmann::json inputs) {
+    std::string sending_output_place = get_sending_output_place(inputs.at("selected_variable"));
+    // First version
+    if(inputs.at("rival_contract").empty()){
+      std::string assignment_output_place = get_assignment_output_place(inputs.at("selected_variable"));
+
+      result["property"] = "ltl property reentrancy1: [] ( not ( not assignment until sending) );";
+      result["propositions"] = "proposition assignment: (" + assignment_output_place +"’card > 0) \
+      proposition sending: ("+ sending_output_place +"’card > 0)";
+    }
+    // Second version
+    // TODO: find alternative to X operator 
+    else {
+      std::string fallback_output_place = get_function_call_output_place("fallback");
+      result["property"] = "ltl property reentrancy2: sending => X [] (( not sending) until end_fallback);";
+      result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0 \
+                                proposition end_fallback: " + fallback_output_place + "'card > 0";
+    }
+    
+  }
+
 
   std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(nlohmann::json inputs) {
     std::string min_threshold = inputs.at("min_threshold");
