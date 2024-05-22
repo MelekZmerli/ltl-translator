@@ -212,10 +212,10 @@ namespace LTL2PROP {
           return checkAlwaysEqual(inputs); 
         case(IsCalled):
           return checkIsCalled(inputs); 
-        // case(IsNeverCalled):
-        //   return checkIsNeverCalled(inputs); 
-        // case(IsExecuted):
-        //   return checkIsExecuted(inputs); 
+        case(IsNeverCalled):
+          return checkIsNeverCalled(inputs); 
+        case(IsExecuted):
+          return checkIsExecuted(inputs); 
         // case(IsNeverExecuted):
         //   return checkIsNeverExecuted(inputs); 
         // case(SequentialCall):
@@ -454,5 +454,13 @@ namespace LTL2PROP {
     return result;
   }  
 
-  
+  std::map<std::string, std::string> LTLTranslator::checkIsExecuted(nlohmann::json inputs) {
+    std::string function_name = inputs.at("selected_function");
+    std::string function_output_place = get_function_call_output_place(function_name);
+    result["property"] = "ltl property executed: funexec";
+    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0";
+    return result;
+  }  
+
+
 }  // namespace LTL2PROP
