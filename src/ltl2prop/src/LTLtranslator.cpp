@@ -23,6 +23,15 @@ namespace LTL2PROP {
     if (vulnerability == "Skip Empty String Literal") return SkipEmptyStringLiteral;
     if (vulnerability == "Uninitialized Storage Variable") return UninitializedStorageVariable;
     if (vulnerability == "Self Destruction") return SelfDestruction;
+    if (vulnerability == "Always Less Than") return AlwaysLessThan;
+    if (vulnerability == "Always More Than") return AlwaysMoreThan;
+    if (vulnerability == "Always Equal") return AlwaysEqual;
+    if (vulnerability == "Is Called") return IsCalled;
+    if (vulnerability == "Is Never Called") return IsNeverCalled;
+    if (vulnerability == "Is Executed") return IsExecuted;
+    if (vulnerability == "Is Never Executed") return IsNeverExecuted;
+    if (vulnerability == "Sequential Call") return SequentialCall;
+    if (vulnerability == "Infinite Loop") return InfiniteLoop;
     }
 
   void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
@@ -106,7 +115,8 @@ namespace LTL2PROP {
       if (function_call.second == function_name){
           return function_call.first;
         }
-      }     
+    }
+    throw(function_name);  
   }
 
   std::string LTLTranslator::get_timestamp_output_place(){
@@ -149,7 +159,6 @@ namespace LTL2PROP {
     // parse a general vulnerability formula
     if (formula_type == "general") {
 
-
       switch(LTLTranslator::getVulnerability(vulnerability_name)){
         case(IntegerOverflowUnderflow):
           return detectUnderOverFlowVul(inputs);
@@ -164,11 +173,23 @@ namespace LTL2PROP {
         case(UninitializedStorageVariable):
           return detectUninitializedStorageVariable(inputs);
         case(AlwaysLessThan):
-          return checkAlwaysLessThan(inputs); // TODO: add variable 2 case
+          return checkAlwaysLessThan(inputs); 
         case(AlwaysMoreThan):
-          return checkAlwaysLessThan(inputs); // TODO: add variable 2 case
-        case(IsConstant):
-          return checkIsConstant(inputs); // TODO: add variable 2 case
+          return checkAlwaysLessThan(inputs); 
+        case(AlwaysEqual):
+          return checkAlwaysEqual(inputs); 
+        case(IsCalled):
+          return checkIsCalled(inputs); 
+        case(IsNeverCalled):
+          return checkIsNeverCalled(inputs); 
+        case(IsExecuted):
+          return checkIsExecuted(inputs); 
+        case(IsNeverExecuted):
+          return checkIsNeverExecuted(inputs); 
+        case(SequentialCall):
+          return checkIsSequential(inputs); 
+        case(InfiniteLoop):
+          return checkIsInfinite(inputs); 
       }
     }
 
@@ -195,26 +216,31 @@ namespace LTL2PROP {
     }
     return result;
   }
-
+  // TODO: Error handling
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(nlohmann::json inputs) {
-    std::string sending_output_place = get_sending_output_place(inputs.at("selected_variable"));
-    // First version
-    if(inputs.at("rival_contract").empty()){
-      std::string assignment_output_place = get_assignment_output_place(inputs.at("selected_variable"));
+    try {
+      std::string sending_output_place = get_sending_output_place(inputs.at("selected_variable"));
+      // First version
+      if(inputs.at("rival_contract").empty()){
+        std::string assignment_output_place = get_assignment_output_place(inputs.at("selected_variable"));
 
-      result["property"] = "ltl property reentrancy1: [] ( not ( not assignment until sending) );";
-      result["propositions"] = "proposition assignment: (" + assignment_output_place +"’card > 0) \
-      proposition sending: ("+ sending_output_place +"’card > 0)";
+        result["property"] = "ltl property reentrancy: [] ( not ( not assignment until sending) );";
+        result["propositions"] = "proposition assignment: (" + assignment_output_place +"'card > 0) \
+        proposition sending: ("+ sending_output_place +"'card > 0)";
+      }
+      // Second version
+      // TODO: find alternative to X operator 
+      else {
+        std::string fallback_output_place = get_function_call_output_place("fallback");
+        result["property"] = "ltl property reentrancy: sending => X [] (( not sending) until end_fallback);";
+        result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0 \
+                                  proposition end_fallback: " + fallback_output_place + "'card > 0";
+      }
+      return result;
     }
-    // Second version
-    // TODO: find alternative to X operator 
-    else {
-      std::string fallback_output_place = get_function_call_output_place("fallback");
-      result["property"] = "ltl property reentrancy2: sending => X [] (( not sending) until end_fallback);";
-      result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0 \
-                                proposition end_fallback: " + fallback_output_place + "'card > 0";
+    catch(std::string e) {
+      std::cerr << "There is no function call of function: " << e << '\n';
     }
-    return result;
   }
 
   std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(nlohmann::json inputs) {
@@ -226,7 +252,6 @@ namespace LTL2PROP {
     else {
       result["property"] = "ltl property tsindependant: true;";
     }
-    
     return result;
   }
 
@@ -243,8 +268,6 @@ namespace LTL2PROP {
     std::string min_threshold = inputs.at("min_threshold");
     std::string max_threshold = inputs.at("max_threshold");
     std::string variable = inputs.at("selected_variable");
-    std::cout << result["propositions"]<< std::endl;
-    std::cout << result["property"] << std::endl; 
     result["property"] = "ltl property outOfRange: [] ( not OUFlow ) ;";
     if (is_global_variable(variable)) {
       result["propositions"] = "proposition OUFlow: exists (t in S | (t->1)." + variable + " < " + min_threshold +") or exists (t in S | (t->1)." + variable + " > " + max_threshold + ");";
@@ -257,8 +280,6 @@ namespace LTL2PROP {
       result["propositions"] = "proposition OUFlow: exists (t in "+ variable_place + " | (t->1)." + variable + " < " + min_threshold +") or exists (t in "+ variable_place \
       +" | (t->1)." + variable + " > " + max_threshold + ");";
     }
-    std::cout << result["propositions"]<< std::endl;
-    std::cout << result["property"];
     return result;
 
   }
@@ -347,7 +368,7 @@ namespace LTL2PROP {
     return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::checkIsConstant(nlohmann::json inputs) {
+  std::map<std::string, std::string> LTLTranslator::checkAlwaysEqual(nlohmann::json inputs) {
     std::string variable = inputs.at("selected_variable");
     result["property"] = "ltl property equals: [] not different;";
     

@@ -1,14 +1,14 @@
 {
     "type": "general",
     "params": {
-        "name": "Integer Overflow/Underflow",
+        "name": "Reentrancy",
         "inputs": {
             "min_threshold": "0",
             "max_threshold": "65535",
             "selected_variable": "mileStone1Reward",
-            "rival_variable": "",
+            "rival_variable": null,
             "rival_contract":"",
-            "constant":""
+            "constant":null
         }
     }
 }

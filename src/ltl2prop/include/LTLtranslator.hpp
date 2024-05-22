@@ -40,7 +40,7 @@ class LTLTranslator {
       const std::string& _formula);
 
  private:
-  struct ASSIGNMENT{
+  struct AssignmentStatement{
      std::string variable;
      std::string parent;
 	std::list<std::string> RHV;
@@ -51,7 +51,7 @@ class LTLTranslator {
   nlohmann::json statements;
   std::map<std::string, std::string> local_variables;
   std::list<std::string> global_variables;
-  std::map<std::string, ASSIGNMENT> assignments;
+  std::map<std::string, AssignmentStatement> assignments;
   std::map<std::string, std::string> sendings;
   std::map<std::string, std::string> branchings;
   std::map<std::string, std::string> function_calls;
@@ -67,7 +67,13 @@ class LTLTranslator {
     UninitializedStorageVariable,
     AlwaysLessThan,
     AlwaysMoreThan,
-    IsConstant
+    AlwaysEqual,
+    IsCalled,
+    IsNeverCalled,
+    IsExecuted,
+    IsNeverExecuted,
+    SequentialCall,
+    InfiniteLoop,
 };
 
   vulnerabilities getVulnerability(std::string vulnerability);
@@ -189,14 +195,28 @@ class LTLTranslator {
 
     std::map<std::string, std::string> checkAlwaysMoreThan(nlohmann::json inputs);
 
-    std::map<std::string, std::string> checkIsConstant(nlohmann::json inputs);
+    std::map<std::string, std::string> checkAlwaysEqual(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsCalled(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsNeverCalled(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsExecuted(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsNeverExecuted(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsSequential(nlohmann::json inputs);
+
+    std::map<std::string, std::string> checkIsInfinite(nlohmann::json inputs);
+
+
 
     std::string get_sending_output_place(std::string variable);
     std::string get_assignment_output_place(std::string variable);
     std::string get_branching_output_place(std::string variable);
     std::string get_function_call_output_place(std::string function_name);
     std::string get_timestamp_output_place();
-    std::string LTLTranslator::get_read_output_place(std::string variable);
+    std::string get_read_output_place(std::string variable);
     bool timestamp_exists();
     
 
