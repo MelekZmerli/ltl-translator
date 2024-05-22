@@ -445,4 +445,14 @@ namespace LTL2PROP {
     result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0";
     return result;
   }  
+  
+  std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(nlohmann::json inputs) {
+    std::string function_name = inputs.at("selected_function");
+    std::string function_input_place = get_function_call_input_place(function_name);
+    result["property"] = "ltl property uncalled: [] not funcall";
+    result["propositions"] = "proposition funcall: "+ function_input_place + "'card > 0";
+    return result;
+  }  
+
+  
 }  // namespace LTL2PROP
