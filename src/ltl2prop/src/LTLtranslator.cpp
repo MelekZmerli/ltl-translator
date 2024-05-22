@@ -462,5 +462,12 @@ namespace LTL2PROP {
     return result;
   }  
 
+  std::map<std::string, std::string> LTLTranslator::checkIsNeverExecuted(nlohmann::json inputs) {
+    std::string function_name = inputs.at("selected_function");
+    std::string function_output_place = get_function_call_output_place(function_name);
+    result["property"] = "ltl property executed: G not funexec";
+    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0";
+    return result;
+  }  
 
 }  // namespace LTL2PROP
