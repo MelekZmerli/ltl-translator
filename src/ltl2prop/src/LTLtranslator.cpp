@@ -216,10 +216,10 @@ namespace LTL2PROP {
           return checkIsNeverCalled(inputs); 
         case(IsExecuted):
           return checkIsExecuted(inputs); 
-        // case(IsNeverExecuted):
-        //   return checkIsNeverExecuted(inputs); 
-        // case(SequentialCall):
-        //   return checkIsSequential(inputs); 
+        case(IsNeverExecuted):
+          return checkIsNeverExecuted(inputs); 
+        case(SequentialCall):
+          return checkIsSequential(inputs); 
         // case(InfiniteLoop):
         //   return checkIsInfinite(inputs); 
       }
@@ -469,5 +469,18 @@ namespace LTL2PROP {
     result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0";
     return result;
   }  
+
+  std::map<std::string, std::string> LTLTranslator::checkIsSequential(nlohmann::json inputs) {
+    std::string function_name = inputs.at("selected_function");
+    std::string rival_function = inputs.at("rival_function");
+    std::string function_input_place = get_function_call_input_place(function_name);
+    std::string rival_function_input_place = get_function_call_input_place(rival_function);
+
+    result["property"] = "property sequential: [] funcallA => F funcallB";
+    result["propositions"] = "proposition funcallA: " + function_input_place + "'card > 0;\
+                              proposition funcallB: " + rival_function_input_place + "'card > 0;";
+    return result;
+  }  
+
 
 }  // namespace LTL2PROP
