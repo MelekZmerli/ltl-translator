@@ -220,8 +220,8 @@ namespace LTL2PROP {
           return checkIsNeverExecuted(inputs); 
         case(SequentialCall):
           return checkIsSequential(inputs); 
-        // case(InfiniteLoop):
-        //   return checkIsInfinite(inputs); 
+        case(InfiniteLoop):
+          return checkIsInfinite(inputs); 
       }
     }
 
@@ -234,7 +234,7 @@ namespace LTL2PROP {
 
     // First Formula 
     if (inputs.at("rival_contract").empty()){
-      result["property"] = "ltl property selfdestruction: not testonbalance";
+      result["property"] = "ltl property selfdestruction: not testonbalance;";
       result["proposition"] = "proposition testonbalance:  "+ branching_output_place +"'card > 0;";
     }
     // Second Formula
@@ -257,16 +257,16 @@ namespace LTL2PROP {
         std::string assignment_output_place = get_assignment_output_place(inputs.at("selected_variable"));
 
         result["property"] = "ltl property reentrancy: [] ( not ( not assignment until sending) );";
-        result["propositions"] = "proposition assignment: (" + assignment_output_place +"'card > 0) \
-        proposition sending: ("+ sending_output_place +"'card > 0)";
+        result["propositions"] = "proposition assignment: (" + assignment_output_place +"'card > 0); \
+        proposition sending: ("+ sending_output_place +"'card > 0);";
       }
       // Second version
       // TODO: find alternative to X operator 
       else {
         std::string fallback_output_place = get_function_call_output_place("fallback");
         result["property"] = "ltl property reentrancy: sending => X [] (( not sending) until end_fallback);";
-        result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0 \
-                                  proposition end_fallback: " + fallback_output_place + "'card > 0";
+        result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0; \
+                                  proposition end_fallback: " + fallback_output_place + "'card > 0;";
       }
       return result;
     }
@@ -279,7 +279,7 @@ namespace LTL2PROP {
     if(timestamp_exists()){
       std::string timestamp_place = get_timestamp_output_place();
       result["property"] = "ltl property tsindependant: [] not timestampstatement;";
-      result["propositions"] = "property timestampstatement: "+ timestamp_place +"'card > 0";
+      result["propositions"] = "property timestampstatement: "+ timestamp_place +"'card > 0;";
     }
     else {
       result["property"] = "ltl property tsindependant: true;";
@@ -292,8 +292,8 @@ namespace LTL2PROP {
     std::string read_output_place = get_read_output_place(inputs.at("selected_variable"));
 
     result["property"] = "ltl property usv: not read until write;";
-    result["propostions"] = "proposition read: exists(t in " + read_output_place + ") | (t->1).X'card > 0) \
-                             proposition write: exists(t in " + write_output_place +" | (t->1).X'card > 0)";
+    result["propostions"] = "proposition read: exists(t in " + read_output_place + ") | (t->1).X'card > 0); \
+                             proposition write: exists(t in " + write_output_place +" | (t->1).X'card > 0);";
   }
 
   std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(nlohmann::json inputs) {
@@ -303,7 +303,6 @@ namespace LTL2PROP {
     result["property"] = "ltl property outOfRange: [] ( not OUFlow ) ;";
     if (is_global_variable(variable)) {
       result["propositions"] = "proposition OUFlow: exists (t in S | (t->1)." + variable + " < " + min_threshold +") or exists (t in S | (t->1)." + variable + " > " + max_threshold + ");";
-    
     }
     else
     {
@@ -441,32 +440,32 @@ namespace LTL2PROP {
   std::map<std::string, std::string> LTLTranslator::checkIsCalled(nlohmann::json inputs) {
     std::string function_name = inputs.at("selected_function");
     std::string function_input_place = get_function_call_input_place(function_name);
-    result["property"] = "ltl property called: funcall";
-    result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0";
+    result["property"] = "ltl property called: funcall;";
+    result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0;";
     return result;
   }  
   
   std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(nlohmann::json inputs) {
     std::string function_name = inputs.at("selected_function");
     std::string function_input_place = get_function_call_input_place(function_name);
-    result["property"] = "ltl property uncalled: [] not funcall";
-    result["propositions"] = "proposition funcall: "+ function_input_place + "'card > 0";
+    result["property"] = "ltl property uncalled: [] not funcall;";
+    result["propositions"] = "proposition funcall: "+ function_input_place + "'card > 0;";
     return result;
   }  
 
   std::map<std::string, std::string> LTLTranslator::checkIsExecuted(nlohmann::json inputs) {
     std::string function_name = inputs.at("selected_function");
     std::string function_output_place = get_function_call_output_place(function_name);
-    result["property"] = "ltl property executed: funexec";
-    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0";
+    result["property"] = "ltl property executed: funexec;";
+    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
 
   std::map<std::string, std::string> LTLTranslator::checkIsNeverExecuted(nlohmann::json inputs) {
     std::string function_name = inputs.at("selected_function");
     std::string function_output_place = get_function_call_output_place(function_name);
-    result["property"] = "ltl property executed: G not funexec";
-    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0";
+    result["property"] = "ltl property executed: G not funexec;";
+    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
 
@@ -476,11 +475,24 @@ namespace LTL2PROP {
     std::string function_input_place = get_function_call_input_place(function_name);
     std::string rival_function_input_place = get_function_call_input_place(rival_function);
 
-    result["property"] = "property sequential: [] funcallA => F funcallB";
+    result["property"] = "property sequential: [] funcallA => F funcallB;";
     result["propositions"] = "proposition funcallA: " + function_input_place + "'card > 0;\
                               proposition funcallB: " + rival_function_input_place + "'card > 0;";
     return result;
   }  
+
+  std::map<std::string, std::string> LTLTranslator::checkIsInfinite(nlohmann::json inputs) {
+    std::string function_name = inputs.at("selected_function");
+    std::string function_input_place = get_function_call_input_place(function_name);
+    std::string function_output_place = get_function_call_output_place(function_name);
+
+
+    result["property"] = "ltl property infinite: funcall => G not funexec;";
+    result["propositions"] = "proposition funcall: " + function_input_place + "'card > 0;\
+                              proposition funexec: " + function_output_place + "'card > 0;";
+    return result;
+  }  
+  
 
 
 }  // namespace LTL2PROP
