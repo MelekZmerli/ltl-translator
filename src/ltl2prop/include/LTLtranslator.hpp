@@ -54,7 +54,6 @@ class LTLTranslator {
      std::string input_place;
      std::string parent;
      std::string output_place;
-	bool	timestamp;
   };
 
   struct BranchingStatement{

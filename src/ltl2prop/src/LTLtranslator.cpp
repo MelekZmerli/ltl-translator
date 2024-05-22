@@ -80,7 +80,6 @@ namespace LTL2PROP {
         .input_place = function_call.at("input_place"),
         .parent = function_call.at("parent"),
         .output_place = function_call.at("output_place"),
-        .timestamp = function_call.at("timestamp"),
       };
       function_calls.push_back(fcs);
     }
@@ -441,8 +440,9 @@ namespace LTL2PROP {
 
   std::map<std::string, std::string> LTLTranslator::checkIsCalled(nlohmann::json inputs) {
     std::string function_name = inputs.at("selected_function");
+    std::string function_input_place = get_function_call_input_place(function_name);
     result["property"] = "ltl property called: funcall";
-    result["propositions"] = "proposition funcall: func_input_place'card > 0";
+    result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0";
     return result;
   }  
 }  // namespace LTL2PROP
