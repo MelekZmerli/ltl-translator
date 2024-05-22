@@ -46,7 +46,7 @@
 			"variable":"x",
 			"input_place":"Pin_43",
 			"parent":"func1",
-			"output_place":"P_out",
+			"output_place":"P_out",		
 			"right_hand_variables":[],
 			"timestamp": true
 			},
@@ -56,7 +56,7 @@
 			"parent":"func3",
 			"output_place":"P23_out",
 			"right_hand_variables":["x"],
-			"timestamp": false
+			"timestamp": true
 			}
 		],
 		"sending":[{
@@ -64,7 +64,7 @@
 			"input_place":"Pin_5",
 			"parent": "func1",
 			"output_place":"P_023",
-			"timestamp": false
+			"timestamp": true
 		}],
 		"function_call":[
 			{
@@ -83,7 +83,8 @@
 				"variable":"variable_name",
 				"input_place":"Pin_15",
 				"parent": "func1",
-				"output_place":"P_023"
+				"output_place":"P_023",
+				"timestamp": true
 			}]
 	}
 }

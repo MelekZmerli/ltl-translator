@@ -152,14 +152,23 @@ namespace LTL2PROP {
     throw(function_name);  
   }
 
-  std::string LTLTranslator::get_timestamp_output_place(){
+  std::list<std::string> LTLTranslator::get_timestamp_places(){
+    std::list<std::string> timestamp_places;
     for (const auto& assignment: assignments) {
       if (assignment.timestamp){
-        return assignment.output_place;
+        timestamp_places.push_back(assignment.output_place);
       }
     }
-    return "";     
+
+    for (const auto& branching: branchings) {
+      if (branching.timestamp){
+        timestamp_places.push_back(branching.output_place);
+      }
+    }
+
+    return timestamp_places;     
   }
+
   // TODO: case timestamp doesn't exist: property is verified automatically ?
   bool LTLTranslator::timestamp_exists(){
     for (const auto& assignment: assignments) {
@@ -277,13 +286,26 @@ namespace LTL2PROP {
 
   std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(nlohmann::json inputs) {
     if(timestamp_exists()){
-      std::string timestamp_place = get_timestamp_output_place();
-      result["property"] = "ltl property tsindependant: [] not timestampstatement;";
-      result["propositions"] = "property timestampstatement: "+ timestamp_place +"'card > 0;";
+      std::list<std::string> places = get_timestamp_places();
+      result["property"] = "ltl property tsindependant: [] not (";
+      for (auto const& place: places)
+      {
+        if (place != places.back()) { 
+          result["propositions"].append("property timestamp"+place+": "+ place +"'card > 0;\n");
+          result["property"].append("timestamp"+place+" or ");
+        }
+        else {
+          result["propositions"].append("property timestamp"+place+": "+ place +"'card > 0;\n");
+          result["property"].append("timestamp"+place+");");
+        } 
+      }
     }
     else {
       result["property"] = "ltl property tsindependant: true;";
     }
+    std::cout << result["property"]<<std::endl;
+    std::cout << result["propositions"]<<std::endl;
+
     return result;
   }
 
