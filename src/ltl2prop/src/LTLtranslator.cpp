@@ -50,26 +50,51 @@ namespace LTL2PROP {
     statements = lna_json.at("statements");
     // get assignments
     for (const auto& assignment : statements.at("assignment")) {
-      assignments[assignment.at("output_place")].variable = assignment.at("variable");
-      assignments[assignment.at("output_place")].parent = assignment.at("parent");
-      assignments[assignment.at("output_place")].RHV = assignment["right_hand_variables"].get<std::list<std::string>>();
-      assignments[assignment.at("output_place")].timestamp = assignment.at("timestamp");
-
+      AssignmentStatement as = {
+        .variable = assignment.at("variable"),
+        .input_place = assignment.at("input_place"),
+        .parent = assignment.at("parent"),
+        .output_place = assignment.at("output_place"),
+        .RHV = assignment["right_hand_variables"].get<std::list<std::string>>(),
+        .timestamp = assignment.at("timestamp"),
+      };
+      assignments.push_back(as);
     }
 
     // get sendings
     for (const auto& sending : statements.at("sending")) {
-      sendings[sending.at("output_place")] = sending.at("variable");
+            SendingStatement ss = {
+        .variable = sending.at("variable"),
+        .input_place = sending.at("input_place"),
+        .parent = sending.at("parent"),
+        .output_place = sending.at("output_place"),
+        .timestamp = sending.at("timestamp"),
+      };
+      sendings.push_back(ss);
     }
 
     // get function calls
     for (const auto& function_call : statements.at("function_call")) {
-      function_calls[function_call.at("output_place")] = function_call.at("function_name");
+      FunctionCallStatement fcs = {
+        .function_name = function_call.at("function_name"),
+        .input_place = function_call.at("input_place"),
+        .parent = function_call.at("parent"),
+        .output_place = function_call.at("output_place"),
+        .timestamp = function_call.at("timestamp"),
+      };
+      function_calls.push_back(fcs);
     }
 
     // get branchings
     for (const auto& branching : statements.at("branching")) {
-      function_calls[branching.at("output_place")] = branching.at("variable");
+      BranchingStatement bs = {
+        .variable = branching.at("variable"),
+        .input_place = branching.at("input_place"),
+        .parent = branching.at("parent"),
+        .output_place = branching.at("output_place"),
+        .timestamp = branching.at("timestamp"),
+      };
+      branchings.push_back(bs);
     }
   }
 
@@ -88,32 +113,41 @@ namespace LTL2PROP {
 
   std::string LTLTranslator::get_sending_output_place(std::string variable){
     for (const auto& sending: sendings) {
-      if (sending.second == variable){
-          return sending.first;
+      if (sending.variable == variable){
+          return sending.output_place;
         }
       }      
   }
 
   std::string LTLTranslator::get_assignment_output_place(std::string variable){
     for (const auto& assignment: assignments) {
-      if (assignment.second.variable == variable){
-          return assignment.first;
+      if (assignment.variable == variable){
+          return assignment.output_place;
         }
       }      
   }
 
   std::string LTLTranslator::get_branching_output_place(std::string variable){
     for (const auto& branching: branchings) {
-      if (branching.second == variable){
-          return branching.first;
+      if (branching.variable == variable){
+          return branching.output_place;
         }
       }      
   }
 
   std::string LTLTranslator::get_function_call_output_place(std::string function_name){
     for (const auto& function_call: function_calls) {
-      if (function_call.second == function_name){
-          return function_call.first;
+      if (function_call.function_name == function_name){
+          return function_call.output_place;
+        }
+    }
+    throw(function_name);  
+  }
+
+  std::string LTLTranslator::get_function_call_input_place(std::string function_name){
+    for (const auto& function_call: function_calls) {
+      if (function_call.function_name == function_name){
+          return function_call.input_place;
         }
     }
     throw(function_name);  
@@ -121,28 +155,27 @@ namespace LTL2PROP {
 
   std::string LTLTranslator::get_timestamp_output_place(){
     for (const auto& assignment: assignments) {
-      if (assignment.second.timestamp){
-        return assignment.first;
+      if (assignment.timestamp){
+        return assignment.output_place;
       }
     }
     return "";     
   }
-
+  // TODO: case timestamp doesn't exist: property is verified automatically ?
   bool LTLTranslator::timestamp_exists(){
     for (const auto& assignment: assignments) {
-      if (assignment.second.timestamp){
+      if (assignment.timestamp){
         return true;
       }
     }
     return false;     
-
   }
 
   std::string LTLTranslator::get_read_output_place(std::string variable){
     for (const auto& assignment: assignments) {
-      for (const auto& RHVariable: assignment.second.RHV){
+      for (const auto& RHVariable: assignment.RHV){
         if (RHVariable == variable){
-          return assignment.first;
+          return assignment.output_place;
         } 
       }
     }
@@ -175,21 +208,21 @@ namespace LTL2PROP {
         case(AlwaysLessThan):
           return checkAlwaysLessThan(inputs); 
         case(AlwaysMoreThan):
-          return checkAlwaysLessThan(inputs); 
+          return checkAlwaysMoreThan(inputs); 
         case(AlwaysEqual):
           return checkAlwaysEqual(inputs); 
         case(IsCalled):
           return checkIsCalled(inputs); 
-        case(IsNeverCalled):
-          return checkIsNeverCalled(inputs); 
-        case(IsExecuted):
-          return checkIsExecuted(inputs); 
-        case(IsNeverExecuted):
-          return checkIsNeverExecuted(inputs); 
-        case(SequentialCall):
-          return checkIsSequential(inputs); 
-        case(InfiniteLoop):
-          return checkIsInfinite(inputs); 
+        // case(IsNeverCalled):
+        //   return checkIsNeverCalled(inputs); 
+        // case(IsExecuted):
+        //   return checkIsExecuted(inputs); 
+        // case(IsNeverExecuted):
+        //   return checkIsNeverExecuted(inputs); 
+        // case(SequentialCall):
+        //   return checkIsSequential(inputs); 
+        // case(InfiniteLoop):
+        //   return checkIsInfinite(inputs); 
       }
     }
 
@@ -404,4 +437,12 @@ namespace LTL2PROP {
     }
     return result;  
   }
+
+
+  std::map<std::string, std::string> LTLTranslator::checkIsCalled(nlohmann::json inputs) {
+    std::string function_name = inputs.at("selected_function");
+    result["property"] = "ltl property called: funcall";
+    result["propositions"] = "proposition funcall: func_input_place'card > 0";
+    return result;
+  }  
 }  // namespace LTL2PROP

@@ -42,13 +42,17 @@
 	],
 	"statements":{
 		"assignment":[
-			{"variable":"x",
+			{
+			"variable":"x",
+			"input_place":"Pin_43",
 			"parent":"func1",
 			"output_place":"P_out",
 			"right_hand_variables":[],
 			"timestamp": true
 			},
-			{"variable":"y",
+			{
+			"variable":"y",
+			"input_place":"Pin_65",
 			"parent":"func3",
 			"output_place":"P23_out",
 			"right_hand_variables":["x"],
@@ -57,6 +61,7 @@
 		],
 		"sending":[{
 			"variable":"variable_name",
+			"input_place":"Pin_5",
 			"parent": "func1",
 			"output_place":"P_023",
 			"timestamp": false
@@ -64,16 +69,19 @@
 		"function_call":[
 			{
 			"parent":"func0",
+			"input_place":"Pin_15",
 			"function_name":"func1",
 			"output_place":"Pfunc_15"
 			},
 			{
 			"parent":"func1",
+			"input_place":"Pin_32",
 			"function_name":"func3",
 			"output_place":"Pfunc_15"
 			}],
 		"branching":[{
 				"variable":"variable_name",
+				"input_place":"Pin_15",
 				"parent": "func1",
 				"output_place":"P_023"
 			}]

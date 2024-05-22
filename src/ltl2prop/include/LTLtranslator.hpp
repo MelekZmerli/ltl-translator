@@ -42,19 +42,45 @@ class LTLTranslator {
  private:
   struct AssignmentStatement{
      std::string variable;
+     std::string input_place;
      std::string parent;
+     std::string output_place;
 	std::list<std::string> RHV;
 	bool	timestamp;
   };
+
+  struct FunctionCallStatement{
+     std::string function_name;
+     std::string input_place;
+     std::string parent;
+     std::string output_place;
+	bool	timestamp;
+  };
+
+  struct BranchingStatement{
+     std::string variable;
+     std::string input_place;
+     std::string parent;
+     std::string output_place;
+	bool	timestamp;
+  };
+    struct SendingStatement{
+     std::string variable;
+     std::string input_place;
+     std::string parent;
+     std::string output_place;
+	bool	timestamp;
+  };
+
   std::map<std::string, std::string> result = { {"property", ""}, {"propositions", ""}};
   nlohmann::json formula_json;
   nlohmann::json statements;
   std::map<std::string, std::string> local_variables;
   std::list<std::string> global_variables;
-  std::map<std::string, AssignmentStatement> assignments;
-  std::map<std::string, std::string> sendings;
-  std::map<std::string, std::string> branchings;
-  std::map<std::string, std::string> function_calls;
+  std::list<AssignmentStatement> assignments;
+  std::list<SendingStatement> sendings;
+  std::list<BranchingStatement> branchings;
+  std::list<FunctionCallStatement> function_calls;
 
 
 
@@ -214,6 +240,7 @@ class LTLTranslator {
     std::string get_sending_output_place(std::string variable);
     std::string get_assignment_output_place(std::string variable);
     std::string get_branching_output_place(std::string variable);
+    std::string get_function_call_input_place(std::string function_name);
     std::string get_function_call_output_place(std::string function_name);
     std::string get_timestamp_output_place();
     std::string get_read_output_place(std::string variable);
