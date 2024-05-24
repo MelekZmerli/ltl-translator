@@ -26,7 +26,7 @@ namespace LTL2PROP {
     if (vulnerability == "Always Less Than") return AlwaysLessThan;
     if (vulnerability == "Always More Than") return AlwaysMoreThan;
     if (vulnerability == "Always Equal") return AlwaysEqual;
-    if (vulnerability == "Is Called") return IsCalled;
+    if (vulnerability == "Is Always Called") return IsAlwaysCalled;
     if (vulnerability == "Is Never Called") return IsNeverCalled;
     if (vulnerability == "Is Executed") return IsExecuted;
     if (vulnerability == "Sequential Call") return SequentialCall;
@@ -50,6 +50,7 @@ namespace LTL2PROP {
     // get assignments
     for (const auto& assignment : statements.at("assignment")) {
       AssignmentStatement as = {
+        .smart_contract = assignment.at("smart_contract"),
         .variable = assignment.at("variable"),
         .input_place = assignment.at("input_place"),
         .parent = assignment.at("parent"),
@@ -62,7 +63,7 @@ namespace LTL2PROP {
 
     // get sendings
     for (const auto& sending : statements.at("sending")) {
-            SendingStatement ss = {
+      SendingStatement ss = {
         .variable = sending.at("variable"),
         .input_place = sending.at("input_place"),
         .parent = sending.at("parent"),
@@ -203,7 +204,7 @@ namespace LTL2PROP {
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
       result["propositions"] = "proposition testonbalance:"+ branching_output_place +"'card > 0; \
                                 proposition selfdestruct:"+ function_call_output_place +"'card > 0; \
-                                proposition start: ??????;"; // TODO: start proposition
+                                proposition start: ??????;"; // TODO: start proposition // function call of f in Si
     }
     return result;
   }
@@ -241,11 +242,11 @@ namespace LTL2PROP {
       for (auto const& place: places)
       {
         if (place != places.back()) { 
-          result["propositions"].append("property timestamp"+place+": "+ place +"'card > 0;\n");
+          result["propositions"].append("property timestamp"+place+" : "+ place +"'card > 0;\n");
           result["property"].append("timestamp"+place+" or ");
         }
         else {
-          result["propositions"].append("property timestamp"+place+": "+ place +"'card > 0;\n");
+          result["propositions"].append("property timestamp"+place+" : "+ place +"'card > 0;\n");
           result["property"].append("timestamp"+place+");");
         } 
       }
@@ -399,9 +400,9 @@ namespace LTL2PROP {
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsCalled(std::string function_name) {
+  std::map<std::string, std::string> LTLTranslator::checkIsAlwaysCalled(std::string function_name) {
     std::string function_input_place = get_function_call_input_place(function_name);
-    result["property"] = "ltl property called: funcall;";
+    result["property"] = "ltl property called: <> funcall;";
     result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0;";
     return result;
   }  
@@ -417,15 +418,7 @@ namespace LTL2PROP {
 
   std::map<std::string, std::string> LTLTranslator::checkIsExecuted(std::string function_name) {
     std::string function_output_place = get_function_call_output_place(function_name);
-    result["property"] = "ltl property executed: funexec;";
-    result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
-    return result;
-  }  
-
-
-  std::map<std::string, std::string> LTLTranslator::checkIsNeverExecuted(std::string function_name) {
-    std::string function_output_place = get_function_call_output_place(function_name);
-    result["property"] = "ltl property executed: G not funexec;";
+    result["property"] = "ltl property executed: []( funcall => <> funexec);";
     result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
@@ -435,7 +428,7 @@ namespace LTL2PROP {
     std::string function_input_place = get_function_call_input_place(function_name);
     std::string rival_function_input_place = get_function_call_input_place(rival_function);
 
-    result["property"] = "property sequential: [] funcallA => F funcallB;";
+    result["property"] = "property sequential: [] funcallA => <> funcallB;";
     result["propositions"] = "proposition funcallA: " + function_input_place + "'card > 0;\
                               proposition funcallB: " + rival_function_input_place + "'card > 0;";
     return result;
@@ -446,7 +439,7 @@ namespace LTL2PROP {
     std::string function_input_place = get_function_call_input_place(function_name);
     std::string function_output_place = get_function_call_output_place(function_name);
 
-    result["property"] = "ltl property infinite: funcall => G not funexec;";
+    result["property"] = "ltl property infinite: funcall => [] not funexec;";
     result["propositions"] = "proposition funcall: " + function_input_place + "'card > 0;\
                               proposition funexec: " + function_output_place + "'card > 0;";
     return result;
@@ -504,9 +497,9 @@ namespace LTL2PROP {
           std::string min_threshold = inputs["constant"];
           return checkAlwaysEqual(variable, rival_variable, min_threshold); 
         }
-        case(IsCalled):{
+        case(IsAlwaysCalled):{
           std::string function_name = inputs.at("selected_function");
-          return checkIsCalled(function_name);
+          return checkIsAlwaysCalled(function_name);
         }
         case(IsNeverCalled):{
           std::string function_name = inputs.at("selected_function");
@@ -518,10 +511,10 @@ namespace LTL2PROP {
           std::string function_name = inputs.at("selected_function");
           std::string rival_function = inputs.at("rival_function");
           return checkIsSequential(function_name, rival_function);
-          }
-        case(InfiniteLoop):{
-          std::string function_name = inputs.at("selected_function");
-          return checkIsInfinite(function_name); 
+        //   }
+        // case(InfiniteLoop):{
+        //   std::string function_name = inputs.at("selected_function");
+        //   return checkIsInfinite(function_name); 
         }
       }
     }

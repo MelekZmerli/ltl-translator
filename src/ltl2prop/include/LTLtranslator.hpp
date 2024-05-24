@@ -39,8 +39,9 @@ class LTLTranslator {
   static std::vector<std::string> getListVariableFromFormula(
       const std::string& _formula);
 
- private:
+ private: //TODO: update all different structs into one general struct
   struct AssignmentStatement{
+     std::string smart_contract;
      std::string variable;
      std::string input_place;
      std::string parent;
@@ -93,7 +94,7 @@ class LTLTranslator {
     AlwaysLessThan,
     AlwaysMoreThan,
     AlwaysEqual,
-    IsCalled,
+    IsAlwaysCalled,
     IsNeverCalled,
     IsExecuted,
     SequentialCall,
@@ -241,12 +242,12 @@ class LTLTranslator {
     std::map<std::string, std::string> checkAlwaysEqual(std::string variable, std::string rival_variable, std::string constant);
 
      /**
-      * @brief Return the helena code that checks if a function is called within a given context
+      * @brief Return the helena code that checks if a function is always called.
       * 
       * @param function_name 
       * @return Helena code of property to be verified and its propositions
       */
-    std::map<std::string, std::string> checkIsCalled(std::string function_name);
+    std::map<std::string, std::string> checkIsAlwaysCalled(std::string function_name);
 
      /**
       * @brief Return the helena code that checks if a function is never called within a given context
