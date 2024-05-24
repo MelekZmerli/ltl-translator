@@ -195,11 +195,10 @@ namespace LTL2PROP {
     std::string formula_type = formula_json.at("type");
     auto formula_params = formula_json.at("params");
     std::string vulnerability_name = formula_params.at("name");
-    nlohmann::json inputs = formula_params.at("inputs");
 
     // parse a general vulnerability formula
     if (formula_type == "general") {
-
+      nlohmann::json inputs = formula_params.at("inputs");
       switch(LTLTranslator::getVulnerability(vulnerability_name)){
         case(IntegerOverflowUnderflow):
           return detectUnderOverFlowVul(inputs);
@@ -232,6 +231,10 @@ namespace LTL2PROP {
         case(InfiniteLoop):
           return checkIsInfinite(inputs); 
       }
+    }
+    else if (formula_type == "specific") {
+      result["property"] = formula_params.at("property");
+      result["propositions"] = formula_params.at("propositions");
     }
 
     // throw an exception since the type cannot be handled

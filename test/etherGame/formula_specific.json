@@ -2,6 +2,7 @@
   "type": "specific",
   "params": {
     "name": "Integer Overflow/Underflow",
-    "formula": "const minThreshold = 0;\nconst maxThreshold = 10\nproposition outOfRange: ('currentBalance' < minThreshold) | ('currentBalance' > maxThreshold);\nproperty prop: G(! outOfRange);"
+    "propositions": "",
+    "property": ""
   }
 }
