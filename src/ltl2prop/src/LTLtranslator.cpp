@@ -29,7 +29,6 @@ namespace LTL2PROP {
     if (vulnerability == "Is Called") return IsCalled;
     if (vulnerability == "Is Never Called") return IsNeverCalled;
     if (vulnerability == "Is Executed") return IsExecuted;
-    if (vulnerability == "Is Never Executed") return IsNeverExecuted;
     if (vulnerability == "Sequential Call") return SequentialCall;
     if (vulnerability == "Infinite Loop") return InfiniteLoop;
     }
@@ -190,62 +189,10 @@ namespace LTL2PROP {
     return "";     
   }
 
-  std::map<std::string, std::string> LTLTranslator::translate() {
-    // get the type of formula : general or specific
-    std::string formula_type = formula_json.at("type");
-    auto formula_params = formula_json.at("params");
-    std::string vulnerability_name = formula_params.at("name");
-
-    // parse a general vulnerability formula
-    if (formula_type == "general") {
-      nlohmann::json inputs = formula_params.at("inputs");
-      switch(LTLTranslator::getVulnerability(vulnerability_name)){
-        case(IntegerOverflowUnderflow):
-          return detectUnderOverFlowVul(inputs);
-        case(SelfDestruction):
-          return detectSelfDestruction(inputs);
-        case(Reentrancy):
-          return detectReentrancy(inputs);
-        case(TimestampDependence):
-          return detectTimestampDependance(inputs);
-        case(SkipEmptyStringLiteral):
-          return detectSkipEmptyStringLiteral(inputs);
-        case(UninitializedStorageVariable):
-          return detectUninitializedStorageVariable(inputs);
-        case(AlwaysLessThan):
-          return checkAlwaysLessThan(inputs); 
-        case(AlwaysMoreThan):
-          return checkAlwaysMoreThan(inputs); 
-        case(AlwaysEqual):
-          return checkAlwaysEqual(inputs); 
-        case(IsCalled):
-          return checkIsCalled(inputs); 
-        case(IsNeverCalled):
-          return checkIsNeverCalled(inputs); 
-        case(IsExecuted):
-          return checkIsExecuted(inputs); 
-        case(IsNeverExecuted):
-          return checkIsNeverExecuted(inputs); 
-        case(SequentialCall):
-          return checkIsSequential(inputs); 
-        case(InfiniteLoop):
-          return checkIsInfinite(inputs); 
-      }
-    }
-    else if (formula_type == "specific") {
-      result["property"] = formula_params.at("property");
-      result["propositions"] = formula_params.at("propositions");
-    }
-
-    // throw an exception since the type cannot be handled
-    throw std::runtime_error("formula type " + vulnerability_name + " is not handled by LTLTranslator");
-  }
-  
-  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(nlohmann::json inputs) {
-    std::string branching_output_place = get_branching_output_place(inputs.at("selected_variable"));
-
+  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string rival_contract="") {
+    std::string branching_output_place = get_branching_output_place(variable);
     // First Formula 
-    if (inputs.at("rival_contract").empty()){
+    if (rival_contract.empty()){
       result["property"] = "ltl property selfdestruction: not testonbalance;";
       result["proposition"] = "proposition testonbalance:  "+ branching_output_place +"'card > 0;";
     }
@@ -261,12 +208,12 @@ namespace LTL2PROP {
     return result;
   }
   // TODO: Error handling
-  std::map<std::string, std::string> LTLTranslator::detectReentrancy(nlohmann::json inputs) {
+  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string rival_contract ="") {
     try {
-      std::string sending_output_place = get_sending_output_place(inputs.at("selected_variable"));
+      std::string sending_output_place = get_sending_output_place(variable);
       // First version
-      if(inputs.at("rival_contract").empty()){
-        std::string assignment_output_place = get_assignment_output_place(inputs.at("selected_variable"));
+      if(rival_contract.empty()){
+        std::string assignment_output_place = get_assignment_output_place(variable);
 
         result["property"] = "ltl property reentrancy: [] ( not ( not assignment until sending) );";
         result["propositions"] = "proposition assignment: (" + assignment_output_place +"'card > 0); \
@@ -287,7 +234,7 @@ namespace LTL2PROP {
     }
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(nlohmann::json inputs) {
+  std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
     if(timestamp_exists()){
       std::list<std::string> places = get_timestamp_places();
       result["property"] = "ltl property tsindependant: [] not (";
@@ -312,19 +259,16 @@ namespace LTL2PROP {
     return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(nlohmann::json inputs) {
-    std::string write_output_place = get_assignment_output_place(inputs.at("selected_variable"));
-    std::string read_output_place = get_read_output_place(inputs.at("selected_variable"));
+  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable) {
+    std::string write_output_place = get_assignment_output_place(variable);
+    std::string read_output_place = get_read_output_place(variable);
 
     result["property"] = "ltl property usv: not read until write;";
     result["propostions"] = "proposition read: exists(t in " + read_output_place + ") | (t->1).X'card > 0); \
                              proposition write: exists(t in " + write_output_place +" | (t->1).X'card > 0);";
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(nlohmann::json inputs) {
-    std::string min_threshold = inputs.at("min_threshold");
-    std::string max_threshold = inputs.at("max_threshold");
-    std::string variable = inputs.at("selected_variable");
+  std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(std::string variable, std::string min_threshold, std::string max_threshold) {
     result["property"] = "ltl property outOfRange: [] ( not OUFlow ) ;";
     if (is_global_variable(variable)) {
       result["propositions"] = "proposition OUFlow: exists (t in S | (t->1)." + variable + " < " + min_threshold +") or exists (t in S | (t->1)." + variable + " > " + max_threshold + ");";
@@ -340,8 +284,7 @@ namespace LTL2PROP {
 
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(nlohmann::json inputs){
-      std::string function = inputs.at("selected_function");
+  std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(std::string function){
       result["property"] = "ltl property skipempty: [] not emptyparam;";
       result["propositions"] = "exists (t in " + function + "_PAR | ((t->1)'space > 0) and ((t->1)'last'card > 0));";
       return result;
@@ -349,12 +292,12 @@ namespace LTL2PROP {
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkAlwaysLessThan(nlohmann::json inputs){
-    std::string variable = inputs.at("selected_variable");
+  std::map<std::string, std::string> LTLTranslator::checkAlwaysLessThan(std::string variable, std::string rival_variable="", std::string max_threshold =""){
+
+
     result["property"] = "ltl property smaller: [] not more;";
 
-    if(inputs.at("rival_variable").empty()){
-      std::string max_threshold = inputs.at("constant");
+    if(rival_variable.empty()){
       if (is_global_variable(variable)) {
         result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > " + max_threshold +");";
       }
@@ -365,7 +308,6 @@ namespace LTL2PROP {
       }
     }
     else {
-      std::string rival_variable = inputs.at("rival_variable");
       if (is_global_variable(variable) && is_global_variable(rival_variable)) {
         result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > (t->1)." + rival_variable +");";
       }
@@ -387,12 +329,10 @@ namespace LTL2PROP {
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkAlwaysMoreThan(nlohmann::json inputs){
+  std::map<std::string, std::string> LTLTranslator::checkAlwaysMoreThan(std::string variable, std::string rival_variable = "", std::string min_threshold = ""){
     result["property"] = "ltl property bigger: [] not less;";
-    std::string variable = inputs.at("selected_variable");
     
-    if(inputs.at("rival_variable").empty()){
-      std::string min_threshold = inputs.at("constant");
+    if(rival_variable.empty()){
       if (is_global_variable(variable)) {
         result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < " + min_threshold +");";
       }
@@ -403,7 +343,7 @@ namespace LTL2PROP {
       }
     }
     else {
-      std::string rival_variable = inputs.at("rival_variable");
+      std::string rival_variable = rival_variable;
       if (is_global_variable(variable) && is_global_variable(rival_variable)) {
         result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < (t->1)." + rival_variable +");";
       }
@@ -424,12 +364,10 @@ namespace LTL2PROP {
     return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::checkAlwaysEqual(nlohmann::json inputs) {
-    std::string variable = inputs.at("selected_variable");
+  std::map<std::string, std::string> LTLTranslator::checkAlwaysEqual(std::string variable, std::string rival_variable="", std::string constant="") {
     result["property"] = "ltl property equals: [] not different;";
     
-    if(inputs.at("rival_variable").empty()){
-      std::string constant = inputs.at("constant");
+    if(rival_variable.empty()){
       if (is_global_variable(variable)) {
         result["propositions"] = "proposition different: exists (t in S | (t->1)." + variable + " != " + constant +");";
       }
@@ -440,7 +378,6 @@ namespace LTL2PROP {
       }
     }
     else {
-      std::string rival_variable = inputs.at("rival_variable");
       if (is_global_variable(variable) && is_global_variable(rival_variable)) {
         result["propositions"] = "proposition different: exists (t in S | (t->1)." + variable + " != (t->1)." + rival_variable +");";
       }
@@ -462,41 +399,39 @@ namespace LTL2PROP {
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsCalled(nlohmann::json inputs) {
-    std::string function_name = inputs.at("selected_function");
+  std::map<std::string, std::string> LTLTranslator::checkIsCalled(std::string function_name) {
     std::string function_input_place = get_function_call_input_place(function_name);
     result["property"] = "ltl property called: funcall;";
     result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0;";
     return result;
   }  
-  
-  std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(nlohmann::json inputs) {
-    std::string function_name = inputs.at("selected_function");
+
+
+  std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(std::string function_name) {
     std::string function_input_place = get_function_call_input_place(function_name);
     result["property"] = "ltl property uncalled: [] not funcall;";
     result["propositions"] = "proposition funcall: "+ function_input_place + "'card > 0;";
     return result;
   }  
 
-  std::map<std::string, std::string> LTLTranslator::checkIsExecuted(nlohmann::json inputs) {
-    std::string function_name = inputs.at("selected_function");
+
+  std::map<std::string, std::string> LTLTranslator::checkIsExecuted(std::string function_name) {
     std::string function_output_place = get_function_call_output_place(function_name);
     result["property"] = "ltl property executed: funexec;";
     result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
 
-  std::map<std::string, std::string> LTLTranslator::checkIsNeverExecuted(nlohmann::json inputs) {
-    std::string function_name = inputs.at("selected_function");
+
+  std::map<std::string, std::string> LTLTranslator::checkIsNeverExecuted(std::string function_name) {
     std::string function_output_place = get_function_call_output_place(function_name);
     result["property"] = "ltl property executed: G not funexec;";
     result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
 
-  std::map<std::string, std::string> LTLTranslator::checkIsSequential(nlohmann::json inputs) {
-    std::string function_name = inputs.at("selected_function");
-    std::string rival_function = inputs.at("rival_function");
+
+  std::map<std::string, std::string> LTLTranslator::checkIsSequential(std::string function_name, std::string rival_function) {
     std::string function_input_place = get_function_call_input_place(function_name);
     std::string rival_function_input_place = get_function_call_input_place(rival_function);
 
@@ -506,18 +441,98 @@ namespace LTL2PROP {
     return result;
   }  
 
-  std::map<std::string, std::string> LTLTranslator::checkIsInfinite(nlohmann::json inputs) {
-    std::string function_name = inputs.at("selected_function");
+
+  std::map<std::string, std::string> LTLTranslator::checkIsInfinite(std::string function_name) {
     std::string function_input_place = get_function_call_input_place(function_name);
     std::string function_output_place = get_function_call_output_place(function_name);
-
 
     result["property"] = "ltl property infinite: funcall => G not funexec;";
     result["propositions"] = "proposition funcall: " + function_input_place + "'card > 0;\
                               proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
-  
 
+
+  std::map<std::string, std::string> LTLTranslator::translate() {
+    // get the type of formula : general or specific
+    std::string formula_type = formula_json.at("type");
+    auto formula_params = formula_json.at("params");
+    std::string vulnerability_name = formula_params.at("name");
+
+    // parse a general vulnerability formula
+    if (formula_type == "general") {
+      nlohmann::json inputs = formula_params.at("inputs");
+      switch(LTLTranslator::getVulnerability(vulnerability_name)){
+        case(IntegerOverflowUnderflow):{
+          std::string min_threshold = inputs.at("min_threshold");
+          std::string max_threshold = inputs.at("max_threshold");
+          std::string variable = inputs.at("selected_variable");
+          return detectUnderOverFlowVul(variable, min_threshold, max_threshold);
+        }
+        case(SelfDestruction):{
+          std::string variable = inputs.at("selected_variable");
+          std::string rival_contract = inputs.at("rival_contract");
+          return detectSelfDestruction(variable, rival_contract);
+        }
+        case(Reentrancy):
+          return detectReentrancy(inputs);
+        case(TimestampDependence):
+          return detectTimestampDependance();
+        case(SkipEmptyStringLiteral):{
+          std::string function = inputs.at("selected_function");
+          return detectSkipEmptyStringLiteral(inputs);
+        }
+        case(UninitializedStorageVariable):{
+          std::string variable = inputs.at("selected_variable");
+          return detectUninitializedStorageVariable(variable);
+        }
+        case(AlwaysLessThan):{
+          std::string variable = inputs.at("selected_variable");
+          std::string rival_variable = inputs.at("rival_variable");
+          std::string max_threshold = inputs.at("constant");
+          return checkAlwaysLessThan(variable, rival_variable, max_threshold); 
+        }
+        case(AlwaysMoreThan):{
+          std::string variable = inputs.at("selected_variable");
+          std::string rival_variable = inputs.at("rival_variable");
+          std::string min_threshold = inputs.at("constant");
+          return checkAlwaysMoreThan(variable,rival_variable,min_threshold);
+        }
+        case(AlwaysEqual):{
+          std::string variable = inputs.at("selected_variable");
+          std::string rival_variable = inputs.at("rival_variable");
+          std::string min_threshold = inputs["constant"];
+          return checkAlwaysEqual(variable, rival_variable, min_threshold); 
+        }
+        case(IsCalled):{
+          std::string function_name = inputs.at("selected_function");
+          return checkIsCalled(function_name);
+        }
+        case(IsNeverCalled):{
+          std::string function_name = inputs.at("selected_function");
+          return checkIsNeverCalled(function_name);}
+        case(IsExecuted):{
+          std::string function_name = inputs.at("selected_function");
+          return checkIsExecuted(function_name);} 
+        case(SequentialCall):{
+          std::string function_name = inputs.at("selected_function");
+          std::string rival_function = inputs.at("rival_function");
+          return checkIsSequential(function_name, rival_function);
+          }
+        case(InfiniteLoop):{
+          std::string function_name = inputs.at("selected_function");
+          return checkIsInfinite(function_name); 
+        }
+      }
+    }
+    else if (formula_type == "specific") {
+      result["property"] = formula_params.at("property");
+      result["propositions"] = formula_params.at("propositions");
+      return result;
+    }
+
+    // throw an exception since the type cannot be handled
+    throw std::runtime_error("formula type " + vulnerability_name + " is not handled by LTLTranslator");
+  }
 
 }  // namespace LTL2PROP

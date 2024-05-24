@@ -96,7 +96,6 @@ class LTLTranslator {
     IsCalled,
     IsNeverCalled,
     IsExecuted,
-    IsNeverExecuted,
     SequentialCall,
     InfiniteLoop,
 };
@@ -159,44 +158,41 @@ class LTLTranslator {
 
   /**
    * Return the Helena code for the "Integer Overflow/Underflow" vulnerability
-   * @param inputs a json file that holds the following params:
-        * 1. min_threshold minimum threshold value
-        * 2. max_threshold maximum threshold value
-        * 3. variable variable being tested
+     @param variable variable being tested
+     @param min_threshold minimum threshold value
+     @param max_threshold maximum threshold value
    * @return Helena code
    */
-    std::map<std::string, std::string> detectUnderOverFlowVul(
-      nlohmann::json inputs);
+    std::map<std::string, std::string> detectUnderOverFlowVul(std::string variable, std::string min_threshold, std::string max_threshold);
       
   /**
    * Return the Helena code for the "Reentrancy" vulnerability
    * @param inputs a json file that holds the following params:
    * if contract is totally free:     
-        * variable: variable being tested
+        @param variable: variable being tested
    * if rival contract is available:
-        * rival contract:   
+        @param variable: variable being tested
+        @param rival_contract: rival contract for second formula   
    * @return Helena code
    */
     std::map<std::string, std::string> detectReentrancy(
-    nlohmann::json inputs);
+    std::string variable, std::string rival_contract);
 
     
 
   /**
    * Return the Helena code for the "TimestampDestruction" vulnerability
-   * @param inputs a json file that holds the following params:
    * @return Helena code
    */
-    std::map<std::string, std::string> detectTimestampDependance(
-    nlohmann::json inputs);
+    std::map<std::string, std::string> detectTimestampDependance();
 
   /**
    * Return the Helena code for the "Skip Empty String Literal" vulnerability
-   * @param inputs a json file that holds the following params:
+   * @param function name of the function whose params are going to be checked 
    * @return Helena code
    */
     std::map<std::string, std::string> detectSkipEmptyStringLiteral(
-    nlohmann::json inputs);
+    std::string function);
 
   /**
    * Return the Helena code for the "Uninitialized Storage Variable" vulnerability
@@ -204,7 +200,7 @@ class LTLTranslator {
    * @return Helena code
    */
     std::map<std::string, std::string> detectUninitializedStorageVariable(
-    nlohmann::json inputs);
+    std::string variable);
 
   /**
    * Return the Helena code for the "Self Destruction" vulnerability
@@ -213,26 +209,76 @@ class LTLTranslator {
    * @return Helena code
    */
     std::map<std::string, std::string> detectSelfDestruction(
-    nlohmann::json inputs);
+    std::string variable, std::string rival_contract);
  
+     /**
+      * @brief Return the helena code that checks that a variable's value is always less than another variable/constant
+      * 
+      * @param variable 
+      * @param rival_variable 
+      * @param max_threshold 
+      * @return Helena code
+      */
+    std::map<std::string, std::string> checkAlwaysLessThan(std::string variable, std::string rival_variable, std::string max_threshold);
+     /**
+      * @brief Return the helena code that checks that a variable's value is always more than another variable/constant
+      * 
+      * @param variable 
+      * @param rival_variable 
+      * @param min_threshold 
+      * @return Helena code of property to be verified and its propositions 
+      */
+    std::map<std::string, std::string> checkAlwaysMoreThan(std::string variable, std::string rival_variable, std::string min_threshold);
 
-    std::map<std::string, std::string> checkAlwaysLessThan(nlohmann::json inputs);
+     /**
+      * @brief Return the helena code that checks that a variable's value is always equal another variable/constant
+      * 
+      * @param variable 
+      * @param rival_variable 
+      * @param constant 
+      * @return Helena code of property to be verified and its propositions 
+      */
+    std::map<std::string, std::string> checkAlwaysEqual(std::string variable, std::string rival_variable, std::string constant);
 
-    std::map<std::string, std::string> checkAlwaysMoreThan(nlohmann::json inputs);
+     /**
+      * @brief Return the helena code that checks if a function is called within a given context
+      * 
+      * @param function_name 
+      * @return Helena code of property to be verified and its propositions
+      */
+    std::map<std::string, std::string> checkIsCalled(std::string function_name);
 
-    std::map<std::string, std::string> checkAlwaysEqual(nlohmann::json inputs);
+     /**
+      * @brief Return the helena code that checks if a function is never called within a given context
+      * 
+      * @param function_name 
+      * @return Helena code of property to be verified and its propositions
+      */
+    std::map<std::string, std::string> checkIsNeverCalled(std::string function_name);
 
-    std::map<std::string, std::string> checkIsCalled(nlohmann::json inputs);
+     /**
+      * @brief Return the helena code that checks if a function finshed execution within a given context
+      * 
+      * @param function_name 
+      * @return Helena code of property to be verified and its propositions
+      */
+    std::map<std::string, std::string> checkIsExecuted(std::string function_name);
 
-    std::map<std::string, std::string> checkIsNeverCalled(nlohmann::json inputs);
+     /**
+      * @brief Return the helena code that checks if a function B is called after function A within a given context
+      * 
+      * @param function_name 
+      * @return Helena code of property to be verified and its propositions
+      */
+    std::map<std::string, std::string> checkIsSequential(std::string function_name, std::string rival_function);
 
-    std::map<std::string, std::string> checkIsExecuted(nlohmann::json inputs);
-
-    std::map<std::string, std::string> checkIsNeverExecuted(nlohmann::json inputs);
-
-    std::map<std::string, std::string> checkIsSequential(nlohmann::json inputs);
-
-    std::map<std::string, std::string> checkIsInfinite(nlohmann::json inputs);
+     /**
+      * @brief Return the helena code that checks if a function has an infinite loop
+      * 
+      * @param function_name 
+      * @return Helena code of property to be verified and its propositions
+      */
+    std::map<std::string, std::string> checkIsInfinite(std::string function_name);
 
 
 
