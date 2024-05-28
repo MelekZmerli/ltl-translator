@@ -345,11 +345,11 @@ namespace LTL2PROP {
       for (auto const& place: places)
       {
         if (place != places.back()) { 
-          result["propositions"].append("property timestamp"+place+" : "+ place +"'card > 0;\n");
+          result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
           result["property"].append("timestamp"+place+" or ");
         }
         else {
-          result["propositions"].append("property timestamp"+place+" : "+ place +"'card > 0;\n");
+          result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
           result["property"].append("timestamp"+place+");");
         } 
       }
@@ -364,12 +364,48 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable) {
-    std::list<std::string> write_output_place = get_write_output_places(variable);
-    std::list<std::string> read_output_place = get_read_output_places(variable);
+    std::list<std::string> write_output_places = get_write_output_places(variable);
+    std::list<std::string> read_output_places = get_read_output_places(variable);
 
-    result["property"] = "ltl property usv: not read until write;";
-    result["propostions"] = "proposition read: exists(t in " + read_output_place + ") | (t->1).X'card > 0); \
-                             proposition write: exists(t in " + write_output_place +" | (t->1).X'card > 0);";
+    if(!read_output_places.empty()){
+      result["property"] = "ltl property usv: not (";
+      for (auto const& read_output_place: read_output_places)
+      {
+        if (read_output_place != read_output_places.back()) { 
+          result["propositions"].append("proposition read"+read_output_place+" : "+ read_output_place +"'card > 0;\n");
+          result["property"].append("read"+read_output_place+" or ");
+        }
+        else {
+          result["propositions"].append("property read"+read_output_place+" : "+ read_output_place +"'card > 0;\n");
+          result["property"].append("read"+read_output_place+") until (");
+        } 
+      }
+    }
+    // in case variable is never read in execution trace
+    else
+    {
+      result["property"] = "ltl property usv: true;";
+      return result;
+    }
+
+    if(!write_output_places.empty()){
+      for (auto const& write_output_place: write_output_places)
+      {
+        if (write_output_place != write_output_places.back()) { 
+          result["propositions"].append("proposition write"+write_output_place+" : "+ write_output_place +"'card > 0;\n");
+          result["property"].append("write"+write_output_place+" or ");
+        }
+        else {
+          result["propositions"].append("property write"+write_output_place+" : "+ write_output_place +"'card > 0;\n");
+          result["property"].append("write"+write_output_place+");");
+        } 
+      }
+    }
+    // in case, variable isn't assigned a value in execution trace
+    else {
+      result["property"] = "ltl property usv: false;";
+      return result;
+    }  
   }
 
   std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(std::string variable, std::string min_threshold, std::string max_threshold) {
