@@ -30,7 +30,6 @@ namespace LTL2PROP {
     if (vulnerability == "Is Never Called") return IsNeverCalled;
     if (vulnerability == "Is Executed") return IsExecuted;
     if (vulnerability == "Sequential Call") return SequentialCall;
-    if (vulnerability == "Infinite Loop") return InfiniteLoop;
     }
 
   void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
@@ -435,17 +434,6 @@ namespace LTL2PROP {
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsInfinite(std::string function_name) {
-    std::string function_input_place = get_function_call_input_place(function_name);
-    std::string function_output_place = get_function_call_output_place(function_name);
-
-    result["property"] = "ltl property infinite: funcall => [] not funexec;";
-    result["propositions"] = "proposition funcall: " + function_input_place + "'card > 0;\
-                              proposition funexec: " + function_output_place + "'card > 0;";
-    return result;
-  }  
-
-
   std::map<std::string, std::string> LTLTranslator::translate() {
     // get the type of formula : general or specific
     std::string formula_type = formula_json.at("type");
@@ -511,10 +499,6 @@ namespace LTL2PROP {
           std::string function_name = inputs.at("selected_function");
           std::string rival_function = inputs.at("rival_function");
           return checkIsSequential(function_name, rival_function);
-        //   }
-        // case(InfiniteLoop):{
-        //   std::string function_name = inputs.at("selected_function");
-        //   return checkIsInfinite(function_name); 
         }
       }
     }

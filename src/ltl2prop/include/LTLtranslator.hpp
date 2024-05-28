@@ -98,7 +98,6 @@ class LTLTranslator {
     IsNeverCalled,
     IsExecuted,
     SequentialCall,
-    InfiniteLoop,
 };
 
   vulnerabilities getVulnerability(std::string vulnerability);
@@ -273,13 +272,6 @@ class LTLTranslator {
       */
     std::map<std::string, std::string> checkIsSequential(std::string function_name, std::string rival_function);
 
-     /**
-      * @brief Return the helena code that checks if a function has an infinite loop
-      * 
-      * @param function_name 
-      * @return Helena code of property to be verified and its propositions
-      */
-    std::map<std::string, std::string> checkIsInfinite(std::string function_name);
 
 
 
