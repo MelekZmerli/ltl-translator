@@ -39,37 +39,17 @@ class LTLTranslator {
   static std::vector<std::string> getListVariableFromFormula(
       const std::string& _formula);
 
- private: //TODO: update all different structs into one general struct
-  struct AssignmentStatement{
-     std::string smart_contract;
-     std::string variable;
-     std::string input_place;
-     std::string parent;
-     std::string output_place;
-	std::list<std::string> RHV;
-	bool	timestamp;
-  };
-
-  struct FunctionCallStatement{
-     std::string function_name;
-     std::string input_place;
-     std::string parent;
-     std::string output_place;
-  };
-
-  struct BranchingStatement{
-     std::string variable;
-     std::string input_place;
-     std::string parent;
-     std::string output_place;
-	bool	timestamp;
-  };
-    struct SendingStatement{
-     std::string variable;
-     std::string input_place;
-     std::string parent;
-     std::string output_place;
-	bool	timestamp;
+ private:
+  struct Statement{
+				std::string type;
+				std::string smart_contract;
+				std::string parent;
+				std::string variable;
+				std::string function_name;
+				std::string input_place;
+				std::string output_place;		
+				std::list<std::string> RHV;
+				bool timestamp;
   };
 
   std::map<std::string, std::string> result = { {"property", ""}, {"propositions", ""}};
@@ -77,10 +57,12 @@ class LTLTranslator {
   nlohmann::json statements;
   std::map<std::string, std::string> local_variables;
   std::list<std::string> global_variables;
-  std::list<AssignmentStatement> assignments;
-  std::list<SendingStatement> sendings;
-  std::list<BranchingStatement> branchings;
-  std::list<FunctionCallStatement> function_calls;
+  std::list<Statement> assignments, sendings, selections, function_calls,
+  variable_declarations, returnings, requirements, for_loops, while_loops;
+
+
+
+
 
 
 
@@ -277,7 +259,7 @@ class LTLTranslator {
 
     std::string get_sending_output_place(std::string variable);
     std::string get_assignment_output_place(std::string variable);
-    std::string get_branching_output_place(std::string variable);
+    std::string get_selection_output_place(std::string variable);
     std::string get_function_call_input_place(std::string function_name);
     std::string get_function_call_output_place(std::string function_name);
     std::list<std::string> get_timestamp_places();

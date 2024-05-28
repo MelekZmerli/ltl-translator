@@ -46,54 +46,31 @@ namespace LTL2PROP {
     }
 
     statements = lna_json.at("statements");
-    // get assignments
-    for (const auto& assignment : statements.at("assignment")) {
-      AssignmentStatement as = {
-        .smart_contract = assignment.at("smart_contract"),
-        .variable = assignment.at("variable"),
-        .input_place = assignment.at("input_place"),
-        .parent = assignment.at("parent"),
-        .output_place = assignment.at("output_place"),
-        .RHV = assignment["right_hand_variables"].get<std::list<std::string>>(),
-        .timestamp = assignment.at("timestamp"),
+    // get statements
+    for (const auto& statement : statements) {
+      Statement s = {
+        .type = statement.at("type"),
+        .smart_contract = statement.at("smart_contract"),
+        .parent = statement.at("parent"),
+        .variable = statement.at("variable"),
+        .function_name = statement.at("function"),
+        .input_place = statement.at("input_place"),
+        .output_place = statement.at("output_place"),
+        .RHV = statement["right_hand_variables"].get<std::list<std::string>>(),
+        .timestamp = statement.at("timestamp"),
       };
-      assignments.push_back(as);
+      if (s.type=="assignment") assignments.push_back(s);
+      if (s.type=="selection") selections.push_back(s);
+      if (s.type=="sending") sendings.push_back(s);
+      if (s.type=="function_call") function_calls.push_back(s);
+      if (s.type=="variable_declaration") variable_declarations.push_back(s);
+      if (s.type=="return") returnings.push_back(s);
+      if (s.type=="require") requirements.push_back(s);
+      if (s.type=="for_loop") for_loops.push_back(s);
+      if (s.type=="while_loops") while_loops.push_back(s);
+      
     }
 
-    // get sendings
-    for (const auto& sending : statements.at("sending")) {
-      SendingStatement ss = {
-        .variable = sending.at("variable"),
-        .input_place = sending.at("input_place"),
-        .parent = sending.at("parent"),
-        .output_place = sending.at("output_place"),
-        .timestamp = sending.at("timestamp"),
-      };
-      sendings.push_back(ss);
-    }
-
-    // get function calls
-    for (const auto& function_call : statements.at("function_call")) {
-      FunctionCallStatement fcs = {
-        .function_name = function_call.at("function_name"),
-        .input_place = function_call.at("input_place"),
-        .parent = function_call.at("parent"),
-        .output_place = function_call.at("output_place"),
-      };
-      function_calls.push_back(fcs);
-    }
-
-    // get branchings
-    for (const auto& branching : statements.at("branching")) {
-      BranchingStatement bs = {
-        .variable = branching.at("variable"),
-        .input_place = branching.at("input_place"),
-        .parent = branching.at("parent"),
-        .output_place = branching.at("output_place"),
-        .timestamp = branching.at("timestamp"),
-      };
-      branchings.push_back(bs);
-    }
   }
 
   bool LTLTranslator::is_global_variable(const std::string& _name) const {
@@ -125,10 +102,10 @@ namespace LTL2PROP {
       }      
   }
 
-  std::string LTLTranslator::get_branching_output_place(std::string variable){
-    for (const auto& branching: branchings) {
-      if (branching.variable == variable){
-          return branching.output_place;
+  std::string LTLTranslator::get_selection_output_place(std::string variable){
+    for (const auto& selection: selections) {
+      if (selection.variable == variable){
+          return selection.output_place;
         }
       }      
   }
@@ -159,9 +136,9 @@ namespace LTL2PROP {
       }
     }
 
-    for (const auto& branching: branchings) {
-      if (branching.timestamp){
-        timestamp_places.push_back(branching.output_place);
+    for (const auto& selection: selections) {
+      if (selection.timestamp){
+        timestamp_places.push_back(selection.output_place);
       }
     }
 
@@ -190,18 +167,18 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string rival_contract="") {
-    std::string branching_output_place = get_branching_output_place(variable);
+    std::string selection_output_place = get_selection_output_place(variable);
     // First Formula 
     if (rival_contract.empty()){
       result["property"] = "ltl property selfdestruction: not testonbalance;";
-      result["proposition"] = "proposition testonbalance:  "+ branching_output_place +"'card > 0;";
+      result["proposition"] = "proposition testonbalance:  "+ selection_output_place +"'card > 0;";
     }
     // Second Formula
     else{
       std::string function_call_output_place = get_function_call_output_place("selfdestruct");
 
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
-      result["propositions"] = "proposition testonbalance:"+ branching_output_place +"'card > 0; \
+      result["propositions"] = "proposition testonbalance:"+ selection_output_place +"'card > 0; \
                                 proposition selfdestruct:"+ function_call_output_place +"'card > 0; \
                                 proposition start: ??????;"; // TODO: start proposition // function call of f in Si
     }
