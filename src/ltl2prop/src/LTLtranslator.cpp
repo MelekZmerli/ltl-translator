@@ -45,9 +45,9 @@ namespace LTL2PROP {
       }
     }
 
-    statements = lna_json.at("statements");
+    statement_list = lna_json.at("statements");
     // get statements
-    for (const auto& statement : statements) {
+    for (const auto& statement : statement_list) {
       Statement s = {
         .type = statement.at("type"),
         .smart_contract = statement.at("smart_contract"),
@@ -162,6 +162,12 @@ namespace LTL2PROP {
       }
     }
 
+    for (const auto& sending: sendings) {
+      if (sending.timestamp){
+        timestamp_places.push_back(sending.output_place);
+      }
+    }
+
     for (const auto& variable_declaration: variable_declarations) {
       if (variable_declaration.timestamp){
         timestamp_places.push_back(variable_declaration.output_place);
@@ -199,15 +205,90 @@ namespace LTL2PROP {
     return false;     
   }
 
-  std::string LTLTranslator::get_read_output_place(std::string variable){
+  std::list<std::string> LTLTranslator::get_write_output_places(std::string variable){
+    std::list<std::string> write_places;
+    for(auto &assignment : assignments) {
+      if (assignment.variable == variable) {
+        write_places.push_back(assignment.output_place);
+      }
+    }
+    for(auto &declaration: variable_declarations) {
+      if (declaration.variable == variable && !declaration.RHV.empty()) {
+        write_places.push_back(declaration.output_place);
+      }
+    }
+    return write_places;     
+  }
+
+
+  std::list<std::string> LTLTranslator::get_read_output_places(std::string variable){
+    std::list<std::string> read_places;
     for (const auto& assignment: assignments) {
       for (const auto& RHVariable: assignment.RHV){
         if (RHVariable == variable){
-          return assignment.output_place;
+          read_places.push_back(assignment.output_place);
         } 
       }
     }
-    return "";     
+
+    for (const auto& selection: selections) {
+      for (const auto& RHVariable: selection.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(selection.output_place);
+        } 
+      }
+    }
+
+    for (const auto& variable_declaration: variable_declarations) {
+      for (const auto& RHVariable: variable_declaration.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(variable_declaration.output_place);
+        } 
+      }
+    }
+
+    for (const auto& requirement: requirements) {
+      for (const auto& RHVariable: requirement.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(requirement.output_place);
+        } 
+      }
+    }
+
+    for (const auto& returning: returnings) {
+      for (const auto& RHVariable: returning.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(returning.output_place);
+        } 
+      }
+    }
+
+    for (const auto& returning: returnings) {
+      for (const auto& RHVariable: returning.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(returning.output_place);
+        } 
+      }
+    }
+
+    for (const auto& for_loop: for_loops) {
+      for (const auto& RHVariable: for_loop.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(for_loop.output_place);
+        } 
+      }
+    }
+
+    for (const auto& while_loop: while_loops) {
+      for (const auto& RHVariable: while_loop.RHV){
+        if (RHVariable == variable){
+          read_places.push_back(while_loop.output_place);
+        } 
+      }
+    }
+
+
+    return read_places;  
   }
 
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string smart_contract, std::string rival_contract="") {
@@ -219,14 +300,14 @@ namespace LTL2PROP {
     }
     // Second Formula
     else{
-      std::string function_call_output_place = get_function_call_output_place("selfdestruct", smart_contract);
+      std::string function_call_input_place = get_function_call_input_place("selfdestruct", smart_contract);
       std::string rival_function_call_output_place = get_function_call_output_place("selfdestruct", rival_contract);
 
 
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
       result["propositions"] = "proposition testonbalance:"+ selection_output_place +"'card > 0; \
                                 proposition selfdestruct:"+ rival_function_call_output_place +"'card > 0; \
-                                proposition start: "+function_call_output_place + "'card > 0"; // Q? start = input or output 
+                                proposition start: "+function_call_input_place + "'card > 0"; // Q? start = input or output 
     }
     return result;
   }
@@ -283,8 +364,8 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable) {
-    std::string write_output_place = get_assignment_output_place(variable);
-    std::string read_output_place = get_read_output_place(variable);
+    std::list<std::string> write_output_place = get_write_output_places(variable);
+    std::list<std::string> read_output_place = get_read_output_places(variable);
 
     result["property"] = "ltl property usv: not read until write;";
     result["propostions"] = "proposition read: exists(t in " + read_output_place + ") | (t->1).X'card > 0); \

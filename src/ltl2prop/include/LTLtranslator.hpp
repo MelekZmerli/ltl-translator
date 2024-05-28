@@ -54,11 +54,13 @@ class LTLTranslator {
 
   std::map<std::string, std::string> result = { {"property", ""}, {"propositions", ""}};
   nlohmann::json formula_json;
-  nlohmann::json statements;
+  nlohmann::json statement_list;
   std::map<std::string, std::string> local_variables;
   std::list<std::string> global_variables;
-  std::list<Statement> assignments, sendings, selections, function_calls,
-  variable_declarations, returnings, requirements, for_loops, while_loops;
+  std::list<Statement> assignments,
+   sendings, selections, function_calls,
+  variable_declarations, returnings, requirements,
+   for_loops, while_loops;
 
 
 
@@ -263,7 +265,8 @@ class LTLTranslator {
     std::string get_function_call_input_place(std::string function_name, std::string smart_contract);
     std::string get_function_call_output_place(std::string function_name, std::string smart_contract);
     std::list<std::string> get_timestamp_places();
-    std::string get_read_output_place(std::string variable);
+    std::list<std::string> get_read_output_places(std::string variable);
+    std::list<std::string> get_write_output_places(std::string variable);
     bool timestamp_exists();
     
 
