@@ -1,14 +1,14 @@
 {
     "type": "general",
     "params": {
-        "name": "Timestamp Dependance",
+        "name": "Uninitialized Storage Variable",
         "inputs": {
             "min_threshold": "0",
             "max_threshold": "65535",
-            "selected_variable": "mileStone1Reward",
-            "rival_variable": null,
-            "rival_contract":null,
-            "constant":null
+            "selected_variable": "x",
+            "rival_variable": "null",
+            "rival_contract":"null",
+            "constant":"null"
         }
     }
 }

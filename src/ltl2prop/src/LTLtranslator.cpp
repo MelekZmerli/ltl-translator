@@ -263,10 +263,10 @@ namespace LTL2PROP {
       }
     }
 
-    for (const auto& returning: returnings) {
-      for (const auto& RHVariable: returning.RHV){
+    for (const auto& sending: sendings) {
+      for (const auto& RHVariable: sending.RHV){
         if (RHVariable == variable){
-          read_places.push_back(returning.output_place);
+          read_places.push_back(sending.output_place);
         } 
       }
     }
@@ -307,7 +307,7 @@ namespace LTL2PROP {
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
       result["propositions"] = "proposition testonbalance:"+ selection_output_place +"'card > 0; \
                                 proposition selfdestruct:"+ rival_function_call_output_place +"'card > 0; \
-                                proposition start: "+function_call_input_place + "'card > 0"; // Q? start = input or output 
+                                proposition start: "+function_call_input_place + "'card > 0";
     }
     return result;
   }
@@ -357,8 +357,6 @@ namespace LTL2PROP {
     else {
       result["property"] = "ltl property tsindependant: true;";
     }
-    std::cout << result["property"]<<std::endl;
-    std::cout << result["propositions"]<<std::endl;
 
     return result;
   }
@@ -366,6 +364,10 @@ namespace LTL2PROP {
   std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable) {
     std::list<std::string> write_output_places = get_write_output_places(variable);
     std::list<std::string> read_output_places = get_read_output_places(variable);
+
+    //remove duplicates from both lists
+    write_output_places.unique();
+    read_output_places.unique();
 
     if(!read_output_places.empty()){
       result["property"] = "ltl property usv: not (";
@@ -406,6 +408,7 @@ namespace LTL2PROP {
       result["property"] = "ltl property usv: false;";
       return result;
     }  
+    return result;
   }
 
   std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(std::string variable, std::string min_threshold, std::string max_threshold) {
@@ -605,7 +608,10 @@ namespace LTL2PROP {
         }
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
-          return detectUninitializedStorageVariable(variable);
+          result = detectUninitializedStorageVariable(variable);
+          std::cout << result["property"]<<std::endl;
+          std::cout << result["propositions"]<<std::endl;
+          return result;
         }
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");

@@ -43,14 +43,47 @@
 	"statements":
 		[
 			{
-				"type":"declaration",
+				"type":"variable_declaration",
 				"smart_contract":"sc1",
 				"parent":"func1",
 				"variable":"x",
-				"function":null,
+				"function":"null",
+				"input_place":"Pin_43",
+				"output_place":"P5_out",		
+				"right_hand_variables":["1","3"],
+				"timestamp": true
+			},
+			{
+				"type":"assignment",
+				"smart_contract":"sc1",
+				"parent":"func1",
+				"variable":"x",
+				"function":"null",
+				"input_place":"Pin_43",
+				"output_place":"P24_out",		
+				"right_hand_variables":["1","3"],
+				"timestamp": true
+			},
+			{
+				"type":"sending",
+				"smart_contract":"sc1",
+				"parent":"func1",
+				"variable":"h",
+				"function":"null",
+				"input_place":"Pin_43",
+				"output_place":"P3_out",		
+				"right_hand_variables":[],
+				"timestamp": true
+			},
+			{
+				"type":"return",
+				"smart_contract":"sc1",
+				"parent":"func1",
+				"variable":"h",
+				"function":"null",
 				"input_place":"Pin_43",
 				"output_place":"P_out",		
-				"right_hand_variables":[],
+				"right_hand_variables":["x"],
 				"timestamp": true
 			}
 		]	
