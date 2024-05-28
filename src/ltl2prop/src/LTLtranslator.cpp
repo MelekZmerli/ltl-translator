@@ -59,6 +59,8 @@ namespace LTL2PROP {
         .RHV = statement["right_hand_variables"].get<std::list<std::string>>(),
         .timestamp = statement.at("timestamp"),
       };
+      
+      // assign statements to their respective lists
       if (s.type=="assignment") assignments.push_back(s);
       if (s.type=="selection") selections.push_back(s);
       if (s.type=="sending") sendings.push_back(s);
@@ -110,18 +112,18 @@ namespace LTL2PROP {
       }      
   }
 
-  std::string LTLTranslator::get_function_call_output_place(std::string function_name){
+  std::string LTLTranslator::get_function_call_output_place(std::string function_name, std::string smart_contract){
     for (const auto& function_call: function_calls) {
-      if (function_call.function_name == function_name){
+      if (function_call.function_name == function_name && function_call.smart_contract == smart_contract){
           return function_call.output_place;
-        }
+      }
     }
     throw(function_name);  
   }
 
-  std::string LTLTranslator::get_function_call_input_place(std::string function_name){
+  std::string LTLTranslator::get_function_call_input_place(std::string function_name,std::string smart_contract){
     for (const auto& function_call: function_calls) {
-      if (function_call.function_name == function_name){
+      if (function_call.function_name == function_name && function_call.smart_contract == smart_contract){
           return function_call.input_place;
         }
     }
@@ -139,6 +141,48 @@ namespace LTL2PROP {
     for (const auto& selection: selections) {
       if (selection.timestamp){
         timestamp_places.push_back(selection.output_place);
+      }
+    }
+
+    for (const auto& sending: sendings) {
+      if (sending.timestamp){
+        timestamp_places.push_back(sending.output_place);
+      }
+    }
+
+    for (const auto& requirement: requirements) {
+      if (requirement.timestamp){
+        timestamp_places.push_back(requirement.output_place);
+      }
+    }
+
+    for (const auto& function_call: function_calls) {
+      if (function_call.timestamp){
+        timestamp_places.push_back(function_call.output_place);
+      }
+    }
+
+    for (const auto& variable_declaration: variable_declarations) {
+      if (variable_declaration.timestamp){
+        timestamp_places.push_back(variable_declaration.output_place);
+      }
+    }
+
+    for (const auto& returning: returnings) {
+      if (returning.timestamp){
+        timestamp_places.push_back(returning.output_place);
+      }
+    }
+
+    for (const auto& for_loop: for_loops) {
+      if (for_loop.timestamp){
+        timestamp_places.push_back(for_loop.output_place);
+      }
+    }
+
+    for (const auto& while_loop: while_loops) {
+      if (while_loop.timestamp){
+        timestamp_places.push_back(while_loop.output_place);
       }
     }
 
@@ -166,7 +210,7 @@ namespace LTL2PROP {
     return "";     
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string rival_contract="") {
+  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string smart_contract, std::string rival_contract="") {
     std::string selection_output_place = get_selection_output_place(variable);
     // First Formula 
     if (rival_contract.empty()){
@@ -175,12 +219,14 @@ namespace LTL2PROP {
     }
     // Second Formula
     else{
-      std::string function_call_output_place = get_function_call_output_place("selfdestruct");
+      std::string function_call_output_place = get_function_call_output_place("selfdestruct", smart_contract);
+      std::string rival_function_call_output_place = get_function_call_output_place("selfdestruct", rival_contract);
+
 
       result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
       result["propositions"] = "proposition testonbalance:"+ selection_output_place +"'card > 0; \
-                                proposition selfdestruct:"+ function_call_output_place +"'card > 0; \
-                                proposition start: ??????;"; // TODO: start proposition // function call of f in Si
+                                proposition selfdestruct:"+ rival_function_call_output_place +"'card > 0; \
+                                proposition start: "+function_call_output_place + "'card > 0"; // Q? start = input or output 
     }
     return result;
   }
@@ -199,7 +245,7 @@ namespace LTL2PROP {
       // Second version
       // TODO: find alternative to X operator 
       else {
-        std::string fallback_output_place = get_function_call_output_place("fallback");
+        std::string fallback_output_place = get_function_call_output_place("fallback",rival_contract);
         result["property"] = "ltl property reentrancy: sending => X [] (( not sending) until end_fallback);";
         result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0; \
                                   proposition end_fallback: " + fallback_output_place + "'card > 0;";
@@ -376,33 +422,33 @@ namespace LTL2PROP {
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsAlwaysCalled(std::string function_name) {
-    std::string function_input_place = get_function_call_input_place(function_name);
+  std::map<std::string, std::string> LTLTranslator::checkIsAlwaysCalled(std::string function_name, std::string smart_contract) {
+    std::string function_input_place = get_function_call_input_place(function_name, smart_contract);
     result["property"] = "ltl property called: <> funcall;";
     result["propositions"] = "proposition funcall: "+ function_input_place +"'card > 0;";
     return result;
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(std::string function_name) {
-    std::string function_input_place = get_function_call_input_place(function_name);
+  std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(std::string function_name,std::string smart_contract) {
+    std::string function_input_place = get_function_call_input_place(function_name, smart_contract);
     result["property"] = "ltl property uncalled: [] not funcall;";
     result["propositions"] = "proposition funcall: "+ function_input_place + "'card > 0;";
     return result;
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsExecuted(std::string function_name) {
-    std::string function_output_place = get_function_call_output_place(function_name);
+  std::map<std::string, std::string> LTLTranslator::checkIsExecuted(std::string function_name,std::string smart_contract) {
+    std::string function_output_place = get_function_call_output_place(function_name, smart_contract);
     result["property"] = "ltl property executed: []( funcall => <> funexec);";
     result["propositions"] = "proposition funexec: " + function_output_place + "'card > 0;";
     return result;
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsSequential(std::string function_name, std::string rival_function) {
-    std::string function_input_place = get_function_call_input_place(function_name);
-    std::string rival_function_input_place = get_function_call_input_place(rival_function);
+  std::map<std::string, std::string> LTLTranslator::checkIsSequential(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
+    std::string function_input_place = get_function_call_input_place(function_name, smart_contract);
+    std::string rival_function_input_place = get_function_call_input_place(rival_function, rival_contract);
 
     result["property"] = "property sequential: [] funcallA => <> funcallB;";
     result["propositions"] = "proposition funcallA: " + function_input_place + "'card > 0;\
@@ -464,18 +510,25 @@ namespace LTL2PROP {
         }
         case(IsAlwaysCalled):{
           std::string function_name = inputs.at("selected_function");
-          return checkIsAlwaysCalled(function_name);
+          std::string smart_contract = inputs.at("smart_contract");
+          return checkIsAlwaysCalled(function_name, smart_contract);
         }
         case(IsNeverCalled):{
           std::string function_name = inputs.at("selected_function");
-          return checkIsNeverCalled(function_name);}
+          std::string smart_contract = inputs.at("smart_contract");
+          return checkIsNeverCalled(function_name, smart_contract);}
         case(IsExecuted):{
           std::string function_name = inputs.at("selected_function");
-          return checkIsExecuted(function_name);} 
+          std::string smart_contract = inputs.at("smart_contract");
+
+          return checkIsExecuted(function_name,smart_contract);} 
         case(SequentialCall):{
           std::string function_name = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
           std::string rival_function = inputs.at("rival_function");
-          return checkIsSequential(function_name, rival_function);
+          std::string rival_contract = inputs.at("rival_contract");
+
+          return checkIsSequential(function_name, smart_contract, rival_function, rival_contract);
         }
       }
     }

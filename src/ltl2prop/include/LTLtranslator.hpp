@@ -191,7 +191,7 @@ class LTLTranslator {
    * @return Helena code
    */
     std::map<std::string, std::string> detectSelfDestruction(
-    std::string variable, std::string rival_contract);
+    std::string variable, std::string smart_contract, std::string rival_contract);
  
      /**
       * @brief Return the helena code that checks that a variable's value is always less than another variable/constant
@@ -228,7 +228,7 @@ class LTLTranslator {
       * @param function_name 
       * @return Helena code of property to be verified and its propositions
       */
-    std::map<std::string, std::string> checkIsAlwaysCalled(std::string function_name);
+    std::map<std::string, std::string> checkIsAlwaysCalled(std::string function_name, std::string smart_contract);
 
      /**
       * @brief Return the helena code that checks if a function is never called within a given context
@@ -236,7 +236,7 @@ class LTLTranslator {
       * @param function_name 
       * @return Helena code of property to be verified and its propositions
       */
-    std::map<std::string, std::string> checkIsNeverCalled(std::string function_name);
+    std::map<std::string, std::string> checkIsNeverCalled(std::string function_name, std::string smart_contract);
 
      /**
       * @brief Return the helena code that checks if a function finshed execution within a given context
@@ -244,7 +244,7 @@ class LTLTranslator {
       * @param function_name 
       * @return Helena code of property to be verified and its propositions
       */
-    std::map<std::string, std::string> checkIsExecuted(std::string function_name);
+    std::map<std::string, std::string> checkIsExecuted(std::string function_name, std::string smart_contract);
 
      /**
       * @brief Return the helena code that checks if a function B is called after function A within a given context
@@ -252,7 +252,7 @@ class LTLTranslator {
       * @param function_name 
       * @return Helena code of property to be verified and its propositions
       */
-    std::map<std::string, std::string> checkIsSequential(std::string function_name, std::string rival_function);
+    std::map<std::string, std::string> checkIsSequential(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
 
 
 
@@ -260,8 +260,8 @@ class LTLTranslator {
     std::string get_sending_output_place(std::string variable);
     std::string get_assignment_output_place(std::string variable);
     std::string get_selection_output_place(std::string variable);
-    std::string get_function_call_input_place(std::string function_name);
-    std::string get_function_call_output_place(std::string function_name);
+    std::string get_function_call_input_place(std::string function_name, std::string smart_contract);
+    std::string get_function_call_output_place(std::string function_name, std::string smart_contract);
     std::list<std::string> get_timestamp_places();
     std::string get_read_output_place(std::string variable);
     bool timestamp_exists();
@@ -272,3 +272,4 @@ class LTLTranslator {
 }  // namespace LTL2PROP
 
 #endif  // LTLTTRANSLATOR_H_
+//TODO: Complete Documentation
