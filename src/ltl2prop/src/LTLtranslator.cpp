@@ -95,6 +95,7 @@ namespace LTL2PROP {
            sending_output_places.push_back(sending.output_place);
         }
       } 
+    sending_output_places.unique();
     return sending_output_places;     
   }
 
@@ -105,6 +106,7 @@ namespace LTL2PROP {
            assignment_output_places.push_back(assignment.output_place);
         }
       } 
+    assignment_output_places.unique();
     return assignment_output_places;     
   }
 
@@ -125,7 +127,24 @@ namespace LTL2PROP {
         }
       } 
     }
+    selection_output_places.unique();
     return selection_output_places;  
+  }
+
+  std::list<std::string> LTLTranslator::get_balance_variables(std::string function, std::string smart_contract){
+    std::list<std::string> balance_variables = {"address(this).balance"};
+    for (auto &assignment : assignments){
+       if (assignment.parent == function && assignment.smart_contract == smart_contract){
+          if (!assignment.RHV.empty()){
+            for (auto &RHVariable : assignment.RHV) {
+              if (RHVariable == "address(this).balance") {
+                balance_variables.push_back(assignment.variable);
+              }
+            }
+          }
+       }
+    }
+    return balance_variables; 
   }
 
   std::list<std::string> LTLTranslator::get_for_loops_output_places(std::string variable,std::string function, std::string smart_contract){
@@ -268,7 +287,6 @@ namespace LTL2PROP {
     return timestamp_places;     
   }
 
-  // TODO: case timestamp doesn't exist: property is verified automatically ?
   bool LTLTranslator::timestamp_exists(){
     for (const auto& assignment: assignments) {
       if (assignment.timestamp){
@@ -364,51 +382,88 @@ namespace LTL2PROP {
     return read_places;  
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string function,std::string smart_contract, std::string rival_contract="") {
-    std::list<std::string> selection_output_place = get_selection_output_places(variable,function,smart_contract);
-    // First Formula 
-    if (rival_contract.empty()){
-      result["property"] = "ltl property selfdestruction: not testonbalance;";
-      result["proposition"] = "proposition testonbalance:  "+ selection_output_place +"'card > 0;";
+  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract="") {
+    // get all variables that are equal to address(this).balance
+    std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
+    std::list<std::string> balance_testing_output_places;
+
+
+    for (auto &balance_variable : balance_variables) {
+      std::list<std::string> selection_output_places = get_selection_output_places(balance_variable,function,smart_contract);
+      std::list<std::string> for_loop_output_places = get_for_loops_output_places(balance_variable,function,smart_contract);
+      std::list<std::string> while_loop_output_places = get_while_loops_output_places(balance_variable,function,smart_contract);
+      std::list<std::string> require_output_places = get_require_output_places(balance_variable,function,smart_contract);
+
+      // merge all output places of statements that have tests on balance variables
+      balance_testing_output_places.merge(selection_output_places);
+      balance_testing_output_places.merge(for_loop_output_places);
+      balance_testing_output_places.merge(while_loop_output_places);
+      balance_testing_output_places.merge(require_output_places);
     }
-    // Second Formula
-    else{
-      std::string function_call_input_place = get_function_call_input_place(function, smart_contract);
-      std::string rival_function_call_output_place = get_function_call_output_place("selfdestruct", rival_contract);
 
 
-      result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start);";
-      result["propositions"] = "proposition testonbalance:"+ selection_output_place +"'card > 0; \
-                                proposition selfdestruct:"+ rival_function_call_output_place +"'card > 0; \
+      balance_testing_output_places.unique();
+      // First Formula 
+      if(rival_contract.empty()){
+        result["property"] = "ltl property selfdestruction: not (";
+        for (auto &balance_testing_output_place : balance_testing_output_places){
+          result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
+          if (balance_testing_output_place != balance_testing_output_places.back()) { 
+            result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
+          }
+          else {
+            result["property"].append(" testonbalance" + balance_testing_output_place +" ); ");
+          } 
+        }
+      }
+      // Second Formula
+      else{
+        std::string function_call_input_place = get_function_call_input_place(function, smart_contract);
+        std::string rival_function_call_output_place = get_function_call_output_place("selfdestruct", rival_contract);
+        result["propositions"] ="proposition selfdestruct: "+ rival_function_call_output_place +"'card > 0; \
                                 proposition start: "+function_call_input_place + "'card > 0";
-    }
+
+        result["property"] = "ltl property selfdestruction: (not ";
+        for (auto &balance_testing_output_place : balance_testing_output_places){
+          result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
+          if (balance_testing_output_place != balance_testing_output_places.back()) { 
+            result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
+          }
+          else {
+            result["property"].append(" testonbalance" + balance_testing_output_place +" ) or (not selfdestruct until start);");
+          } 
+        }
+      }  
     return result;
   }
-  // TODO: Error handling
-  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function, std::string rival_contract ="") {
-    try {
-      std::string sending_output_place = get_sending_output_place(function);
-      // First version
-      if(rival_contract.empty()){
-        std::string assignment_output_place = get_assignment_output_place(variable);
 
-        result["property"] = "ltl property reentrancy: [] ( not ( not assignment until sending) );";
-        result["propositions"] = "proposition assignment: (" + assignment_output_place +"'card > 0); \
-        proposition sending: ("+ sending_output_place +"'card > 0);";
+
+  // TODO: Error handling
+  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
+    std::list<std::string> sending_output_places = get_sending_output_places(function);
+      std::list<std::string> assignment_output_places = get_assignment_output_places(variable, function);
+
+      result["property"] = "ltl property reentrancy: [] ( not ( not (";//assignment until sending) );";
+
+      for (auto &assignment_output_place : assignment_output_places){
+        result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
+        if(assignment_output_place != assignment_output_places.back()){
+          result["property"].append("assignment"+assignment_output_place +" or ");
+        }
+        else {
+          result["property"].append("assignment"+assignment_output_place +" until ( ");
+        }          
       }
-      // Second version
-      // TODO: find alternative to X operator 
-      else {
-        std::string fallback_output_place = get_function_call_output_place("fallback",rival_contract);
-        result["property"] = "ltl property reentrancy: sending => X [] (( not sending) until end_fallback);";
-        result["propositions"] = "proposition sending: "+ sending_output_place +"'card > 0; \
-                                  proposition end_fallback: " + fallback_output_place + "'card > 0;";
-      }
-      return result;
-    }
-    catch(std::string e) {
-      std::cerr << "There is no function call of function: " << e << '\n';
-    }
+
+      for (auto &sending_output_place : sending_output_places){
+        result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
+        if(sending_output_place != sending_output_places.back()){
+          result["property"].append("sending"+sending_output_place +" or ");
+        }
+        else {
+          result["property"].append("sending"+sending_output_place +" );");
+        }          
+      }        
   }
 
   std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
@@ -417,12 +472,11 @@ namespace LTL2PROP {
       result["property"] = "ltl property tsindependant: [] not (";
       for (auto const& place: places)
       {
+        result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
         if (place != places.back()) { 
-          result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
           result["property"].append("timestamp"+place+" or ");
         }
         else {
-          result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
           result["property"].append("timestamp"+place+");");
         } 
       }
@@ -672,7 +726,7 @@ namespace LTL2PROP {
           std::string function = inputs.at("selected_function");
           std::string rival_contract = inputs.at("rival_contract");
           
-          return detectSelfDestruction(variable, function,smart_contract,rival_contract);
+          return detectSelfDestruction(function,smart_contract,rival_contract);
         }
         case(Reentrancy):{
           std::string variable = inputs.at("selected_variable");
@@ -748,3 +802,5 @@ namespace LTL2PROP {
 // timestamp dependance => DONE
 //TODO: add sc json file to gitignore
 // TODO: handle null cases of json file
+//TODO: add detect all function call io statements
+// TODO: update vulnerabilities/props using funcall/funexec

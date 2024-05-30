@@ -1,6 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++
-
+#ignore directory containing smart contract examples
+test/
 ### C++ ###
 # Prerequisites
 *.d
