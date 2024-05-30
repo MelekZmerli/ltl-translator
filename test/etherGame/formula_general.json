@@ -1,15 +1,15 @@
 {
     "type": "general",
     "params": {
-        "name": "Integer Overflow/Underflow",
+        "name": "Self Destruction",
         "inputs": {
             "smart_contract": "sc1",
-            "selected_function":"func",
+            "selected_function":"func1",
             "selected_variable": "rgeg",
             "min_threshold": "0",
             "max_threshold": "65535",
             "rival_variable": "null",
-            "rival_contract":"null",
+            "rival_contract":"sc2",
             "constant":"null"
         }
     }

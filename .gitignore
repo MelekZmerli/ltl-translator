@@ -1,7 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++
-#ignore directory containing smart contract examples
-test/
+
 ### C++ ###
 # Prerequisites
 *.d
@@ -57,9 +56,11 @@ test/
 
 build
 bin
+test
 .vscode
 output
 
 .DS_Store
+
 
 # End of https://www.toptal.com/developers/gitignore/api/c++

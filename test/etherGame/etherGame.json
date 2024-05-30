@@ -21,7 +21,7 @@
 		},
 		{
 			"name": "redeemableEther"
-		}	
+		}
 	],
 	"functions":[
 		{
@@ -32,8 +32,6 @@
 					"name": "currentBalance",
 					"place": "PLAY_currentBalance"
 				}
-
-
 			]
 		},
 		{
@@ -91,6 +89,61 @@
 				"input_place":"Pin_43",
 				"output_place":"P_out",		
 				"right_hand_variables":["x"],
+				"timestamp": true
+			},
+			{
+				"type":"function_call",
+				"smart_contract":"sc1",
+				"parent":"func0",
+				"variable":"h",
+				"function":"func1",
+				"input_place":"Pin_43",
+				"output_place":"P_34out",		
+				"right_hand_variables":["x"],
+				"timestamp": true
+			},
+			{
+				"type":"function_call",
+				"smart_contract":"sc2",
+				"parent":"func0",
+				"variable":"h",
+				"function":"selfdestruct",
+				"input_place":"Pin_443",
+				"output_place":"P_24out",		
+				"right_hand_variables":["x"],
+				"timestamp": true
+			},
+			{
+				"type":"require",
+				"smart_contract":"sc1",
+				"parent":"func1",
+				"variable":"address(this).balance",
+				"function":"selfdestruct",
+				"input_place":"Pin_443",
+				"output_place":"P_24out",		
+				"right_hand_variables":["x"],
+				"timestamp": true
+			},
+			{
+				"type":"assignment",
+				"smart_contract":"sc1",
+				"parent":"func1",
+				"variable":"balance",
+				"function":"selfdestruct",
+				"input_place":"Pin_643",
+				"output_place":"P_24out",		
+				"right_hand_variables":["address(this).balance"],
+				"timestamp": true
+			},
+			{
+				"type":"while_loop",
+				"smart_contract":"sc1",
+				"parent":"func1",
+				"variable":"balance",
+				"function":"selfdestruct",
+				"input_place":"Pin_643",
+				"output_place":"P_245out",		
+				"right_hand_variables":[],
 				"timestamp": true
 			}
 		]	

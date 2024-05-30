@@ -69,7 +69,7 @@ namespace LTL2PROP {
       if (s.type=="return") returnings.push_back(s);
       if (s.type=="require") requirements.push_back(s);
       if (s.type=="for_loop") for_loops.push_back(s);
-      if (s.type=="while_loops") while_loops.push_back(s);
+      if (s.type=="while_loop") while_loops.push_back(s);
       
     }
 
@@ -210,16 +210,18 @@ namespace LTL2PROP {
           return function_call.output_place;
       }
     }
+    throw std::runtime_error("Function " + function_name + " is never called in this context.");
     throw(function_name);  
   }
 
   std::string LTLTranslator::get_function_call_input_place(std::string function_name,std::string smart_contract){
     for (const auto& function_call: function_calls) {
       if (function_call.function_name == function_name && function_call.smart_contract == smart_contract){
+
           return function_call.input_place;
         }
     }
-    throw(function_name);  
+    throw std::runtime_error("Function " + function_name + " is never called in this context.");
   }
 
   std::list<std::string> LTLTranslator::get_timestamp_places(){
@@ -382,7 +384,7 @@ namespace LTL2PROP {
     return read_places;  
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract="") {
+  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract) {
     // get all variables that are equal to address(this).balance
     std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
     std::list<std::string> balance_testing_output_places;
@@ -401,10 +403,13 @@ namespace LTL2PROP {
       balance_testing_output_places.merge(require_output_places);
     }
 
-
       balance_testing_output_places.unique();
+      // if there's no testing on balance variable, vulnerability doesn't exist.
+      if(balance_testing_output_places.empty()){
+        result["property"] = "ltl property selfdestruction: true";
+      }
       // First Formula 
-      if(rival_contract.empty()){
+      else if(rival_contract.empty()){
         result["property"] = "ltl property selfdestruction: not (";
         for (auto &balance_testing_output_place : balance_testing_output_places){
           result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
@@ -416,16 +421,18 @@ namespace LTL2PROP {
           } 
         }
       }
+
       // Second Formula
       else{
         std::string function_call_input_place = get_function_call_input_place(function, smart_contract);
         std::string rival_function_call_output_place = get_function_call_output_place("selfdestruct", rival_contract);
-        result["propositions"] ="proposition selfdestruct: "+ rival_function_call_output_place +"'card > 0; \
-                                proposition start: "+function_call_input_place + "'card > 0";
+
+        result["propositions"].append("proposition selfdestruct: "+ rival_function_call_output_place +"'card > 0;\n");
+        result["propositions"].append("proposition start: "+function_call_input_place + "'card > 0;\n");
 
         result["property"] = "ltl property selfdestruction: (not ";
         for (auto &balance_testing_output_place : balance_testing_output_places){
-          result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
+          result["propositions"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
           if (balance_testing_output_place != balance_testing_output_places.back()) { 
             result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
           }
@@ -434,6 +441,7 @@ namespace LTL2PROP {
           } 
         }
       }  
+
     return result;
   }
 
@@ -723,18 +731,19 @@ namespace LTL2PROP {
           std::string max_threshold = inputs.at("max_threshold");
           std::string variable = inputs.at("selected_variable");
           result = detectIntegerUnderOverFlow(variable, min_threshold, max_threshold);
-          std::cout << result["property"];
-          std::cout << result["propositions"];
 
-          return result;
+
+
         }
         case(SelfDestruction):{
-          std::string variable = inputs.at("selected_variable");
           std::string smart_contract = inputs.at("smart_contract");
           std::string function = inputs.at("selected_function");
           std::string rival_contract = inputs.at("rival_contract");
-          
-          return detectSelfDestruction(function,smart_contract,rival_contract);
+          result = detectSelfDestruction(function,smart_contract,rival_contract);
+
+          std::cout << result["property"] << std::endl;
+          std::cout << result["propositions"];
+          return result;
         }
         case(Reentrancy):{
           std::string variable = inputs.at("selected_variable");
