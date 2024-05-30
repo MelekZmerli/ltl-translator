@@ -89,21 +89,23 @@ namespace LTL2PROP {
   }
 
   std::list<std::string> LTLTranslator::get_sending_output_places(std::string function){
-    std::list<std::string> output_places;
+    std::list<std::string> sending_output_places;
     for (const auto& sending: sendings) {
       if (sending.parent == function){
-           output_places.push_back(sending.output_place);
+           sending_output_places.push_back(sending.output_place);
         }
       } 
-    return output_places;     
+    return sending_output_places;     
   }
 
-  std::string LTLTranslator::get_assignment_output_place(std::string variable){
+  std::list<std::string> LTLTranslator::get_assignment_output_places(std::string variable, std::string function){
+    std::list<std::string> assignment_output_places;
     for (const auto& assignment: assignments) {
-      if (assignment.variable == variable){
-          return assignment.output_place;
+      if (assignment.variable == variable && assignment.parent == function){
+           assignment_output_places.push_back(assignment.output_place);
         }
-      }      
+      } 
+    return assignment_output_places;     
   }
 
   std::string LTLTranslator::get_selection_output_place(std::string variable){
