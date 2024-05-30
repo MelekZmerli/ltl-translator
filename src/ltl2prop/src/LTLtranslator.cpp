@@ -88,12 +88,14 @@ namespace LTL2PROP {
     return is_local_variable(_name) ? local_variables[_name] : "";
   }
 
-  std::string LTLTranslator::get_sending_output_place(std::string variable){
+  std::list<std::string> LTLTranslator::get_sending_output_places(std::string function){
+    std::list<std::string> output_places;
     for (const auto& sending: sendings) {
-      if (sending.variable == variable){
-          return sending.output_place;
+      if (sending.parent == function){
+           output_places.push_back(sending.output_place);
         }
-      }      
+      } 
+    return output_places;     
   }
 
   std::string LTLTranslator::get_assignment_output_place(std::string variable){
@@ -291,7 +293,7 @@ namespace LTL2PROP {
     return read_places;  
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string smart_contract, std::string rival_contract="") {
+  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string function,std::string smart_contract, std::string rival_contract="") {
     std::string selection_output_place = get_selection_output_place(variable);
     // First Formula 
     if (rival_contract.empty()){
@@ -300,11 +302,11 @@ namespace LTL2PROP {
     }
     // Second Formula
     else{
-      std::string function_call_input_place = get_function_call_input_place("selfdestruct", smart_contract);
+      std::string function_call_input_place = get_function_call_input_place(function, smart_contract);
       std::string rival_function_call_output_place = get_function_call_output_place("selfdestruct", rival_contract);
 
 
-      result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start)";
+      result["property"] = "ltl property selfdestruction: (not testonbalance) or (not selfdestruct until start);";
       result["propositions"] = "proposition testonbalance:"+ selection_output_place +"'card > 0; \
                                 proposition selfdestruct:"+ rival_function_call_output_place +"'card > 0; \
                                 proposition start: "+function_call_input_place + "'card > 0";
@@ -312,9 +314,9 @@ namespace LTL2PROP {
     return result;
   }
   // TODO: Error handling
-  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string rival_contract ="") {
+  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function, std::string rival_contract ="") {
     try {
-      std::string sending_output_place = get_sending_output_place(variable);
+      std::string sending_output_place = get_sending_output_place(function);
       // First version
       if(rival_contract.empty()){
         std::string assignment_output_place = get_assignment_output_place(variable);
@@ -429,7 +431,7 @@ namespace LTL2PROP {
 
   std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(std::string function){
       result["property"] = "ltl property skipempty: [] not emptyparam;";
-      result["propositions"] = "exists (t in " + function + "_PAR | ((t->1)'space > 0) and ((t->1)'last'card > 0));";
+      result["propositions"] = "proposition emptyparam: exists (t in " + function + "_PAR | ((t->1)'space > 0) and ((t->1)'last'card > 0));";
       return result;
 
   }
@@ -595,11 +597,17 @@ namespace LTL2PROP {
         }
         case(SelfDestruction):{
           std::string variable = inputs.at("selected_variable");
+          std::string smart_contract = inputs.at("smart_contract");
+          std::string function = inputs.at("selected_function");
           std::string rival_contract = inputs.at("rival_contract");
-          return detectSelfDestruction(variable, rival_contract);
+          
+          return detectSelfDestruction(variable, function,smart_contract,rival_contract);
         }
-        case(Reentrancy):
-          return detectReentrancy(inputs);
+        case(Reentrancy):{
+          std::string variable = inputs.at("selected_variable");
+          std::string function = inputs.at("selected_function");
+          return detectReentrancy(variable,function);
+        }
         case(TimestampDependence):
           return detectTimestampDependance();
         case(SkipEmptyStringLiteral):{
@@ -609,8 +617,6 @@ namespace LTL2PROP {
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
           result = detectUninitializedStorageVariable(variable);
-          std::cout << result["property"]<<std::endl;
-          std::cout << result["propositions"]<<std::endl;
           return result;
         }
         case(AlwaysLessThan):{
@@ -666,3 +672,8 @@ namespace LTL2PROP {
   }
 
 }  // namespace LTL2PROP
+//TODO: test execution of rest of the vulnerabilities
+// unitialized storage variable => DONE
+// timestamp dependance => DONE
+//TODO: add sc json file to gitignore
+// TODO: handle null cases of json file

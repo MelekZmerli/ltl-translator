@@ -154,13 +154,14 @@ class LTLTranslator {
    * @param inputs a json file that holds the following params:
    * if contract is totally free:     
         @param variable: variable being tested
+        @param function: function used for sending
    * if rival contract is available:
         @param variable: variable being tested
         @param rival_contract: rival contract for second formula   
    * @return Helena code
    */
     std::map<std::string, std::string> detectReentrancy(
-    std::string variable, std::string rival_contract);
+    std::string variable, std::string function, std::string rival_contract);
 
     
 
@@ -193,7 +194,7 @@ class LTLTranslator {
    * @return Helena code
    */
     std::map<std::string, std::string> detectSelfDestruction(
-    std::string variable, std::string smart_contract, std::string rival_contract);
+    std::string variable, std::string function,  std::string smart_contract, std::string rival_contract);
  
      /**
       * @brief Return the helena code that checks that a variable's value is always less than another variable/constant
@@ -259,7 +260,7 @@ class LTLTranslator {
 
 
 
-    std::string get_sending_output_place(std::string variable);
+    std::list<std::string> get_sending_output_places(std::string function);
     std::string get_assignment_output_place(std::string variable);
     std::string get_selection_output_place(std::string variable);
     std::string get_function_call_input_place(std::string function_name, std::string smart_contract);
