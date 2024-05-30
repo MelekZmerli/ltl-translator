@@ -128,6 +128,63 @@ namespace LTL2PROP {
     return selection_output_places;  
   }
 
+  std::list<std::string> LTLTranslator::get_for_loops_output_places(std::string variable,std::string function, std::string smart_contract){
+    std::list<std::string> for_loop_output_places;
+    for (const auto& for_loop: for_loops) {
+      if(for_loop.smart_contract == smart_contract && for_loop.parent == function){
+        if (for_loop.variable == variable){
+            for_loop_output_places.push_back(for_loop.output_place);
+          }
+        else if(!for_loop.RHV.empty()){
+          for (auto &RHVariable : for_loop.RHV){
+            if(RHVariable == variable){
+              for_loop_output_places.push_back(for_loop.output_place);
+            }
+          }
+        }
+      } 
+    }
+    return for_loop_output_places;  
+  }
+
+  std::list<std::string> LTLTranslator::get_while_loops_output_places(std::string variable,std::string function, std::string smart_contract){
+    std::list<std::string> while_loop_output_places;
+    for (const auto& while_loop: while_loops) {
+      if(while_loop.smart_contract == smart_contract && while_loop.parent == function){
+        if (while_loop.variable == variable){
+            while_loop_output_places.push_back(while_loop.output_place);
+          }
+        else if(!while_loop.RHV.empty()){
+          for (auto &RHVariable : while_loop.RHV){
+            if(RHVariable == variable){
+              while_loop_output_places.push_back(while_loop.output_place);
+            }
+          }
+        }
+      } 
+    }
+    return while_loop_output_places;  
+  }
+
+  std::list<std::string> LTLTranslator::get_require_output_places(std::string variable,std::string function, std::string smart_contract){
+    std::list<std::string> require_output_places;
+    for (const auto& require: requirements) {
+      if(require.smart_contract == smart_contract && require.parent == function){
+        if (require.variable == variable){
+            require_output_places.push_back(require.output_place);
+        }
+        else if(!require.RHV.empty()){
+          for (auto &RHVariable : require.RHV){
+            if(RHVariable == variable){
+              require_output_places.push_back(require.output_place);
+            }
+          }
+        }
+      } 
+    }
+    return require_output_places;  
+  }
+
   std::string LTLTranslator::get_function_call_output_place(std::string function_name, std::string smart_contract){
     for (const auto& function_call: function_calls) {
       if (function_call.function_name == function_name && function_call.smart_contract == smart_contract){
