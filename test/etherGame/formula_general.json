@@ -1,11 +1,11 @@
 {
     "type": "general",
     "params": {
-        "name": "Uninitialized Storage Variable",
+        "name": "Integer Overflow/Underflow",
         "inputs": {
             "smart_contract": "sc1",
             "selected_function":"func",
-            "selected_variable": "x",
+            "selected_variable": "rgeg",
             "min_threshold": "0",
             "max_threshold": "65535",
             "rival_variable": "null",

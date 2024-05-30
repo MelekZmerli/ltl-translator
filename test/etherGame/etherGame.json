@@ -21,13 +21,20 @@
 		},
 		{
 			"name": "redeemableEther"
-		}
+		}	
 	],
 	"functions":[
 		{
 			"name":"func1",
 			"params":[],
-			"local_variables":[]
+			"local_variables":[
+				{
+					"name": "currentBalance",
+					"place": "PLAY_currentBalance"
+				}
+
+
+			]
 		},
 		{
 			"name":"func2",

@@ -147,7 +147,7 @@ class LTLTranslator {
      @param max_threshold maximum threshold value
    * @return Helena code
    */
-    std::map<std::string, std::string> detectUnderOverFlowVul(std::string variable, std::string min_threshold, std::string max_threshold);
+    std::map<std::string, std::string> detectIntegerUnderOverFlow(std::string variable, std::string min_threshold, std::string max_threshold);
       
   /**
    * Return the Helena code for the "Reentrancy" vulnerability

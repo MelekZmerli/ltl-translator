@@ -538,18 +538,22 @@ namespace LTL2PROP {
     return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectUnderOverFlowVul(std::string variable, std::string min_threshold, std::string max_threshold) {
+  std::map<std::string, std::string> LTLTranslator::detectIntegerUnderOverFlow(std::string variable, std::string min_threshold, std::string max_threshold) {
     result["property"] = "ltl property outOfRange: [] ( not OUFlow ) ;";
     if (is_global_variable(variable)) {
       result["propositions"] = "proposition OUFlow: exists (t in S | (t->1)." + variable + " < " + min_threshold +") or exists (t in S | (t->1)." + variable + " > " + max_threshold + ");";
     }
-    else
+    else if (!local_variables[variable].empty())
     {
       std::string variable_place = local_variables[variable];
 
       result["propositions"] = "proposition OUFlow: exists (t in "+ variable_place + " | (t->1)." + variable + " < " + min_threshold +") or exists (t in "+ variable_place \
       +" | (t->1)." + variable + " > " + max_threshold + ");";
     }
+    else{
+      throw std::runtime_error("Variable " + variable + " doesn't exist in smart contract.");
+    }
+    
     return result;
 
   }
@@ -718,7 +722,11 @@ namespace LTL2PROP {
           std::string min_threshold = inputs.at("min_threshold");
           std::string max_threshold = inputs.at("max_threshold");
           std::string variable = inputs.at("selected_variable");
-          return detectUnderOverFlowVul(variable, min_threshold, max_threshold);
+          result = detectIntegerUnderOverFlow(variable, min_threshold, max_threshold);
+          std::cout << result["property"];
+          std::cout << result["propositions"];
+
+          return result;
         }
         case(SelfDestruction):{
           std::string variable = inputs.at("selected_variable");
