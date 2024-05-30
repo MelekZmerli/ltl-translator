@@ -262,7 +262,8 @@ class LTLTranslator {
 
     std::list<std::string> get_sending_output_places(std::string function);
     std::list<std::string> LTLTranslator::get_assignment_output_places(std::string variable, std::string function);
-    std::string get_selection_output_place(std::string variable);
+    std::list<std::string> LTLTranslator::get_selection_output_places(std::string variable, std::string function, std::string smart_contract);
+    //TODO: add require, for loops and while loops output places functions
     std::string get_function_call_input_place(std::string function_name, std::string smart_contract);
     std::string get_function_call_output_place(std::string function_name, std::string smart_contract);
     std::list<std::string> get_timestamp_places();

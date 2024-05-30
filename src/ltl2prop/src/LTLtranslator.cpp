@@ -108,12 +108,24 @@ namespace LTL2PROP {
     return assignment_output_places;     
   }
 
-  std::string LTLTranslator::get_selection_output_place(std::string variable){
+  //TODO: get all variables that were affected address(this).balance value => get_balance_testing_output_places
+  std::list<std::string> LTLTranslator::get_selection_output_places(std::string variable,std::string function, std::string smart_contract){
+    std::list<std::string> selection_output_places;
     for (const auto& selection: selections) {
-      if (selection.variable == variable){
-          return selection.output_place;
+      if(selection.smart_contract == smart_contract && selection.parent == function){
+        if (selection.variable == variable){
+            selection_output_places.push_back(selection.output_place);
+          }
+        else if(!selection.RHV.empty()){
+          for (auto &RHVariable : selection.RHV){
+            if(RHVariable == variable){
+              selection_output_places.push_back(selection.output_place);
+            }
+          }
         }
-      }      
+      } 
+    }
+    return selection_output_places;  
   }
 
   std::string LTLTranslator::get_function_call_output_place(std::string function_name, std::string smart_contract){
@@ -296,7 +308,7 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string variable, std::string function,std::string smart_contract, std::string rival_contract="") {
-    std::string selection_output_place = get_selection_output_place(variable);
+    std::list<std::string> selection_output_place = get_selection_output_places(variable,function,smart_contract);
     // First Formula 
     if (rival_contract.empty()){
       result["property"] = "ltl property selfdestruction: not testonbalance;";
