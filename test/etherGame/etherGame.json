@@ -54,7 +54,8 @@
 				"variable":"x",
 				"function":"null",
 				"input_place":"Pin_43",
-				"output_place":"P5_out",		
+				"output_place":"P5_out",	
+				"param_place":"",			
 				"right_hand_variables":["1","3"],
 				"timestamp": true
 			},
@@ -65,7 +66,8 @@
 				"variable":"x",
 				"function":"null",
 				"input_place":"Pin_43",
-				"output_place":"P24_out",		
+				"output_place":"P24_out",	
+				"param_place":"",
 				"right_hand_variables":["1","3"],
 				"timestamp": true
 			},
@@ -76,7 +78,8 @@
 				"variable":"h",
 				"function":"null",
 				"input_place":"Pin_43",
-				"output_place":"P3_out",		
+				"output_place":"P3_out",	
+				"param_place":"",		
 				"right_hand_variables":[],
 				"timestamp": true
 			},
@@ -87,7 +90,8 @@
 				"variable":"h",
 				"function":"null",
 				"input_place":"Pin_43",
-				"output_place":"P_out",		
+				"output_place":"P_out",	
+				"param_place":"",			
 				"right_hand_variables":["x"],
 				"timestamp": true
 			},
@@ -98,7 +102,8 @@
 				"variable":"h",
 				"function":"func1",
 				"input_place":"Pin_43",
-				"output_place":"P_34out",		
+				"output_place":"P_34out",
+				"param_place":"P_p32",		
 				"right_hand_variables":["x"],
 				"timestamp": true
 			},
@@ -110,6 +115,7 @@
 				"function":"selfdestruct",
 				"input_place":"Pin_443",
 				"output_place":"P_24out",		
+				"param_place":"P_p24",		
 				"right_hand_variables":["x"],
 				"timestamp": true
 			},
@@ -120,7 +126,8 @@
 				"variable":"address(this).balance",
 				"function":"selfdestruct",
 				"input_place":"Pin_443",
-				"output_place":"P_24out",		
+				"output_place":"P_24out",	
+				"param_place":"",		
 				"right_hand_variables":["x"],
 				"timestamp": true
 			},
@@ -131,7 +138,8 @@
 				"variable":"balance",
 				"function":"selfdestruct",
 				"input_place":"Pin_643",
-				"output_place":"P_24out",		
+				"output_place":"P_24out",	
+				"param_place":"",		
 				"right_hand_variables":["address(this).balance"],
 				"timestamp": true
 			},
@@ -143,6 +151,7 @@
 				"function":"selfdestruct",
 				"input_place":"Pin_643",
 				"output_place":"P_245out",		
+				"param_place":"",		
 				"right_hand_variables":[],
 				"timestamp": true
 			}

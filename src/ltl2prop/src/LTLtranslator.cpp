@@ -56,6 +56,7 @@ namespace LTL2PROP {
         .function_name = statement.at("function"),
         .input_place = statement.at("input_place"),
         .output_place = statement.at("output_place"),
+        .param_place = statement.at("param_place"),
         .RHV = statement["right_hand_variables"].get<std::list<std::string>>(),
         .timestamp = statement.at("timestamp"),
       };
@@ -393,6 +394,17 @@ namespace LTL2PROP {
     return read_places;  
   }
 
+  std::list<std::string> LTLTranslator::get_function_call_param_places(std::string function){
+    std::list<std::string> function_call_param_places;
+    for (auto &function_call : function_calls) {
+      if(function_call.parent == function){
+        function_call_param_places.push_back(function_call.param_place);
+      }
+    }
+    
+  }
+
+
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract) {
     // get all variables that are equal to address(this).balance
     std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
@@ -596,15 +608,22 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(std::string function){
-      result["property"] = "ltl property skipempty: [] not emptyparam;";
-      result["propositions"] = "proposition emptyparam: exists (t in " + function + "_PAR | ((t->1)'space > 0) and ((t->1)'last'card > 0));";
+      std::list<std::string> function_call_inside_function_param_places = get_function_call_param_places(function);
+      result["property"] = "ltl property skipempty: [] not (";
+      for (auto &function_call_inside_function_param_place : function_call_inside_function_param_places) {
+        result["propositions"].append("proposition emptyparam" + function_call_inside_function_param_place + ": exists (t in " + function_call_inside_function_param_place + " | ((t->1)'space > 0) and ((t->1)'last'card > 0));\n");
+        if(function_call_inside_function_param_place != function_call_inside_function_param_places.back()){
+          result["property"].append("emptyparam" + function_call_inside_function_param_place + " or ");
+        }
+        else {
+          result["property"].append("emptyparam" + function_call_inside_function_param_place + " );");
+        }
+      }
       return result;
-
   }
 
 
   std::map<std::string, std::string> LTLTranslator::checkAlwaysLessThan(std::string variable, std::string rival_variable="", std::string max_threshold =""){
-
 
     result["property"] = "ltl property smaller: [] not more;";
 

@@ -48,6 +48,7 @@ class LTLTranslator {
 				std::string function_name;
 				std::string input_place;
 				std::string output_place;		
+        std::string param_place;		
 				std::list<std::string> RHV;
 				bool timestamp;
   };
@@ -273,6 +274,7 @@ class LTLTranslator {
     std::list<std::string> get_timestamp_places();
     std::list<std::string> get_read_output_places(std::string variable);
     std::list<std::string> get_write_output_places(std::string variable);
+    std::list<std::string> get_function_call_param_places(std::string function);
     bool timestamp_exists();
     
 
