@@ -268,8 +268,8 @@ class LTLTranslator {
     std::list<std::string> get_require_output_places(std::string variable,std::string function, std::string smart_contract);
     std::list<std::string> get_balance_variables(std::string function, std::string smart_contract);
 
-    std::string get_function_call_input_place(std::string function_name, std::string smart_contract);
-    std::string get_function_call_output_place(std::string function_name, std::string smart_contract);
+    std::list<std::string> get_function_call_input_places(std::string function_name, std::string smart_contract);
+    std::list<std::string> get_function_call_output_places(std::string function_name, std::string smart_contract);
     std::list<std::string> get_timestamp_places();
     std::list<std::string> get_read_output_places(std::string variable);
     std::list<std::string> get_write_output_places(std::string variable);
