@@ -215,6 +215,7 @@ namespace LTL2PROP {
     if(function_call_output_places.empty()){
       throw std::runtime_error("Function " + function_name + " is never called in this context.");
     }
+    function_call_output_places.unique();
     return function_call_output_places;
   }
 
@@ -227,7 +228,8 @@ namespace LTL2PROP {
     }
     if (function_call_input_places.empty()) {
       throw std::runtime_error("Function " + function_name + " is never called in this context.");
-    }    
+    }   
+    function_call_input_places.unique(); 
     return function_call_input_places;
   }
 
@@ -710,7 +712,7 @@ namespace LTL2PROP {
 
   std::map<std::string, std::string> LTLTranslator::checkIsAlwaysCalled(std::string function_name, std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
-        result["property"] = "ltl property called: <> ( ";
+    result["property"] = "ltl property called: <> ( ";
 
     for (auto &function_call_input_place : function_call_input_places) {
       result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
@@ -721,34 +723,82 @@ namespace LTL2PROP {
         result["property"].append("funcall" + function_call_input_place +" ); " );
       }
     }
-    
     return result;
   }  
 
 
   std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(std::string function_name,std::string smart_contract) {
-    std::list<std::string> function_input_places = get_function_call_input_places(function_name, smart_contract);
-    result["property"] = "ltl property uncalled: [] not funcall;";
-    result["propositions"] = "proposition funcall: "+ function_input_place + "'card > 0;";
+    std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
+    result["property"] = "ltl property uncalled: [] not ( ";
+    for (auto &function_call_input_place : function_call_input_places) {
+      result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
+      if (function_call_input_place != function_call_input_places.back()) {
+        result["property"].append("funcall" + function_call_input_place +" or " );
+      }
+      else {
+        result["property"].append("funcall" + function_call_input_place +" ); " );
+      }
+    }
     return result;
   }  
 
 
   std::map<std::string, std::string> LTLTranslator::checkIsExecuted(std::string function_name,std::string smart_contract) {
-    std::list<std::string> function_output_places = get_function_call_output_places(function_name, smart_contract);
-    result["property"] = "ltl property executed: []( funcall => <> funexec);";
-    result["propositions"] = "proposition funexec: " + function_output_places + "'card > 0;";
+    std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
+    std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
+    result["property"] = "ltl property executed: [] ( ";
+
+    // get all funcall propositions
+    for (auto &function_call_input_place : function_call_input_places) {
+      result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
+      if (function_call_input_place != function_call_input_places.back()) {
+        result["property"].append("funcall" + function_call_input_place +" or " );
+      }
+      else {
+        result["property"].append("funcall" + function_call_input_place +" ) => <> ( " );
+      }
+    }
+
+    // get all funexec propositions
+    for (auto &function_call_output_place : function_call_output_places) {
+      result["propositions"].append("proposition funexec" + function_call_output_place +" : " + function_call_output_place +"'card > 0;\n");
+      if (function_call_output_place != function_call_output_places.back()) {
+        result["property"].append("funexec" + function_call_output_place +" or " );
+      }
+      else {
+        result["property"].append("funexec" + function_call_output_place +" );" );
+      }
+    }
     return result;
   }  
 
 
   std::map<std::string, std::string> LTLTranslator::checkIsSequential(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
-    std::string function_input_place = get_function_call_input_places(function_name, smart_contract);
-    std::string rival_function_input_place = get_function_call_input_places(rival_function, rival_contract);
+    std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
+    std::list<std::string> rival_function_call_input_places = get_function_call_input_places(rival_function, rival_contract);
+    result["property"] = "property sequential: [] ( "; 
 
-    result["property"] = "property sequential: [] funcallA => <> funcallB;";
-    result["propositions"] = "proposition funcallA: " + function_input_place + "'card > 0;\
-                              proposition funcallB: " + rival_function_input_place + "'card > 0;";
+    // get all funcall A properties
+    for (auto &function_call_input_place : function_call_input_places) {
+      result["propositions"].append("proposition funcallA" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
+      if (function_call_input_place != function_call_input_places.back()) {
+        result["property"].append("funcallA" + function_call_input_place +" or " );
+      }
+      else {
+        result["property"].append("funcallA" + function_call_input_place +" ) => <> ( " );
+      }
+    }
+    // get all funcall B properties
+    for (auto &rival_function_call_input_place : rival_function_call_input_places) {
+      result["propositions"].append("proposition funcallB" + rival_function_call_input_place +" : " + rival_function_call_input_place +"'card > 0;\n");
+      if (rival_function_call_input_place != rival_function_call_input_places.back()) {
+        result["property"].append("funcallB" + rival_function_call_input_place +" or " );
+      }
+      else {
+        result["property"].append("funcallB" + rival_function_call_input_place +" );" );
+      }
+    }
+
     return result;
   }  
 
@@ -858,4 +908,5 @@ namespace LTL2PROP {
 //TODO: add sc json file to gitignore
 // TODO: handle null cases of json file
 //TODO: add detect all function call io statements
+//TODO: change skip empty string literal to check all function calls inside function variable 
 // TODO: update vulnerabilities/props using funcall/funexec
