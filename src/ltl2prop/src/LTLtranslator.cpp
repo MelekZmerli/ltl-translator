@@ -96,22 +96,14 @@ namespace LTL2PROP {
            sending_output_places.push_back(sending.output_place);
         }
       } 
+    if(sending_output_places.empty()){
+      std::runtime_error("There are no sending statements in this smart contract");
+    }
     sending_output_places.unique();
     return sending_output_places;     
   }
 
-  std::list<std::string> LTLTranslator::get_assignment_output_places(std::string variable, std::string function){
-    std::list<std::string> assignment_output_places;
-    for (const auto& assignment: assignments) {
-      if (assignment.variable == variable && assignment.parent == function){
-           assignment_output_places.push_back(assignment.output_place);
-        }
-      } 
-    assignment_output_places.unique();
-    return assignment_output_places;     
-  }
 
-  //TODO: get all variables that were affected address(this).balance value => get_balance_testing_output_places
   std::list<std::string> LTLTranslator::get_selection_output_places(std::string variable,std::string function, std::string smart_contract){
     std::list<std::string> selection_output_places;
     for (const auto& selection: selections) {
@@ -132,14 +124,30 @@ namespace LTL2PROP {
     return selection_output_places;  
   }
 
-  std::list<std::string> LTLTranslator::get_balance_variables(std::string function, std::string smart_contract){
+  // get all variables that were affected address(this).balance value
+  // we look in assignment and variable declaration statements
+  std::list<std::string> LTLTranslator::get_balance_variables(std::string function, std::string smart_contract=""){
     std::list<std::string> balance_variables = {"address(this).balance"};
     for (auto &assignment : assignments){
-       if (assignment.parent == function && assignment.smart_contract == smart_contract){
-          if (!assignment.RHV.empty()){
-            for (auto &RHVariable : assignment.RHV) {
+        // for reentrancy variable, smart contract is not provided so we only check for function
+      if (assignment.parent == function && (assignment.smart_contract == smart_contract || smart_contract.empty())) {
+        if (!assignment.RHV.empty()){
+          for (auto &RHVariable : assignment.RHV) {
+            if (RHVariable == "address(this).balance") {
+              balance_variables.push_back(assignment.variable);
+            }
+          }
+        }
+      }
+    }
+
+    for (auto &variable_declaration : variable_declarations){
+        // for reentrancy variable, smart contract is not provided so we only check for function
+       if (variable_declaration.parent == function && (variable_declaration.smart_contract == smart_contract || smart_contract.empty())) {
+          if (!variable_declaration.RHV.empty()){
+            for (auto &RHVariable : variable_declaration.RHV) {
               if (RHVariable == "address(this).balance") {
-                balance_variables.push_back(assignment.variable);
+                balance_variables.push_back(variable_declaration.variable);
               }
             }
           }
@@ -308,7 +316,10 @@ namespace LTL2PROP {
     return false;     
   }
 
-  std::list<std::string> LTLTranslator::get_write_output_places(std::string variable){
+  // returns output places for following statements (variable x)
+  // int x = y;
+  // x = y;
+  std::list<std::string> LTLTranslator::get_write_output_places(std::string variable, std::string function){
     std::list<std::string> write_places;
     for(auto &assignment : assignments) {
       if (assignment.variable == variable) {
@@ -323,8 +334,10 @@ namespace LTL2PROP {
     return write_places;     
   }
 
-
-  std::list<std::string> LTLTranslator::get_read_output_places(std::string variable){
+  // returns x in following cases
+  // int x = y;
+  // x = y;
+  std::list<std::string> LTLTranslator::get_read_output_places(std::string variable, std::string function){
     std::list<std::string> read_places;
     for (const auto& assignment: assignments) {
       for (const auto& RHVariable: assignment.RHV){
@@ -510,12 +523,20 @@ namespace LTL2PROP {
 
 
   // TODO: Error handling
+  // ltl property: [ ] not (( not assignment ) until (sending)) )
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
+    std::list<std::string> balance_variables = get_balance_variables(function);
     std::list<std::string> sending_output_places = get_sending_output_places(function);
-    std::list<std::string> assignment_output_places = get_assignment_output_places(variable, function);
+
+    std::list<std::string> assignment_output_places;
+    // get assignment (assignment and variable declaration statements) output places for all variables that are affected  
+    for (auto &balance_variable : balance_variables){
+      assignment_output_places.merge(get_write_output_places(balance_variable, function));
+    }
 
     result["property"] = "ltl property reentrancy: [] ( not ( not (";
-
+    
+    // get assignment propositions
     for (auto &assignment_output_place : assignment_output_places){
       result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
       if(assignment_output_place != assignment_output_places.back()){
@@ -525,16 +546,18 @@ namespace LTL2PROP {
         result["property"].append("assignment"+assignment_output_place +" until ( ");
       }          
     }
-
+    // get sending propositions
     for (auto &sending_output_place : sending_output_places){
-      result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
+      result["propositions"].append("proposition sending" + sending_output_place + " : ( " + sending_output_place + "'card > 0);\n");
       if(sending_output_place != sending_output_places.back()){
         result["property"].append("sending"+sending_output_place +" or ");
       }
       else {
         result["property"].append("sending"+sending_output_place +" );");
       }          
-    }        
+    } 
+
+    return result;       
 }
 
 std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
@@ -559,9 +582,9 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
   return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable) {
-    std::list<std::string> write_output_places = get_write_output_places(variable);
-    std::list<std::string> read_output_places = get_read_output_places(variable);
+  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable,std::string function) {
+    std::list<std::string> write_output_places = get_write_output_places(variable, function);
+    std::list<std::string> read_output_places = get_read_output_places(variable, function);
 
     //remove duplicates from both lists
     write_output_places.unique();
@@ -867,16 +890,18 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
           std::string smart_contract = inputs.at("smart_contract");
           std::string function = inputs.at("selected_function");
           std::string rival_contract = inputs.at("rival_contract");
-          result = detectSelfDestruction(function,smart_contract,rival_contract);
 
-          std::cout << result["property"] << std::endl;
-          std::cout << result["propositions"];
-          return result;
+
+          return  detectSelfDestruction(function,smart_contract,rival_contract);
         }
         case(Reentrancy):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
-          return detectReentrancy(variable,function);
+          
+          result = detectReentrancy(variable,function);
+          std::cout << result["property"] << std::endl;
+          std::cout << result["propositions"];
+          return result;
         }
         case(TimestampDependence):
           return detectTimestampDependance();
@@ -886,7 +911,9 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
         }
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
-          result = detectUninitializedStorageVariable(variable);
+          std::string function = inputs.at("selected_function");
+
+          result = detectUninitializedStorageVariable(variable, function);
           return result;
         }
         case(AlwaysLessThan):{
