@@ -1,8 +1,0 @@
-{
-  "type": "specific",
-  "params": {
-    "name": "Integer Overflow/Underflow",
-    "propositions": "",
-    "property": ""
-  }
-}
