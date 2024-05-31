@@ -274,7 +274,8 @@ class LTLTranslator {
     std::list<std::string> get_read_output_places(std::string variable,std::string function);
     std::list<std::string> get_write_output_places(std::string variable,std::string function);
     std::list<std::string> get_function_call_param_places(std::string function);
-    std::list<std::string> get_balance_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract);
+    std::list<std::string> get_balance_variables_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract);
+    std::list<std::string> get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function);
     bool timestamp_exists();
     
 

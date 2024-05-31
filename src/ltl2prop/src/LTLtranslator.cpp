@@ -418,7 +418,7 @@ namespace LTL2PROP {
     return function_call_param_places;
   }
 
-  std::list<std::string> LTLTranslator::get_balance_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract){
+  std::list<std::string> LTLTranslator::get_balance_variables_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract){
     std::list<std::string> balance_testing_output_places;
     for (auto &balance_variable : balance_variables) {
       std::list<std::string> selection_output_places = get_selection_output_places(balance_variable,function,smart_contract);
@@ -437,10 +437,20 @@ namespace LTL2PROP {
     return balance_testing_output_places;
   }
 
+  // get assignment (assignment and variable declaration statements) output places for all variables that are affected  
+  std::list<std::string> LTLTranslator::get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function){
+    std::list<std::string> assignment_output_places;
+    for (auto &balance_variable : balance_variables){
+      assignment_output_places.merge(get_write_output_places(balance_variable, function));
+    }
+    assignment_output_places.unique();
+    return assignment_output_places;
+  }
+
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract) {
     // get all variables that are equal to address(this).balance
     std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
-    std::list<std::string> balance_testing_output_places = get_balance_testing_output_places(balance_variables, function, smart_contract);
+    std::list<std::string> balance_testing_output_places = get_balance_variables_testing_output_places(balance_variables, function, smart_contract);
 
 
     // if there's no testing on balance variable, vulnerability doesn't exist.
@@ -527,24 +537,25 @@ namespace LTL2PROP {
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
     std::list<std::string> balance_variables = get_balance_variables(function);
     std::list<std::string> sending_output_places = get_sending_output_places(function);
+    std::list<std::string> assignment_output_places = get_balance_variables_write_statements(balance_variables, function);
 
-    std::list<std::string> assignment_output_places;
-    // get assignment (assignment and variable declaration statements) output places for all variables that are affected  
-    for (auto &balance_variable : balance_variables){
-      assignment_output_places.merge(get_write_output_places(balance_variable, function));
-    }
 
-    result["property"] = "ltl property reentrancy: [] ( not ( not (";
     
     // get assignment propositions
-    for (auto &assignment_output_place : assignment_output_places){
-      result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
-      if(assignment_output_place != assignment_output_places.back()){
-        result["property"].append("assignment"+assignment_output_place +" or ");
+    try{
+      for (auto &assignment_output_place : assignment_output_places){
+        result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
+        if(assignment_output_place != assignment_output_places.back()){
+          result["property"].append("assignment"+assignment_output_place +" or ");
+        }
+        else {
+          result["property"].append("assignment"+assignment_output_place +" until ( ");
+        }          
       }
-      else {
-        result["property"].append("assignment"+assignment_output_place +" until ( ");
-      }          
+    }
+    catch(const std::runtime_error e)
+    {
+      std::cerr << e.what() << '\n';
     }
     // get sending propositions
     for (auto &sending_output_place : sending_output_places){
