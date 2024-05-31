@@ -533,41 +533,60 @@ namespace LTL2PROP {
 
 
   // TODO: Error handling
-  // ltl property: [ ] not (( not assignment ) until (sending)) )
+  // ltl property reentrancy: [ ] not (( not assignment ) until (sending))
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
     std::list<std::string> balance_variables = get_balance_variables(function);
     std::list<std::string> sending_output_places = get_sending_output_places(function);
     std::list<std::string> assignment_output_places = get_balance_variables_write_statements(balance_variables, function);
+    result["property"] = "ltl property reentrancy: [] not (not (";
 
 
-    
-    // get assignment propositions
-    try{
+    // in case there aren't any sending statements in context, smart contract isn't vulnerable to reentrancy attacks.
+    if(sending_output_places.empty()){
+      result["property"] = "ltl property reentrancy: true;";
+      return result;
+    }
+    // in case there are sending statements but there are no assignment to variable we only check if there are sendings.
+    // Q? false OR replace it with false instead of assignment in reentrancy property OR [] not sending
+    else if(assignment_output_places.empty()){
+      result["property"] = "ltl property reentrancy: [] not (";  
+      // get sending propositions
+      for (auto &sending_output_place : sending_output_places){
+        result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
+        if(sending_output_place != sending_output_places.back()){
+          result["property"].append("sending"+sending_output_place +" or ");
+        }
+        else {
+          result["property"].append("sending"+sending_output_place +"));");
+        }          
+      }     
+    }
+    // there are sending and assignment properties
+    else {
+      // get assignment propositions
+
       for (auto &assignment_output_place : assignment_output_places){
         result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
         if(assignment_output_place != assignment_output_places.back()){
           result["property"].append("assignment"+assignment_output_place +" or ");
         }
         else {
-          result["property"].append("assignment"+assignment_output_place +" until ( ");
+          result["property"].append("assignment"+assignment_output_place +") until (");
         }          
       }
-    }
-    catch(const std::runtime_error e)
-    {
-      std::cerr << e.what() << '\n';
-    }
-    // get sending propositions
-    for (auto &sending_output_place : sending_output_places){
-      result["propositions"].append("proposition sending" + sending_output_place + " : ( " + sending_output_place + "'card > 0);\n");
-      if(sending_output_place != sending_output_places.back()){
-        result["property"].append("sending"+sending_output_place +" or ");
-      }
-      else {
-        result["property"].append("sending"+sending_output_place +" );");
-      }          
-    } 
+      
 
+      // get sending propositions
+      for (auto &sending_output_place : sending_output_places){
+        result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
+        if(sending_output_place != sending_output_places.back()){
+          result["property"].append("sending"+sending_output_place +" or ");
+        }
+        else {
+          result["property"].append("sending"+sending_output_place +"));");
+        }          
+      } 
+    }
     return result;       
 }
 
