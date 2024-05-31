@@ -401,16 +401,12 @@ namespace LTL2PROP {
         function_call_param_places.push_back(function_call.param_place);
       }
     }
-    
+    function_call_param_places.unique();
+    return function_call_param_places;
   }
 
-
-  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract) {
-    // get all variables that are equal to address(this).balance
-    std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
+  std::list<std::string> LTLTranslator::get_balance_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract){
     std::list<std::string> balance_testing_output_places;
-
-
     for (auto &balance_variable : balance_variables) {
       std::list<std::string> selection_output_places = get_selection_output_places(balance_variable,function,smart_contract);
       std::list<std::string> for_loop_output_places = get_for_loops_output_places(balance_variable,function,smart_contract);
@@ -424,41 +420,52 @@ namespace LTL2PROP {
       balance_testing_output_places.merge(require_output_places);
     }
 
-      balance_testing_output_places.unique();
-      // if there's no testing on balance variable, vulnerability doesn't exist.
-      if(balance_testing_output_places.empty()){
-        result["property"] = "ltl property selfdestruction: true";
-      }
-      // First Formula 
-      else if(rival_contract.empty()){
-        result["property"] = "ltl property selfdestruction: not (";
-        for (auto &balance_testing_output_place : balance_testing_output_places){
-          result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
-          if (balance_testing_output_place != balance_testing_output_places.back()) { 
-            result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
-          }
-          else {
-            result["property"].append(" testonbalance" + balance_testing_output_place +" ); ");
-          } 
+    balance_testing_output_places.unique();
+    return balance_testing_output_places;
+  }
+
+  std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract) {
+    // get all variables that are equal to address(this).balance
+    std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
+    std::list<std::string> balance_testing_output_places = get_balance_testing_output_places(balance_variables, function, smart_contract);
+
+
+    // if there's no testing on balance variable, vulnerability doesn't exist.
+    if(balance_testing_output_places.empty()){
+      result["property"] = "ltl property selfdestruction: true";
+    }
+    
+    // First Formula : ltl property selfdestruction: not testonbalance ;
+    else if(rival_contract.empty()){
+      result["property"] = "ltl property selfdestruction: not (";
+      for (auto &balance_testing_output_place : balance_testing_output_places){
+        result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
+        if (balance_testing_output_place != balance_testing_output_places.back()) { 
+          result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
         }
+        else {
+          result["property"].append(" testonbalance" + balance_testing_output_place +" ); ");
+        } 
+      }
+    }
+
+    // Second Formula :  ltl property selfdestruction: ( not testonbalance ) or ( not selfdestruct U start );
+    else{
+
+      // get balance testonbalance properties
+      result["property"] = "ltl property selfdestruction: (not ";
+      for (auto &balance_testing_output_place : balance_testing_output_places){
+        result["propositions"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
+        if (balance_testing_output_place != balance_testing_output_places.back()) { 
+          result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
+        }
+        else {
+          result["property"].append(" testonbalance" + balance_testing_output_place +" ) or ( not ( ");
+        } 
       }
 
-      // Second Formula
-      else{
-        std::list<std::string> function_call_input_places = get_function_call_input_places(function, smart_contract);
+      try{
         std::list<std::string> rival_function_call_output_places = get_function_call_output_places("selfdestruct", rival_contract);
-        // get balance testonbalance properties
-        result["property"] = "ltl property selfdestruction: (not ";
-        for (auto &balance_testing_output_place : balance_testing_output_places){
-          result["propositions"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
-          if (balance_testing_output_place != balance_testing_output_places.back()) { 
-            result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
-          }
-          else {
-            result["property"].append(" testonbalance" + balance_testing_output_place +" ) or ( ");
-          } 
-        }
-
         // get selfdestruct propositions
         for (auto &rival_function_call_output_place : rival_function_call_output_places) {
         result["propositions"].append("proposition selfdestruct"+rival_function_call_output_place + " : " + rival_function_call_output_place +"'card > 0;\n");
@@ -466,11 +473,19 @@ namespace LTL2PROP {
             result["property"].append("selfdestruct"+rival_function_call_output_place +" or ");
           }
           else {
-            result["property"].append("selfdestruct"+rival_function_call_output_place +" ) until (");
+            result["property"].append("selfdestruct"+rival_function_call_output_place +" ) until ( ");
           }
-        
         }
+      }
+      // if selfdestruct function is never called in rival contract, contract isn't vulnerable to selfdestruction exploits.
+      catch(std::runtime_error e){
+        result["property"] = "ltl property selfdestruction: true;";
+        return result;
+      }
 
+
+      try{
+        std::list<std::string> function_call_input_places = get_function_call_input_places(function, smart_contract);
         // get start propositions
         for (auto &function_call_input_place : function_call_input_places) {
           result["propositions"].append("proposition start" + function_call_input_place + " : " + function_call_input_place + "'card > 0;\n");
@@ -478,11 +493,15 @@ namespace LTL2PROP {
             result["property"].append("start" + function_call_input_place + " or ");
           }
           else {
-            result["property"].append("start" + function_call_input_place + " ); ");
+            result["property"].append("start" + function_call_input_place + " )); ");
           } 
         }
-      }  
-
+      }
+      // if tested function isn't called in context execution then we subsitute start with false property
+      catch(std::runtime_error e){
+        result["property"].append("false );");
+      }
+    }  
     return result;
   }
 
@@ -492,7 +511,7 @@ namespace LTL2PROP {
     std::list<std::string> sending_output_places = get_sending_output_places(function);
       std::list<std::string> assignment_output_places = get_assignment_output_places(variable, function);
 
-      result["property"] = "ltl property reentrancy: [] ( not ( not (";//assignment until sending) );";
+      result["property"] = "ltl property reentrancy: [] ( not ( not (";
 
       for (auto &assignment_output_place : assignment_output_places){
         result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
@@ -575,7 +594,7 @@ namespace LTL2PROP {
         }
         else {
           result["propositions"].append("property write"+write_output_place+" : "+ write_output_place +"'card > 0;\n");
-          result["property"].append("write"+write_output_place+");");
+          result["property"].append("write"+write_output_place+" );");
         } 
       }
     }
@@ -921,11 +940,11 @@ namespace LTL2PROP {
 
 }  // namespace LTL2PROP
 //TODO: test execution of rest of the vulnerabilities
+
+// self-destruction => Error Handling
 // integer under/overflow => DONE
 // unitialized storage variable => DONE
 // timestamp dependance => DONE
-//TODO: add sc json file to gitignore
+
+
 // TODO: handle null cases of json file
-//TODO: add detect all function call io statements
-//TODO: change skip empty string literal to check all function calls inside function variable 
-// TODO: update vulnerabilities/props using funcall/funexec
