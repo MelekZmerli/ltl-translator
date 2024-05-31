@@ -439,7 +439,7 @@ namespace LTL2PROP {
     else if(rival_contract.empty()){
       result["property"] = "ltl property selfdestruction: not (";
       for (auto &balance_testing_output_place : balance_testing_output_places){
-        result["proposition"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
+        result["propositions"].append("proposition testonbalance" +balance_testing_output_place +" : "+ balance_testing_output_place +"'card > 0;\n");
         if (balance_testing_output_place != balance_testing_output_places.back()) { 
           result["property"].append(" testonbalance" + balance_testing_output_place +" or ");
         }
@@ -480,6 +480,7 @@ namespace LTL2PROP {
       // if selfdestruct function is never called in rival contract, contract isn't vulnerable to selfdestruction exploits.
       catch(std::runtime_error e){
         result["property"] = "ltl property selfdestruction: true;";
+        result["propositions"].clear();
         return result;
       }
 
@@ -497,9 +498,11 @@ namespace LTL2PROP {
           } 
         }
       }
-      // if tested function isn't called in context execution then we subsitute start with false property
+      // if tested function isn't called in context execution then function is not vulnerable to self destruction exploits
+      // Q? directly true or keep propositions and replace it with until false instead of until start
       catch(std::runtime_error e){
-        result["property"].append("false );");
+        result["property"] = "ltl property selfdestruction: true;";
+        result["propositions"].clear();
       }
     }  
     return result;
@@ -509,51 +512,51 @@ namespace LTL2PROP {
   // TODO: Error handling
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
     std::list<std::string> sending_output_places = get_sending_output_places(function);
-      std::list<std::string> assignment_output_places = get_assignment_output_places(variable, function);
+    std::list<std::string> assignment_output_places = get_assignment_output_places(variable, function);
 
-      result["property"] = "ltl property reentrancy: [] ( not ( not (";
+    result["property"] = "ltl property reentrancy: [] ( not ( not (";
 
-      for (auto &assignment_output_place : assignment_output_places){
-        result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
-        if(assignment_output_place != assignment_output_places.back()){
-          result["property"].append("assignment"+assignment_output_place +" or ");
-        }
-        else {
-          result["property"].append("assignment"+assignment_output_place +" until ( ");
-        }          
+    for (auto &assignment_output_place : assignment_output_places){
+      result["propositions"].append("proposition assignment" + assignment_output_place + " : (" + assignment_output_place + "'card > 0);\n");
+      if(assignment_output_place != assignment_output_places.back()){
+        result["property"].append("assignment"+assignment_output_place +" or ");
       }
+      else {
+        result["property"].append("assignment"+assignment_output_place +" until ( ");
+      }          
+    }
 
-      for (auto &sending_output_place : sending_output_places){
-        result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
-        if(sending_output_place != sending_output_places.back()){
-          result["property"].append("sending"+sending_output_place +" or ");
-        }
-        else {
-          result["property"].append("sending"+sending_output_place +" );");
-        }          
-      }        
+    for (auto &sending_output_place : sending_output_places){
+      result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
+      if(sending_output_place != sending_output_places.back()){
+        result["property"].append("sending"+sending_output_place +" or ");
+      }
+      else {
+        result["property"].append("sending"+sending_output_place +" );");
+      }          
+    }        
+}
+
+std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
+  if(timestamp_exists()){
+    std::list<std::string> places = get_timestamp_places();
+    result["property"] = "ltl property tsindependant: [] not (";
+    for (auto const& place: places)
+    {
+      result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
+      if (place != places.back()) { 
+        result["property"].append("timestamp"+place+" or ");
+      }
+      else {
+        result["property"].append("timestamp"+place+");");
+      } 
+    }
+  }
+  else {
+    result["property"] = "ltl property tsindependant: true;";
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
-    if(timestamp_exists()){
-      std::list<std::string> places = get_timestamp_places();
-      result["property"] = "ltl property tsindependant: [] not (";
-      for (auto const& place: places)
-      {
-        result["propositions"].append("proposition timestamp"+place+" : "+ place +"'card > 0;\n");
-        if (place != places.back()) { 
-          result["property"].append("timestamp"+place+" or ");
-        }
-        else {
-          result["property"].append("timestamp"+place+");");
-        } 
-      }
-    }
-    else {
-      result["property"] = "ltl property tsindependant: true;";
-    }
-
-    return result;
+  return result;
   }
 
   std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable) {
@@ -941,7 +944,7 @@ namespace LTL2PROP {
 }  // namespace LTL2PROP
 //TODO: test execution of rest of the vulnerabilities
 
-// self-destruction => Error Handling
+// self-destruction => DONE
 // integer under/overflow => DONE
 // unitialized storage variable => DONE
 // timestamp dependance => DONE
