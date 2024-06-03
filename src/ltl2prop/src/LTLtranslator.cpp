@@ -921,6 +921,43 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
   }  
 
 
+  std::map<std::string, std::string> LTLTranslator::checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
+    std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
+    std::list<std::string> rival_function_call_output_places = get_function_call_output_places(rival_function, rival_contract);
+
+    if (function_call_output_places.empty())
+    {
+    result["property"] = "property sequential: true "; 
+    }
+    else if(rival_function_call_output_places.empty()){
+    result["property"] = "property sequential: false "; 
+    }
+    else{ 
+      result["property"] = "property sequential: [] ( "; 
+      // get all funcall A properties
+      for (auto &function_call_output_place : function_call_output_places) {
+        result["propositions"].append("proposition funcallA" + function_call_output_place +" : " + function_call_output_place +"'card > 0;\n");
+        if (function_call_output_place != function_call_output_places.back()) {
+          result["property"].append("funcallA" + function_call_output_place +" or " );
+        }
+        else {
+          result["property"].append("funcallA" + function_call_output_place +" ) => <> ( " );
+        }
+      }
+      // get all funcall B properties
+      for (auto &rival_function_call_output_place : rival_function_call_output_places) {
+        result["propositions"].append("proposition funcallB" + rival_function_call_output_place +" : " + rival_function_call_output_place +"'card > 0;\n");
+        if (rival_function_call_output_place != rival_function_call_output_places.back()) {
+          result["property"].append("funcallB" + rival_function_call_output_place +" or " );
+        }
+        else {
+          result["property"].append("funcallB" + rival_function_call_output_place +" );" );
+        }
+      }
+    }
+    return result;
+  }  
+
   std::map<std::string, std::string> LTLTranslator::translate() {
     // get the type of formula : general or specific
     std::string formula_type = formula_json.at("type");
@@ -1010,7 +1047,31 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          result = checkIsSequentialCall(function_name, smart_contract, rival_function, rival_contract);
+          return checkIsSequentialCall(function_name, smart_contract, rival_function, rival_contract);
+        }
+        case(SequentialExec):{
+          std::string function_name = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
+          std::string rival_function = inputs.at("rival_function");
+          std::string rival_contract = inputs.at("rival_contract");
+
+        return checkIsSequentialExec(function_name, smart_contract, rival_function, rival_contract);
+        }
+        case(CallFollowedByExec):{
+          std::string function_name = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
+          std::string rival_function = inputs.at("rival_function");
+          std::string rival_contract = inputs.at("rival_contract");
+
+          return checkCallFollowedByExec(function_name, smart_contract, rival_function, rival_contract);
+        }
+        case(ExecFollowedByCall):{
+          std::string function_name = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
+          std::string rival_function = inputs.at("rival_function");
+          std::string rival_contract = inputs.at("rival_contract");
+
+          result = checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
 
           std:: cout << result["propositions"]<< std::endl;
           std:: cout << result["property"]<< std::endl;

@@ -83,6 +83,9 @@ class LTLTranslator {
     IsNeverCalled,
     IsExecuted,
     SequentialCall,
+    SequentialExec,
+    CallFollowedByExec,
+    ExecFollowedByCall
 };
 
   vulnerabilities getVulnerability(std::string vulnerability);
