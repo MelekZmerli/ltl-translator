@@ -221,9 +221,6 @@ namespace LTL2PROP {
       }
     }
 
-    if(function_call_output_places.empty()){
-      throw std::runtime_error("Function " + function_name + " is never called in this context.");
-    }
     function_call_output_places.unique();
     return function_call_output_places;
   }
@@ -235,9 +232,6 @@ namespace LTL2PROP {
           function_call_input_places.push_back(function_call.input_place);
       }
     }
-    if (function_call_input_places.empty()) {
-      throw std::runtime_error("Function " + function_name + " is never called in this context.");
-    }   
     function_call_input_places.unique(); 
     return function_call_input_places;
   }
@@ -742,19 +736,17 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
 
   std::map<std::string, std::string> LTLTranslator::checkAlwaysMoreThan(std::string variable, std::string rival_variable = "", std::string min_threshold = ""){
     result["property"] = "ltl property bigger: [] not less;";
-    
+
     if(rival_variable.empty()){
       if (is_global_variable(variable)) {
         result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < " + min_threshold +");";
       }
-      else
-      {
+      else {
         std::string variable_place = local_variables[variable];
         result["propositions"] = "proposition less: exists (t in "+ variable_place + " | (t->1)." + variable + " < " + min_threshold +");";
       }
     }
     else {
-      std::string rival_variable = rival_variable;
       if (is_global_variable(variable) && is_global_variable(rival_variable)) {
         result["propositions"] = "proposition less: exists (t in S | (t->1)." + variable + " < (t->1)." + rival_variable +");";
       }
@@ -770,6 +762,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
         std::string variable_place = local_variables[variable];
         std::string rival_variable_place = local_variables[rival_variable];
         result["propositions"] = "proposition less: exists (t in "+ variable_place + ", t2 in "+ rival_variable_place +" | (t->1)." + variable + " < (t2->1)." + rival_variable +");";
+
       }   
     }  
     return result;
@@ -812,15 +805,20 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
 
   std::map<std::string, std::string> LTLTranslator::checkIsAlwaysCalled(std::string function_name, std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
-    result["property"] = "ltl property called: <> ( ";
+    if(function_call_input_places.empty()){
+      result["property"] = "ltl property called: false;";
+    }
+    else{
+      result["property"] = "ltl property called: <> ( ";
 
-    for (auto &function_call_input_place : function_call_input_places) {
-      result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
-      if (function_call_input_place != function_call_input_places.back()) {
-        result["property"].append("funcall" + function_call_input_place +" or " );
-      }
-      else {
-        result["property"].append("funcall" + function_call_input_place +" ); " );
+      for (auto &function_call_input_place : function_call_input_places) {
+        result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
+        if (function_call_input_place != function_call_input_places.back()) {
+          result["property"].append("funcall" + function_call_input_place +" or " );
+        }
+        else {
+          result["property"].append("funcall" + function_call_input_place +" ); " );
+        }
       }
     }
     return result;
@@ -940,48 +938,56 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
           return detectTimestampDependance();
         case(SkipEmptyStringLiteral):{
           std::string function = inputs.at("selected_function");
-          
+
           return detectSkipEmptyStringLiteral(function);
         }
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
 
-          result = detectUninitializedStorageVariable(variable, function);
-          return result;
+          return detectUninitializedStorageVariable(variable, function);
+
         }
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
-          std::string max_threshold = inputs.at("constant");
+          std::string max_threshold = inputs.at("max_threshold");
+
           return checkAlwaysLessThan(variable, rival_variable, max_threshold); 
-        }
+          }
         case(AlwaysMoreThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
-          std::string min_threshold = inputs.at("constant");
+          std::string min_threshold = inputs.at("min_threshold");
+
           return checkAlwaysMoreThan(variable,rival_variable,min_threshold);
+
         }
         case(AlwaysEqual):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
           std::string min_threshold = inputs["constant"];
+
           return checkAlwaysEqual(variable, rival_variable, min_threshold); 
         }
         case(IsAlwaysCalled):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
+
           return checkIsAlwaysCalled(function_name, smart_contract);
         }
         case(IsNeverCalled):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
-          return checkIsNeverCalled(function_name, smart_contract);}
+
+          return checkIsNeverCalled(function_name, smart_contract);
+        }
         case(IsExecuted):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
-          return checkIsExecuted(function_name,smart_contract);} 
+          return checkIsExecuted(function_name,smart_contract);
+        } 
         case(SequentialCall):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
