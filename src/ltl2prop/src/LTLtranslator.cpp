@@ -30,6 +30,9 @@ namespace LTL2PROP {
     if (vulnerability == "Is Never Called") return IsNeverCalled;
     if (vulnerability == "Is Executed") return IsExecuted;
     if (vulnerability == "Sequential Call") return SequentialCall;
+    if (vulnerability == "Sequential Exec") return SequentialExec;
+    if (vulnerability == "Call Followed By Exec") return CallFollowedByExec;
+    if (vulnerability == "Exec Followed By Call") return ExecFollowedByCall;
     }
 
   void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
@@ -994,6 +997,43 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
     }
     return result;
   }  
+
+  std::map<std::string, std::string> LTLTranslator::checkExecFollowedByCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
+    std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
+    std::list<std::string> rival_function_call_input_places = get_function_call_input_places(rival_function, rival_contract);
+
+    if (function_call_output_places.empty())
+    {
+    result["property"] = "property sequential: true "; 
+    }
+    else if(rival_function_call_input_places.empty()){
+    result["property"] = "property sequential: false "; 
+    }
+    else{ 
+      result["property"] = "property sequential: [] ( "; 
+      // get all funcall A properties
+      for (auto &function_call_output_place : function_call_output_places) {
+        result["propositions"].append("proposition funcallA" + function_call_output_place +" : " + function_call_output_place +"'card > 0;\n");
+        if (function_call_output_place != function_call_output_places.back()) {
+          result["property"].append("funcallA" + function_call_output_place +" or " );
+        }
+        else {
+          result["property"].append("funcallA" + function_call_output_place +" ) => <> ( " );
+        }
+      }
+      // get all funcall B properties
+      for (auto &rival_function_call_input_place : rival_function_call_input_places) {
+        result["propositions"].append("proposition funcallB" + rival_function_call_input_place +" : " + rival_function_call_input_place +"'card > 0;\n");
+        if (rival_function_call_input_place != rival_function_call_input_places.back()) {
+          result["property"].append("funcallB" + rival_function_call_input_place +" or " );
+        }
+        else {
+          result["property"].append("funcallB" + rival_function_call_input_place +" );" );
+        }
+      }
+    }
+    return result;
+  } 
 
   std::map<std::string, std::string> LTLTranslator::translate() {
     // get the type of formula : general or specific
