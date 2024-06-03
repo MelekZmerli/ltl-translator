@@ -827,14 +827,19 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
 
   std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(std::string function_name,std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
-    result["property"] = "ltl property uncalled: [] not ( ";
-    for (auto &function_call_input_place : function_call_input_places) {
-      result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
-      if (function_call_input_place != function_call_input_places.back()) {
-        result["property"].append("funcall" + function_call_input_place +" or " );
-      }
-      else {
-        result["property"].append("funcall" + function_call_input_place +" ); " );
+    if(function_call_input_places.empty()){
+      result["property"] = "ltl property uncalled: true;";
+    }
+    else{
+      result["property"] = "ltl property uncalled: [] not ( ";
+      for (auto &function_call_input_place : function_call_input_places) {
+        result["propositions"].append("proposition funcall" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
+        if (function_call_input_place != function_call_input_places.back()) {
+          result["property"].append("funcall" + function_call_input_place +" or " );
+        }
+        else {
+          result["property"].append("funcall" + function_call_input_place +" ); " );
+        }
       }
     }
     return result;
