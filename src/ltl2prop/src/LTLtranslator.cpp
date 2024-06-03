@@ -681,20 +681,27 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
     return result;
 
   }
-
+  // look for empty function calls INSIDE function variable
   std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(std::string function){
-      std::list<std::string> function_call_inside_function_param_places = get_function_call_param_places(function);
+    
+    std::list<std::string> function_call_inside_function_param_places = get_function_call_param_places(function);
+    if (function_call_inside_function_param_places.empty()) {
+      result["property"] = "ltl property skipempty: true";
+    }
+    else {
       result["property"] = "ltl property skipempty: [] not (";
       for (auto &function_call_inside_function_param_place : function_call_inside_function_param_places) {
+        // TODO: check another way to express proposition (structured types don't have any attributes)
         result["propositions"].append("proposition emptyparam" + function_call_inside_function_param_place + ": exists (t in " + function_call_inside_function_param_place + " | ((t->1)'space > 0) and ((t->1)'last'card > 0));\n");
         if(function_call_inside_function_param_place != function_call_inside_function_param_places.back()){
           result["property"].append("emptyparam" + function_call_inside_function_param_place + " or ");
         }
         else {
-          result["property"].append("emptyparam" + function_call_inside_function_param_place + " );");
+          result["property"].append("emptyparam" + function_call_inside_function_param_place + ");");
         }
       }
-      return result;
+    }
+    return result;
   }
 
 
@@ -706,8 +713,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
       if (is_global_variable(variable)) {
         result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > " + max_threshold +");";
       }
-      else
-      {
+      else {
         std::string variable_place = local_variables[variable];
         result["propositions"] = "proposition more: exists (t in "+ variable_place + " | (t->1)." + variable + " > " + max_threshold +");";
       }
@@ -927,17 +933,15 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
         case(Reentrancy):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
-          
-          result = detectReentrancy(variable,function);
-          std::cout << result["property"] << std::endl;
-          std::cout << result["propositions"];
-          return result;
+  
+          return  detectReentrancy(variable,function);
         }
         case(TimestampDependence):
           return detectTimestampDependance();
         case(SkipEmptyStringLiteral):{
           std::string function = inputs.at("selected_function");
-          return detectSkipEmptyStringLiteral(inputs);
+          
+          return detectSkipEmptyStringLiteral(function);
         }
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
@@ -1001,6 +1005,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
 }  // namespace LTL2PROP
 //TODO: test execution of rest of the vulnerabilities
 
+// reentrancy => DONE
 // self-destruction => DONE
 // integer under/overflow => DONE
 // unitialized storage variable => DONE
