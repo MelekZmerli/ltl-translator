@@ -256,7 +256,10 @@ class LTLTranslator {
       * @param function_name 
       * @return Helena code of property to be verified and its propositions
       */
-    std::map<std::string, std::string> checkIsSequential(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+    std::map<std::string, std::string> checkIsSequentialCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+    std::map<std::string, std::string> checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+    std::map<std::string, std::string> checkCallFollowedByExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+    std::map<std::string, std::string> checkExecFollowedByCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
 
 
 
