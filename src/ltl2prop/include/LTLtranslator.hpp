@@ -173,7 +173,7 @@ class LTLTranslator {
    * Return the Helena code for the "TimestampDestruction" vulnerability
    * @return Helena code
    */
-    std::map<std::string, std::string> detectTimestampDependance();
+    std::map<std::string, std::string> detectTimestampDependance(std::string function_name, std::string smart_contract);
 
   /**
    * Return the Helena code for the "Skip Empty String Literal" vulnerability
@@ -197,92 +197,254 @@ class LTLTranslator {
         * @param variable variable being tested
    * @return Helena code
    */
-    std::map<std::string, std::string> detectSelfDestruction(
-    std::string function,  std::string smart_contract, std::string rival_contract);
+  std::map<std::string, std::string> detectSelfDestruction(
+  std::string function,  std::string smart_contract, std::string rival_contract);
  
-     /**
-      * @brief Return the helena code that checks that a variable's value is always less than another variable/constant
-      * 
-      * @param variable 
-      * @param rival_variable 
-      * @param max_threshold 
-      * @return Helena code
-      */
-    std::map<std::string, std::string> checkAlwaysLessThan(std::string variable, std::string rival_variable, std::string max_threshold);
-     /**
-      * @brief Return the helena code that checks that a variable's value is always more than another variable/constant
-      * 
-      * @param variable 
-      * @param rival_variable 
-      * @param min_threshold 
-      * @return Helena code of property to be verified and its propositions 
-      */
-    std::map<std::string, std::string> checkAlwaysMoreThan(std::string variable, std::string rival_variable, std::string min_threshold);
+  /**
+    * @brief Return the helena code that checks that a variable's value is always less than another variable/constant
+    * 
+    * @param variable 
+    * @param rival_variable 
+    * @param max_threshold 
+    * @return Helena code
+    */
+  std::map<std::string, std::string> checkAlwaysLessThan(std::string variable, std::string rival_variable, std::string max_threshold);
 
-     /**
-      * @brief Return the helena code that checks that a variable's value is always equal another variable/constant
-      * 
-      * @param variable 
-      * @param rival_variable 
-      * @param constant 
-      * @return Helena code of property to be verified and its propositions 
-      */
-    std::map<std::string, std::string> checkAlwaysEqual(std::string variable, std::string rival_variable, std::string constant);
+  /**
+    * @brief Return the helena code that checks that a variable's value is always more than another variable/constant
+    * 
+    * @param variable 
+    * @param rival_variable 
+    * @param min_threshold 
+    * @return Helena code of property to be verified and its propositions 
+    */
+  std::map<std::string, std::string> checkAlwaysMoreThan(std::string variable, std::string rival_variable, std::string min_threshold);
 
-     /**
-      * @brief Return the helena code that checks if a function is always called.
-      * 
-      * @param function_name 
-      * @return Helena code of property to be verified and its propositions
-      */
-    std::map<std::string, std::string> checkIsAlwaysCalled(std::string function_name, std::string smart_contract);
+  /**
+    * @brief Return the helena code that checks that a variable's value is always equal another variable/constant
+    * 
+    * @param variable 
+    * @param rival_variable 
+    * @param constant 
+    * @return Helena code of property to be verified and its propositions 
+    */
+  std::map<std::string, std::string> checkAlwaysEqual(std::string variable, std::string rival_variable, std::string constant);
 
-     /**
-      * @brief Return the helena code that checks if a function is never called within a given context
-      * 
-      * @param function_name 
-      * @return Helena code of property to be verified and its propositions
-      */
-    std::map<std::string, std::string> checkIsNeverCalled(std::string function_name, std::string smart_contract);
+  /**
+    * @brief 
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @return Return the helena code that checks if a function is always called
+    */
+  std::map<std::string, std::string> checkIsAlwaysCalled(std::string function_name, std::string smart_contract);
 
-     /**
-      * @brief Return the helena code that checks if a function finshed execution within a given context
-      * 
-      * @param function_name 
-      * @return Helena code of property to be verified and its propositions
-      */
-    std::map<std::string, std::string> checkIsExecuted(std::string function_name, std::string smart_contract);
+  /**
+    * @brief
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @return Return the helena code that checks if a function is never called within a given context
+    */
+  std::map<std::string, std::string> checkIsNeverCalled(std::string function_name, std::string smart_contract);
 
-     /**
-      * @brief Return the helena code that checks if a function B is called after function A within a given context
-      * 
-      * @param function_name 
-      * @return Helena code of property to be verified and its propositions
-      */
-    std::map<std::string, std::string> checkIsSequentialCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
-    std::map<std::string, std::string> checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
-    std::map<std::string, std::string> checkCallFollowedByExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
-    std::map<std::string, std::string> checkExecFollowedByCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+  /**
+    * @brief
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @return Return the helena code that checks if a function finshed execution within a given context
+    */
+  std::map<std::string, std::string> checkIsExecuted(std::string function_name, std::string smart_contract);
+
+  /**
+    * @brief 
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @param rival_function
+    * @param rival_contract
+    * @return Return the helena code that checks if a function B is called after function A call within a given context
+    */
+  std::map<std::string, std::string> checkIsSequentialCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+
+  /**
+    * @brief 
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @param rival_function
+    * @param rival_contract
+    * @return Return the helena code that checks if a function B finishes execution after function A finished its execution within a given context
+    */
+  std::map<std::string, std::string> checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+
+  /**
+    * @brief 
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @param rival_function
+    * @param rival_contract
+    * @return Return the helena code that checks if a function B finishes execution after function A is called
+    */
+  std::map<std::string, std::string> checkCallFollowedByExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+
+  /**
+    * @brief 
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * @param rival_function
+    * @param rival_contract
+    * 
+    * @return Return the helena code that checks if a function B is called after function A finishes execution
+    */   
+  std::map<std::string, std::string> checkExecFollowedByCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
 
 
+  /**
+    * @brief 
+    * 
+    * @param function parent function of sending statements
+    * 
+    * @return Return output places of sending statements called in 'function' 
+  */   
+  std::list<std::string> get_sending_output_places(std::string function);
 
+  /**
+    * @brief 
+    * 
+    * @param variable we only check for selection statements that use 'variable'
+    * @param function parent function of selection statements
+    * @param smart_contract parent contract of 'function'
+    * 
+    * @return Return output places of selection(if) statements that use 'variable' inside 'function' 
+  */   
+  std::list<std::string> get_selection_output_places(std::string variable, std::string function, std::string smart_contract);
 
-    std::list<std::string> get_sending_output_places(std::string function);
-    std::list<std::string> get_selection_output_places(std::string variable, std::string function, std::string smart_contract);
-    std::list<std::string> get_for_loops_output_places(std::string variable, std::string function, std::string smart_contract);
-    std::list<std::string> get_while_loops_output_places(std::string variable,std::string function, std::string smart_contract);
-    std::list<std::string> get_require_output_places(std::string variable,std::string function, std::string smart_contract);
-    std::list<std::string> get_balance_variables(std::string function, std::string smart_contract);
+  /**
+    * @brief 
+    * 
+    * @param variable we only check for for_loop statements that use 'variable'
+    * @param function parent function of for loop statements
+    * @param smart_contract parent contract of 'function'
+    * 
+    * @return Return output places of for loop statements that use 'variable' inside 'function' 
+  */   
+  std::list<std::string> get_for_loops_output_places(std::string variable, std::string function, std::string smart_contract);
 
-    std::list<std::string> get_function_call_input_places(std::string function_name, std::string smart_contract);
-    std::list<std::string> get_function_call_output_places(std::string function_name, std::string smart_contract);
-    std::list<std::string> get_timestamp_places();
-    std::list<std::string> get_read_output_places(std::string variable,std::string function);
-    std::list<std::string> get_write_output_places(std::string variable,std::string function);
-    std::list<std::string> get_function_call_param_places(std::string function);
-    std::list<std::string> get_balance_variables_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract);
-    std::list<std::string> get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function);
-    bool timestamp_exists();
+  /**
+    * @brief 
+    * 
+    * @param variable we only check for while_loop statements that use 'variable'
+    * @param function parent function of while loop statements
+    * @param smart_contract parent contract of 'function'
+    * 
+    * @return Return output places of while loop statements that use 'variable' inside 'function' 
+  */   
+  std::list<std::string> get_while_loops_output_places(std::string variable,std::string function, std::string smart_contract);
+
+  /**
+    * @brief Return output places of require statements that use 'variable' inside 'function' 
+    * 
+    * @param variable we only check for require statements that use 'variable'
+    * @param function parent function of require statements
+    * @param smart_contract parent contract of 'function'
+    * 
+    * @return Return output places of require statements that use 'variable' inside 'function' 
+  */   
+  std::list<std::string> get_require_output_places(std::string variable,std::string function, std::string smart_contract);
+
+  /**
+    * @brief Return variables that represent the balance of 'smart contract' 
+    * 
+    * @param function look for variables inside 'function'
+    * @param smart_contract parent contract of 'function'
+    * 
+    * @return Variables that represent the balance of 'smart contract'
+  */   
+  std::list<std::string> get_balance_variables(std::string function, std::string smart_contract);
+
+  /**
+    * @brief  
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * 
+    * @return input places of 'function_name' called in 'smart contract'
+  */    
+  std::list<std::string> get_function_call_input_places(std::string function_name, std::string smart_contract);
+
+  /**
+    * @brief  
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * 
+    * @return output places of 'function_name' called in 'smart contract'
+  */    
+  std::list<std::string> get_function_call_output_places(std::string function_name, std::string smart_contract);
+
+  /**
+    * @brief  
+    * 
+    * @param function_name 
+    * @param smart_contract
+    * 
+    * @return output places of all statements that use a timestamp inside 'function_name' of 'smart_contract'
+  */    
+  std::list<std::string> get_timestamp_places(std::string function_name, std::string smart_contract);
+
+  /**
+    * @brief  
+    * 
+    * @param variable 
+    * @param function
+    * 
+    * @return output places of statements that read 'variable' value inside 'function'
+  */    
+  std::list<std::string> get_read_output_places(std::string variable,std::string function);
+
+  /**
+    * @brief  
+    * 
+    * @param variable 
+    * @param function
+    * 
+    * @return output places of statements that assign value to 'variable'
+  */    
+  std::list<std::string> get_write_output_places(std::string variable,std::string function);
+
+  /**
+    * @brief  
+    * 
+    * @param function
+    * 
+    * @return param places of all functions called inside 'function'
+  */   
+  std::list<std::string> get_function_call_param_places(std::string function);
+
+  /**
+    * @brief  
+    * 
+    * @param balance_variables
+    * @param function
+    * @param smart_contract
+    * 
+    * @return output places of all statements inside 'function' that test variables representing the balance of 'smart_contract'
+  */   
+  std::list<std::string> get_balance_variables_testing_output_places(std::list<std::string> balance_variables, std::string function, std::string smart_contract);
+
+  /**
+    * @brief  
+    * 
+    * @param balance_variables
+    * @param function
+    * 
+    * @return output places of statements that assign values to variables representing the balance inside 'function'
+  */   
+  std::list<std::string> get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function);
     
 
 };

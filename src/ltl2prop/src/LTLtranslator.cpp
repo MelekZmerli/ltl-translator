@@ -241,64 +241,58 @@ namespace LTL2PROP {
     return function_call_input_places;
   }
 
-  std::list<std::string> LTLTranslator::get_timestamp_places(){
+  std::list<std::string> LTLTranslator::get_timestamp_places(std::string function_name, std::string smart_contract){
     std::list<std::string> timestamp_places;
     for (const auto& assignment: assignments) {
-      if (assignment.timestamp && !assignment.output_place.empty()){
+      if (assignment.timestamp && assignment.function_name == function_name && assignment.smart_contract == smart_contract && !assignment.output_place.empty()){
         timestamp_places.push_back(assignment.output_place);
       }
     }
 
     for (const auto& selection: selections) {
-      if (selection.timestamp && !selection.output_place.empty()){
+      if (selection.timestamp && selection.function_name == function_name && selection.smart_contract == smart_contract && !selection.output_place.empty()){
         timestamp_places.push_back(selection.output_place);
       }
     }
 
     for (const auto& sending: sendings) {
-      if (sending.timestamp && !sending.output_place.empty()){
+      if (sending.timestamp && sending.function_name == function_name && sending.smart_contract == smart_contract && !sending.output_place.empty()){
         timestamp_places.push_back(sending.output_place);
       }
     }
 
     for (const auto& requirement: requirements) {
-      if (requirement.timestamp && !requirement.output_place.empty()){
+      if (requirement.timestamp && requirement.function_name == function_name && requirement.smart_contract == smart_contract && !requirement.output_place.empty()){
         timestamp_places.push_back(requirement.output_place);
       }
     }
 
     for (const auto& function_call: function_calls) {
-      if (function_call.timestamp && !function_call.output_place.empty()){
+      if (function_call.timestamp && function_call.parent == function_name && function_call.smart_contract == smart_contract && !function_call.output_place.empty()){
         timestamp_places.push_back(function_call.output_place);
       }
     }
 
-    for (const auto& sending: sendings) {
-      if (sending.timestamp && !sending.output_place.empty()){
-        timestamp_places.push_back(sending.output_place);
-      }
-    }
-
     for (const auto& variable_declaration: variable_declarations) {
-      if (variable_declaration.timestamp && !variable_declaration.output_place.empty()){
+      if (variable_declaration.timestamp && variable_declaration.function_name == function_name && variable_declaration.smart_contract == smart_contract && !variable_declaration.output_place.empty()){
         timestamp_places.push_back(variable_declaration.output_place);
       }
     }
 
     for (const auto& returning: returnings) {
-      if (returning.timestamp && !returning.output_place.empty()){
+      if (returning.timestamp && returning.function_name == function_name && returning.smart_contract == smart_contract && !returning.output_place.empty()){
         timestamp_places.push_back(returning.output_place);
       }
     }
 
     for (const auto& for_loop: for_loops) {
-      if (for_loop.timestamp && !for_loop.output_place.empty()){
+      if (for_loop.timestamp && for_loop.function_name == function_name && for_loop.smart_contract == smart_contract && !for_loop.output_place.empty()){
         timestamp_places.push_back(for_loop.output_place);
       }
     }
 
     for (const auto& while_loop: while_loops) {
-      if (while_loop.timestamp && !while_loop.output_place.empty()){
+      if (while_loop.timestamp && while_loop.function_name == function_name && while_loop.smart_contract == smart_contract && !while_loop.output_place.empty()){
         timestamp_places.push_back(while_loop.output_place);
       }
     }
@@ -306,14 +300,6 @@ namespace LTL2PROP {
     return timestamp_places;     
   }
 
-  bool LTLTranslator::timestamp_exists(){
-    for (const auto& assignment: assignments) {
-      if (assignment.timestamp){
-        return true;
-      }
-    }
-    return false;     
-  }
 
   // returns output places for following statements (variable x)
   // int x = y;
@@ -333,7 +319,7 @@ namespace LTL2PROP {
     return write_places;     
   }
 
-  // returns x in following cases
+  // returns cases for variable x
   // int x = y;
   // x = y;
   std::list<std::string> LTLTranslator::get_read_output_places(std::string variable, std::string function){
@@ -531,7 +517,6 @@ namespace LTL2PROP {
   }
 
 
-  // TODO: Error handling
   // ltl property reentrancy: [ ] not (( not assignment ) until (sending))
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
     std::list<std::string> balance_variables = get_balance_variables(function);
@@ -589,9 +574,9 @@ namespace LTL2PROP {
     return result;       
 }
 
-std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
-  if(timestamp_exists()){
-    std::list<std::string> places = get_timestamp_places();
+std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std::string function_name, std::string smart_contract) {
+  std::list<std::string> places = get_timestamp_places(function_name, smart_contract);
+  if (!places.empty()){
     result["property"] = "ltl property tsindependant: [] not (";
     for (auto const& place: places)
     {
@@ -892,10 +877,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
 
     if (function_call_input_places.empty())
     {
-    result["property"] = "property sequential: true "; 
+    result["property"] = "property sequential: true;"; 
     }
     else if(rival_function_call_input_places.empty()){
-    result["property"] = "property sequential: false "; 
+    result["property"] = "property sequential: false;"; 
     }
     else{ 
       result["property"] = "property sequential: [] ( "; 
@@ -930,10 +915,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
 
     if (function_call_output_places.empty())
     {
-    result["property"] = "property sequential: true "; 
+    result["property"] = "property sequential: true;"; 
     }
     else if(rival_function_call_output_places.empty()){
-    result["property"] = "property sequential: false "; 
+    result["property"] = "property sequential: false;"; 
     }
     else{ 
       result["property"] = "property sequential: [] ( "; 
@@ -965,12 +950,11 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     std::list<std::string> rival_function_call_output_places = get_function_call_output_places(rival_function, rival_contract);
 
-    if (function_call_input_places.empty())
-    {
-    result["property"] = "property sequential: true "; 
+    if (function_call_input_places.empty()) {
+      result["property"] = "property sequential: true;"; 
     }
     else if(rival_function_call_output_places.empty()){
-    result["property"] = "property sequential: false "; 
+      result["property"] = "property sequential: false;"; 
     }
     else{ 
       result["property"] = "property sequential: [] ( "; 
@@ -1066,7 +1050,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance() {
           return  detectReentrancy(variable,function);
         }
         case(TimestampDependence):
-          return detectTimestampDependance();
+          std::string function = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
+
+          return detectTimestampDependance(function, smart_contract);
         case(SkipEmptyStringLiteral):{
           std::string function = inputs.at("selected_function");
 
