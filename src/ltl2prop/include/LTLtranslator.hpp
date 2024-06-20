@@ -53,11 +53,22 @@ class LTLTranslator {
 				bool timestamp;
   };
 
+  // output map of translate() function
   std::map<std::string, std::string> result = { {"property", ""}, {"propositions", ""}};
+
+  // json that contrains vulnerability / property info
   nlohmann::json formula_json;
+
+  // all statements of selected smart contracts
   nlohmann::json statement_list;
+
+  // all local variables of selected smart contracts
   std::map<std::string, std::string> local_variables;
+
+  // all global variables of selected smart contracts
   std::list<std::string> global_variables;
+
+  // each type of statement has its own list
   std::list<Statement> assignments,
    sendings, selections, function_calls,
   variable_declarations, returnings, requirements,
@@ -68,7 +79,7 @@ class LTLTranslator {
 
 
 
-
+  // vulnerabilities and properties
   enum vulnerabilities {
     IntegerOverflowUnderflow,
     Reentrancy,

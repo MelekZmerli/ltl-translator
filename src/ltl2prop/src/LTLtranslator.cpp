@@ -433,7 +433,7 @@ namespace LTL2PROP {
   }
 
   std::map<std::string, std::string> LTLTranslator::detectSelfDestruction(std::string function,std::string smart_contract, std::string rival_contract) {
-    // get all variables that are equal to address(this).balance
+    // get all variables that reference address(this).balance
     std::list<std::string> balance_variables = get_balance_variables(function,smart_contract);
     std::list<std::string> balance_testing_output_places = get_balance_variables_testing_output_places(balance_variables, function, smart_contract);
 
@@ -618,7 +618,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
         } 
       }
     }
-    // in case variable is never read in execution
+    // in case variable is never read in context
     else
     {
       result["property"] = "ltl property usv: true;";
@@ -640,7 +640,8 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     }
     // in case, variable isn't assigned a value in execution
     else {
-      result["property"] = "ltl property usv: false;";
+      result["propositions"].append("proposition write: false;\n");
+      result["property"].append("write);");
       return result;
     }  
     return result;
@@ -1049,11 +1050,12 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   
           return  detectReentrancy(variable,function);
         }
-        case(TimestampDependence):
+        case(TimestampDependence):{
           std::string function = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
-
+        
           return detectTimestampDependance(function, smart_contract);
+        }
         case(SkipEmptyStringLiteral):{
           std::string function = inputs.at("selected_function");
 
@@ -1063,7 +1065,11 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
 
-          return detectUninitializedStorageVariable(variable, function);
+          result = detectUninitializedStorageVariable(variable, function);
+          std::cout << result["propositions"]<< std::endl;
+          std::cout << result["property"]<< std::endl;
+
+          return result;
         }
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
@@ -1135,11 +1141,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          result = checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
-
-          std:: cout << result["propositions"]<< std::endl;
-          std:: cout << result["property"]<< std::endl;
-          return result;
+          return checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
         }
       }
     }
@@ -1154,13 +1156,6 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }
 
 }  // namespace LTL2PROP
-//TODO: test execution of rest of the vulnerabilities
-
-// reentrancy => DONE
-// self-destruction => DONE
-// integer under/overflow => DONE
-// unitialized storage variable => DONE
-// timestamp dependance => DONE
 
 
 // TODO: handle null cases of json file
