@@ -1006,14 +1006,11 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
     std::list<std::string> rival_function_call_input_places = get_function_call_input_places(rival_function, rival_contract);
 
-    if (function_call_output_places.empty())
-    {
+    if (function_call_output_places.empty()) {
     result["property"] = "property execfollowedbycall: true "; 
+    return result;
     }
-    else if(rival_function_call_input_places.empty()){
-    result["property"] = "property execfollowedbycall: false "; 
-    }
-    else{ 
+    else {
       result["property"] = "property execfollowedbycall: [] ( "; 
       // get all funcall A properties
       for (auto &function_call_output_place : function_call_output_places) {
@@ -1025,6 +1022,12 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funexecA" + function_call_output_place +" ) => <> ( " );
         }
       }
+    }
+    if(rival_function_call_input_places.empty()) {
+      result["propositions"].append("proposition funcallB : false;\n");
+      result["property"].append("funcallB );" );
+    }
+    else{
       // get all funcall B properties
       for (auto &rival_function_call_input_place : rival_function_call_input_places) {
         result["propositions"].append("proposition funcallB" + rival_function_call_input_place +" : " + rival_function_call_input_place +"'card > 0;\n");
@@ -1056,6 +1059,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           result = detectIntegerUnderOverFlow(variable, min_threshold, max_threshold);
         }
+
         case(SelfDestruction):{
           std::string smart_contract = inputs.at("smart_contract");
           std::string function = inputs.at("selected_function");
@@ -1063,29 +1067,34 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return  detectSelfDestruction(function,smart_contract,rival_contract);
         }
+
         case(Reentrancy):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
   
           return  detectReentrancy(variable,function);
         }
+
         case(TimestampDependence):{
           std::string function = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
         
           return detectTimestampDependance(function, smart_contract);
         }
+
         case(SkipEmptyStringLiteral):{
           std::string function = inputs.at("selected_function");
 
           return detectSkipEmptyStringLiteral(function);
         }
+
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
 
           return detectUninitializedStorageVariable(variable, function);
         }
+        
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
@@ -1093,6 +1102,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return checkAlwaysLessThan(variable, rival_variable, max_threshold); 
         }
+
         case(AlwaysMoreThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
@@ -1100,6 +1110,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return checkAlwaysMoreThan(variable,rival_variable,min_threshold);
         }
+
         case(AlwaysEqual):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
@@ -1131,6 +1142,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::cout << result["property"]<< std::endl;
           return result;
         } 
+
         case(SequentialCall):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
@@ -1139,6 +1151,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return checkIsSequentialCall(function_name, smart_contract, rival_function, rival_contract);
         }
+
         case(SequentialExec):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
@@ -1146,26 +1159,27 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string rival_contract = inputs.at("rival_contract");
 
           return checkIsSequentialExec(function_name, smart_contract, rival_function, rival_contract);
-
         }
+
         case(CallFollowedByExec):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          result = checkCallFollowedByExec(function_name, smart_contract, rival_function, rival_contract);
-          std::cout << result["propositions"]<< std::endl;
-          std::cout << result["property"]<< std::endl;
-          return result;
+          return checkCallFollowedByExec(function_name, smart_contract, rival_function, rival_contract);
         }
+
         case(ExecFollowedByCall):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          return checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
+          result = checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
+          std::cout << result["propositions"]<< std::endl;
+          std::cout << result["property"]<< std::endl;
+          return result;
         }
       }
     }
