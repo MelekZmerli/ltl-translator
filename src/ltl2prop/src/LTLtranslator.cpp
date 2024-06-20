@@ -881,7 +881,19 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     result["property"] = "property sequential: true;"; 
     }
     else if(rival_function_call_input_places.empty()){
-    result["property"] = "property sequential: false;"; 
+      result["property"] = "property sequential: [] ( "; 
+      result["propositions"].append("proposition funcallB : false;\n");
+      // get all funcall A properties
+      for (auto &function_call_input_place : function_call_input_places) {
+        result["propositions"].append("proposition funcallA" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
+        if (function_call_input_place != function_call_input_places.back()) {
+          result["property"].append("funcallA" + function_call_input_place +" or " );
+        }
+        else {
+          result["property"].append("funcallA" + function_call_input_place +" ) => <> ( " );
+        }
+      }
+      result["property"].append("funcallB );");
     }
     else{ 
       result["property"] = "property sequential: [] ( "; 
@@ -1118,7 +1130,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          return checkIsSequentialCall(function_name, smart_contract, rival_function, rival_contract);
+          result = checkIsSequentialCall(function_name, smart_contract, rival_function, rival_contract);
+          std::cout << result["propositions"]<< std::endl;
+          std::cout << result["property"]<< std::endl;
+          return result;
         }
         case(SequentialExec):{
           std::string function_name = inputs.at("selected_function");
