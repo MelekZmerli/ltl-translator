@@ -92,7 +92,7 @@ class LTLTranslator {
     AlwaysEqual,
     IsAlwaysCalled,
     IsNeverCalled,
-    IsExecuted,
+    IfCalledIsExecuted,
     SequentialCall,
     SequentialExec,
     CallFollowedByExec,
@@ -266,7 +266,7 @@ class LTLTranslator {
     * @param smart_contract
     * @return Return the helena code that checks if a function finshed execution within a given context
     */
-  std::map<std::string, std::string> checkIsExecuted(std::string function_name, std::string smart_contract);
+  std::map<std::string, std::string> checkIfCalledIsExecuted(std::string function_name, std::string smart_contract);
 
   /**
     * @brief 

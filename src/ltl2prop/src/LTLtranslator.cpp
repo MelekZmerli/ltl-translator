@@ -28,7 +28,7 @@ namespace LTL2PROP {
     if (vulnerability == "Always Equal") return AlwaysEqual;
     if (vulnerability == "Is Always Called") return IsAlwaysCalled;
     if (vulnerability == "Is Never Called") return IsNeverCalled;
-    if (vulnerability == "Is Executed") return IsExecuted;
+    if (vulnerability == "If Called Is Executed") return IfCalledIsExecuted;
     if (vulnerability == "Sequential Call") return SequentialCall;
     if (vulnerability == "Sequential Exec") return SequentialExec;
     if (vulnerability == "Call Followed By Exec") return CallFollowedByExec;
@@ -837,13 +837,13 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsExecuted(std::string function_name,std::string smart_contract) {
+  std::map<std::string, std::string> LTLTranslator::checkIfCalledIsExecuted(std::string function_name,std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
-    result["property"] = "ltl property executed: [] ( ";
+    result["property"] = "ltl property ifcalledthenexecuted: [] ( ";
 
     if(function_call_input_places.empty() || function_call_output_places.empty()){
-      result["property"] = "ltl property executed: false;";
+      result["property"] = "ltl property ifcalledthenexecuted: true;";
     } 
     else{
       // get all funcall propositions
@@ -1065,11 +1065,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
 
-          result = detectUninitializedStorageVariable(variable, function);
-          std::cout << result["propositions"]<< std::endl;
-          std::cout << result["property"]<< std::endl;
-
-          return result;
+          return detectUninitializedStorageVariable(variable, function);
         }
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
@@ -1084,7 +1080,6 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string min_threshold = inputs.at("min_threshold");
 
           return checkAlwaysMoreThan(variable,rival_variable,min_threshold);
-
         }
         case(AlwaysEqual):{
           std::string variable = inputs.at("selected_variable");
@@ -1093,23 +1088,29 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return checkAlwaysEqual(variable, rival_variable, min_threshold); 
         }
+        
         case(IsAlwaysCalled):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
           return checkIsAlwaysCalled(function_name, smart_contract);
         }
+
         case(IsNeverCalled):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
           return checkIsNeverCalled(function_name, smart_contract);
         }
-        case(IsExecuted):{
+
+        case(IfCalledIsExecuted):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
-          result = checkIsExecuted(function_name,smart_contract);
+          result = checkIfCalledIsExecuted(function_name,smart_contract);
+          std::cout << result["propositions"]<< std::endl;
+          std::cout << result["property"]<< std::endl;
+          return result;
         } 
         case(SequentialCall):{
           std::string function_name = inputs.at("selected_function");
