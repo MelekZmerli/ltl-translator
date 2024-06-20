@@ -840,10 +840,11 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   std::map<std::string, std::string> LTLTranslator::checkIfCalledIsExecuted(std::string function_name,std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
-    result["property"] = "ltl property ifcalledthenexecuted: [] ( ";
+    result["property"] = "ltl property ifcalledthenexecuted: [] ( ( ";
 
-    if(function_call_input_places.empty() || function_call_output_places.empty()){
-      result["property"] = "ltl property ifcalledthenexecuted: true;";
+    if(function_call_input_places.empty()){
+      result["propositions"].append("proposition funcall : false;\n");
+      result["property"].append("funcall ) => <> ( " );       
     } 
     else{
       // get all funcall propositions
@@ -856,7 +857,13 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funcall" + function_call_input_place +" ) => <> ( " );
         }
       }
-
+    }
+    
+    if(function_call_output_places.empty()){
+      result["propositions"].append("proposition funexec: false;\n");
+      result["property"].append("funexec ) );");
+    }
+    else{
       // get all funexec propositions
       for (auto &function_call_output_place : function_call_output_places) {
         result["propositions"].append("proposition funexec" + function_call_output_place +" : " + function_call_output_place +"'card > 0;\n");
@@ -864,7 +871,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funexec" + function_call_output_place +" or " );
         }
         else {
-          result["property"].append("funexec" + function_call_output_place +" );" );
+          result["property"].append("funexec" + function_call_output_place +" ) );" );
         }
       }
     }
@@ -874,29 +881,13 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
   std::map<std::string, std::string> LTLTranslator::checkIsSequentialCall(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
-    std::list<std::string> rival_function_call_input_places = get_function_call_input_places(rival_function, rival_contract);
-
-    if (function_call_input_places.empty())
-    {
-    result["property"] = "property sequential: true;"; 
-    }
-    else if(rival_function_call_input_places.empty()){
-      result["property"] = "property sequential: [] ( "; 
-      result["propositions"].append("proposition funcallB : false;\n");
-      // get all funcall A properties
-      for (auto &function_call_input_place : function_call_input_places) {
-        result["propositions"].append("proposition funcallA" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
-        if (function_call_input_place != function_call_input_places.back()) {
-          result["property"].append("funcallA" + function_call_input_place +" or " );
-        }
-        else {
-          result["property"].append("funcallA" + function_call_input_place +" ) => <> ( " );
-        }
-      }
-      result["property"].append("funcallB );");
+    std::list<std::string> rival_function_call_input_places = get_function_call_input_places(rival_function, rival_contract); 
+    result["property"] = "property sequentialcall: [] ( ( ";
+    if (function_call_input_places.empty()) {
+      result["propositions"].append("proposition funcallA : false;\n");
+      result["property"].append("funcallA ) => <> ( " );    
     }
     else{ 
-      result["property"] = "property sequential: [] ( "; 
       // get all funcall A properties
       for (auto &function_call_input_place : function_call_input_places) {
         result["propositions"].append("proposition funcallA" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
@@ -907,6 +898,12 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funcallA" + function_call_input_place +" ) => <> ( " );
         }
       }
+    }
+    if(rival_function_call_input_places.empty()){
+      result["propositions"].append("proposition funcallB: false;\n");
+      result["property"].append("funcallB ) );");
+    }
+    else {
       // get all funcall B properties
       for (auto &rival_function_call_input_place : rival_function_call_input_places) {
         result["propositions"].append("proposition funcallB" + rival_function_call_input_place +" : " + rival_function_call_input_place +"'card > 0;\n");
@@ -914,7 +911,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funcallB" + rival_function_call_input_place +" or " );
         }
         else {
-          result["property"].append("funcallB" + rival_function_call_input_place +" );" );
+          result["property"].append("funcallB" + rival_function_call_input_place +" ) );" );
         }
       }
     }
@@ -925,13 +922,12 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   std::map<std::string, std::string> LTLTranslator::checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
     std::list<std::string> rival_function_call_output_places = get_function_call_output_places(rival_function, rival_contract);
-
+    result["property"] = "property sequentialexec: [] ( ( ";
     if (function_call_output_places.empty()) {
-    result["property"] = "property sequentialexec: true;"; 
-    return result;
+      result["propositions"].append("proposition funexecA : false;\n");
+      result["property"].append("funexecA ) => <> ( " );
     }
     else {
-      result["property"] = "property sequentialexec: [] ( ";
       // get all funcall A properties
       for (auto &function_call_output_place : function_call_output_places) {
         result["propositions"].append("proposition funexecA" + function_call_output_place +" : " + function_call_output_place +"'card > 0;\n");
@@ -945,7 +941,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     }
     if(rival_function_call_output_places.empty()){ 
       result["propositions"].append("proposition funexecB: false;\n");
-      result["property"].append("funexecB );");
+      result["property"].append("funexecB ) );");
     }  
     else {
       // get all funcall B properties
@@ -955,7 +951,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funexecB" + rival_function_call_output_place +" or " );
         }
         else {
-          result["property"].append("funexecB" + rival_function_call_output_place +" );" );
+          result["property"].append("funexecB" + rival_function_call_output_place +" ) );" );
         }
       }
     }
@@ -965,13 +961,13 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   std::map<std::string, std::string> LTLTranslator::checkCallFollowedByExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     std::list<std::string> rival_function_call_output_places = get_function_call_output_places(rival_function, rival_contract);
-
+    
+    result["property"] = "property callfollowedbyexec: [] ( ( "; 
     if (function_call_input_places.empty()) {
-      result["property"] = "property callfollowedbyexec: true;"; 
-      return result;
+      result["propositions"].append("proposition funcallA : false;\n");
+      result["property"].append("funcallA ) => <> ( " );
     }
     else{ 
-      result["property"] = "property callfollowedbyexec: [] ( "; 
       // get all funcall A properties
       for (auto &function_call_input_place : function_call_input_places) {
         result["propositions"].append("proposition funcallA" + function_call_input_place +" : " + function_call_input_place +"'card > 0;\n");
@@ -985,7 +981,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     }
     if(rival_function_call_output_places.empty()){
       result["propositions"].append("proposition funexecB : false;\n");
-      result["property"].append("funexecB );" );
+      result["property"].append("funexecB ) );" );
     }
     else{
       // get all funcall B properties
@@ -995,7 +991,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funexecB" + rival_function_call_output_place +" or " );
         }
         else {
-          result["property"].append("funexecB" + rival_function_call_output_place +" );" );
+          result["property"].append("funexecB" + rival_function_call_output_place +" ) );" );
         }
       }
     }
@@ -1006,12 +1002,12 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
     std::list<std::string> rival_function_call_input_places = get_function_call_input_places(rival_function, rival_contract);
 
+    result["property"] = "property execfollowedbycall: [] ( ( "; 
     if (function_call_output_places.empty()) {
-    result["property"] = "property execfollowedbycall: true "; 
-    return result;
+      result["propositions"].append("proposition funexecA : false;\n");
+      result["property"].append("funexecA ) => <> ( " );
     }
     else {
-      result["property"] = "property execfollowedbycall: [] ( "; 
       // get all funcall A properties
       for (auto &function_call_output_place : function_call_output_places) {
         result["propositions"].append("proposition funexecA" + function_call_output_place +" : " + function_call_output_place +"'card > 0;\n");
@@ -1025,7 +1021,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     }
     if(rival_function_call_input_places.empty()) {
       result["propositions"].append("proposition funcallB : false;\n");
-      result["property"].append("funcallB );" );
+      result["property"].append("funcallB ) );" );
     }
     else{
       // get all funcall B properties
@@ -1035,7 +1031,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           result["property"].append("funcallB" + rival_function_call_input_place +" or " );
         }
         else {
-          result["property"].append("funcallB" + rival_function_call_input_place +" );" );
+          result["property"].append("funcallB" + rival_function_call_input_place +" ) );" );
         }
       }
     }
@@ -1094,7 +1090,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return detectUninitializedStorageVariable(variable, function);
         }
-        
+
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
@@ -1176,10 +1172,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          result = checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
-          std::cout << result["propositions"]<< std::endl;
-          std::cout << result["property"]<< std::endl;
-          return result;
+          return checkExecFollowedByCall(function_name, smart_contract, rival_function, rival_contract);
         }
       }
     }
