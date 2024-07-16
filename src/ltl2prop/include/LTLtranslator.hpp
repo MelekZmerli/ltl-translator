@@ -87,6 +87,9 @@ class LTLTranslator {
     SelfDestruction,
     SkipEmptyStringLiteral,
     UninitializedStorageVariable,
+  };
+
+  enum propertyTemplates {
     AlwaysLessThan,
     AlwaysMoreThan,
     AlwaysEqual,
@@ -97,9 +100,11 @@ class LTLTranslator {
     SequentialExec,
     CallFollowedByExec,
     ExecFollowedByCall
-};
+  };
 
   vulnerabilities getVulnerability(std::string vulnerability);
+
+  propertyTemplates getPropertyTemplate(std::string propertyTemplate);
 
   /**
    * Create a map between the syntax of LTL operators and Helena

@@ -23,17 +23,20 @@ namespace LTL2PROP {
     if (vulnerability == "Skip Empty String Literal") return SkipEmptyStringLiteral;
     if (vulnerability == "Uninitialized Storage Variable") return UninitializedStorageVariable;
     if (vulnerability == "Self Destruction") return SelfDestruction;
-    if (vulnerability == "Always Less Than") return AlwaysLessThan;
-    if (vulnerability == "Always More Than") return AlwaysMoreThan;
-    if (vulnerability == "Always Equal") return AlwaysEqual;
-    if (vulnerability == "Is Always Called") return IsAlwaysCalled;
-    if (vulnerability == "Is Never Called") return IsNeverCalled;
-    if (vulnerability == "If Called Is Executed") return IfCalledIsExecuted;
-    if (vulnerability == "Sequential Call") return SequentialCall;
-    if (vulnerability == "Sequential Exec") return SequentialExec;
-    if (vulnerability == "Call Followed By Exec") return CallFollowedByExec;
-    if (vulnerability == "Exec Followed By Call") return ExecFollowedByCall;
-    }
+  }
+  
+  LTLTranslator::propertyTemplates LTLTranslator::getPropertyTemplate(std::string propertyTemplate){
+    if (propertyTemplate == "Always Less Than") return AlwaysLessThan;
+    if (propertyTemplate == "Always More Than") return AlwaysMoreThan;
+    if (propertyTemplate == "Always Equal") return AlwaysEqual;
+    if (propertyTemplate == "Is Always Called") return IsAlwaysCalled;
+    if (propertyTemplate == "Is Never Called") return IsNeverCalled;
+    if (propertyTemplate == "If Called Is Executed") return IfCalledIsExecuted;
+    if (propertyTemplate == "Sequential Call") return SequentialCall;
+    if (propertyTemplate == "Sequential Exec") return SequentialExec;
+    if (propertyTemplate == "Call Followed By Exec") return CallFollowedByExec;
+    if (propertyTemplate == "Exec Followed By Call") return ExecFollowedByCall;
+  }
 
   void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
     // get global variables
@@ -940,7 +943,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
       }   
     }
     if(rival_function_call_output_places.empty()){ 
-      result["propositions"].append("proposition funexecB: false;\n");
+      result["propositions"].append("proposition funexecB : false;\n");
       result["property"].append("funexecB ) );");
     }  
     else {
@@ -1042,18 +1045,18 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     // get the type of formula : general or specific
     std::string formula_type = formula_json.at("type");
     auto formula_params = formula_json.at("params");
-    std::string vulnerability_name = formula_params.at("name");
+    std::string template_name = formula_params.at("name");
+    nlohmann::json inputs = formula_params.at("inputs");
 
     // parse a general vulnerability formula
     if (formula_type == "general") {
-      nlohmann::json inputs = formula_params.at("inputs");
-      switch(LTLTranslator::getVulnerability(vulnerability_name)){
+      switch(LTLTranslator::getVulnerability(template_name)){
         case(IntegerOverflowUnderflow):{
           std::string min_threshold = inputs.at("min_threshold");
           std::string max_threshold = inputs.at("max_threshold");
           std::string variable = inputs.at("selected_variable");
 
-          result = detectIntegerUnderOverFlow(variable, min_threshold, max_threshold);
+          return detectIntegerUnderOverFlow(variable, min_threshold, max_threshold);
         }
 
         case(SelfDestruction):{
@@ -1090,7 +1093,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
           return detectUninitializedStorageVariable(variable, function);
         }
-
+      }
+    }
+    else if (formula_type == "specific") {
+      switch(LTLTranslator::getVulnerability(template_name)){
         case(AlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
@@ -1133,10 +1139,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
-          result = checkIfCalledIsExecuted(function_name,smart_contract);
-          std::cout << result["propositions"]<< std::endl;
-          std::cout << result["property"]<< std::endl;
-          return result;
+          return checkIfCalledIsExecuted(function_name,smart_contract);
         } 
 
         case(SequentialCall):{
@@ -1176,17 +1179,18 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
         }
       }
     }
-    else if (formula_type == "specific") {
+    else {
       result["property"] = formula_params.at("property");
       result["propositions"] = formula_params.at("propositions");
       return result;
     }
 
     // throw an exception since the type cannot be handled
-    throw std::runtime_error("formula type " + vulnerability_name + " is not handled by LTLTranslator");
+    throw std::runtime_error("formula type " + template_name + " is not handled by LTLTranslator");
   }
 
 }  // namespace LTL2PROP
 
 
 // TODO: handle null cases of json file
+// TODO: handle contract specific (non-template) properties
