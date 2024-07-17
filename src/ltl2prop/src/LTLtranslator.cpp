@@ -692,11 +692,12 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     return result;
   }
 
-
+  /** Check that 'variable's value is always less than either a 'max_threshold' or a 'rival_variable'*/
   std::map<std::string, std::string> LTLTranslator::checkAlwaysLessThan(std::string variable, std::string rival_variable="", std::string max_threshold =""){
 
     result["property"] = "ltl property smaller: [] not more;";
 
+    // compare against a constant
     if(rival_variable.empty()){
       if (is_global_variable(variable)) {
         result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > " + max_threshold +");";
@@ -706,18 +707,23 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
         result["propositions"] = "proposition more: exists (t in "+ variable_place + " | (t->1)." + variable + " > " + max_threshold +");";
       }
     }
+    // compare against a rival variable
     else {
+      // both variables are global
       if (is_global_variable(variable) && is_global_variable(rival_variable)) {
         result["propositions"] = "proposition more: exists (t in S | (t->1)." + variable + " > (t->1)." + rival_variable +");";
       }
+      // selected variable is global and rival variable is local
       else if(is_global_variable(variable)) {
         std::string rival_variable_place = local_variables[rival_variable];
         result["propositions"] = "proposition more: exists (t in S, t2 in "+ rival_variable_place + " | (t->1)." + variable + " > (t2->1)." + rival_variable +");";
       }
+      // selected variable is local and rival variable is local
       else if(is_global_variable(rival_variable)) {
         std::string variable_place = local_variables[variable];
         result["propositions"] = "proposition more: exists (t in "+ variable_place + ", t2 in S | (t->1)." + variable + " > (t2->1)." + rival_variable +");";
       }
+      // both variables are local
       else {
         std::string variable_place = local_variables[variable];
         std::string rival_variable_place = local_variables[rival_variable];
