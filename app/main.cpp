@@ -46,7 +46,7 @@ nlohmann::json parse_json_file(const std::string &filename) {
 }
 
 /**
- * Save a content into a file
+ * Save a content into a file (overwrite)
  *
  * @param filename path to the output file
  * @param content string to the be saved
@@ -56,6 +56,58 @@ void save_content(const std::string &filename, const std::string &content) {
       std::ofstream output_file(filename);
       output_file << content;
       output_file.close();  
+}
+
+void removeLastOccurrenceFromFile(const std::string& filename, char charToRemove) {
+    std::ifstream inFile(filename);
+    if (!inFile) {
+        std::cerr << "Error: Could not open the file for reading!" << std::endl;
+        return;
+    }
+
+    std::string content((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+    inFile.close();
+
+    size_t pos = content.find_last_of(charToRemove);
+    if (pos != std::string::npos) {
+        content.erase(pos, 1);
+
+        std::ofstream outFile(filename);
+        if (!outFile) {
+            std::cerr << "Error: Could not open the file for writing!" << std::endl;
+            return;
+        }
+        outFile << content;
+        outFile.close();
+    }
+}
+
+/**
+ * Append content to a file
+ *
+ * @param filename path to the output file
+ * @param content string to the be saved
+ */
+void append_content(const std::string& filename, const std::string& content) {
+    std::ofstream outFile;
+
+    // Open file in append mode
+    outFile.open(filename, std::ios_base::app);
+
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Could not open the file!" << std::endl;
+        return;
+    }
+
+    // Write content to file
+    outFile  << content << '\n' << '}' << std::endl;
+
+    // Close the file
+    outFile.close();
+
+    if (outFile.fail()) {
+        std::cerr << "Error: Could not close the file properly!" << std::endl;
+    }
 }
 
 int main(int argc, char **argv) {
@@ -98,7 +150,9 @@ int main(int argc, char **argv) {
 
   std::map<std::string, std::string> ltl_result = ltl_translator.translate();
   save_content(full_outpath + ".prop.lna", ltl_result["property"]);
-  save_content(full_outpath + ".propositions.lna", ltl_result["propositions"]);
+
+  removeLastOccurrenceFromFile(full_outpath + "_HCPN.lna", '}');
+  append_content(full_outpath + "_HCPN.lna", ltl_result["propositions"]);
 
   return 0;
 }
