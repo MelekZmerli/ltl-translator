@@ -26,16 +26,16 @@ namespace LTL2PROP {
   }
   
   LTLTranslator::propertyTemplates LTLTranslator::getPropertyTemplate(std::string propertyTemplate){
-    if (propertyTemplate == "Always Less Than") return AlwaysLessThan;
-    if (propertyTemplate == "Always More Than") return AlwaysMoreThan;
-    if (propertyTemplate == "Always Equal") return AlwaysEqual;
-    if (propertyTemplate == "Is Always Called") return IsAlwaysCalled;
-    if (propertyTemplate == "Is Never Called") return IsNeverCalled;
-    if (propertyTemplate == "If Called Is Executed") return IfCalledIsExecuted;
+    if (propertyTemplate == "Variable Always Less Than") return VariableAlwaysLessThan;
+    if (propertyTemplate == "Variable Always Bigger Than") return VariableAlwaysMoreThan;
+    if (propertyTemplate == "Variable Always Equal To") return VariableAlwaysEqualTo;
+    if (propertyTemplate == "Function Is Eventually Called") return FunctionIsEventuallyCalled;
+    if (propertyTemplate == "Function Is Never Called") return FunctionIsNeverCalled;
+    if (propertyTemplate == "Function Is Executed") return FunctionIsExecuted;
     if (propertyTemplate == "Sequential Call") return SequentialCall;
-    if (propertyTemplate == "Sequential Exec") return SequentialExec;
-    if (propertyTemplate == "Call Followed By Exec") return CallFollowedByExec;
-    if (propertyTemplate == "Exec Followed By Call") return ExecFollowedByCall;
+    if (propertyTemplate == "Sequential Execution") return SequentialExecution;
+    if (propertyTemplate == "Function A Call Followed by Function B Execution") return CallFollowedByExec;
+    if (propertyTemplate == "Function A Execution Followed by Function B Call") return ExecFollowedByCall;
   }
 
   void LTLTranslator::handleVariable(const nlohmann::json& lna_json) {
@@ -705,7 +705,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }
 
   /** Check that 'variable's value is always less than either a 'max_threshold' or a 'rival_variable'*/
-  std::map<std::string, std::string> LTLTranslator::checkAlwaysLessThan(std::string variable, std::string rival_variable="", std::string max_threshold =""){
+  std::map<std::string, std::string> LTLTranslator::checkVariableAlwaysLessThan(std::string variable, std::string rival_variable="", std::string max_threshold =""){
 
     result["property"] = "ltl property smaller: [] not more;";
 
@@ -746,7 +746,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkAlwaysMoreThan(std::string variable, std::string rival_variable = "", std::string min_threshold = ""){
+  std::map<std::string, std::string> LTLTranslator::checkVariableAlwaysMoreThan(std::string variable, std::string rival_variable = "", std::string min_threshold = ""){
     result["property"] = "ltl property bigger: [] not less;";
 
     if(rival_variable.empty()){
@@ -780,7 +780,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::checkAlwaysEqual(std::string variable, std::string rival_variable="", std::string constant="") {
+  std::map<std::string, std::string> LTLTranslator::checkVariableAlwaysEqualTo(std::string variable, std::string rival_variable="", std::string constant="") {
     result["property"] = "ltl property equals: [] not different;";
     
     if(rival_variable.empty()){
@@ -815,7 +815,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsAlwaysCalled(std::string function_name, std::string smart_contract) {
+  std::map<std::string, std::string> LTLTranslator::checkFunctionIsEventuallyCalled(std::string function_name, std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     if(function_call_input_places.empty()){
       result["property"] = "ltl property called: false;";
@@ -837,7 +837,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsNeverCalled(std::string function_name,std::string smart_contract) {
+  std::map<std::string, std::string> LTLTranslator::checkFunctionIsNeverCalled(std::string function_name,std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     if(function_call_input_places.empty()){
       result["property"] = "ltl property uncalled: true;";
@@ -858,7 +858,7 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIfCalledIsExecuted(std::string function_name,std::string smart_contract) {
+  std::map<std::string, std::string> LTLTranslator::checkFunctionIsExecuted(std::string function_name,std::string smart_contract) {
     std::list<std::string> function_call_input_places = get_function_call_input_places(function_name, smart_contract);
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
     result["property"] = "ltl property ifcalledthenexecuted: [] ( ( ";
@@ -940,10 +940,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   }  
 
 
-  std::map<std::string, std::string> LTLTranslator::checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
+  std::map<std::string, std::string> LTLTranslator::checkIsSequentialExecution(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract) {
     std::list<std::string> function_call_output_places = get_function_call_output_places(function_name, smart_contract);
     std::list<std::string> rival_function_call_output_places = get_function_call_output_places(rival_function, rival_contract);
-    result["property"] = "property sequentialexec: [] ( ( ";
+    result["property"] = "property sequentialexecution: [] ( ( ";
     if (function_call_output_places.empty()) {
       result["propositions"].append("proposition funexecA : false;\n");
       result["property"].append("funexecA ) => <> ( " );
@@ -1119,49 +1119,49 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
     }
     else if (formula_type == "specific") {
       switch(LTLTranslator::getVulnerability(template_name)){
-        case(AlwaysLessThan):{
+        case(VariableAlwaysLessThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
           std::string max_threshold = inputs.at("max_threshold");
 
-          return checkAlwaysLessThan(variable, rival_variable, max_threshold); 
+          return checkVariableAlwaysLessThan(variable, rival_variable, max_threshold); 
         }
 
-        case(AlwaysMoreThan):{
+        case(VariableAlwaysMoreThan):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
           std::string min_threshold = inputs.at("min_threshold");
 
-          return checkAlwaysMoreThan(variable,rival_variable,min_threshold);
+          return checkVariableAlwaysMoreThan(variable,rival_variable,min_threshold);
         }
 
-        case(AlwaysEqual):{
+        case(VariableAlwaysEqualTo):{
           std::string variable = inputs.at("selected_variable");
           std::string rival_variable = inputs.at("rival_variable");
           std::string min_threshold = inputs["constant"];
 
-          return checkAlwaysEqual(variable, rival_variable, min_threshold); 
+          return checkVariableAlwaysEqualTo(variable, rival_variable, min_threshold); 
         }
         
-        case(IsAlwaysCalled):{
+        case(FunctionIsEventuallyCalled):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
-          return checkIsAlwaysCalled(function_name, smart_contract);
+          return checkFunctionIsEventuallyCalled(function_name, smart_contract);
         }
 
-        case(IsNeverCalled):{
+        case(FunctionIsNeverCalled):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
-          return checkIsNeverCalled(function_name, smart_contract);
+          return checkFunctionIsNeverCalled(function_name, smart_contract);
         }
 
-        case(IfCalledIsExecuted):{
+        case(FunctionIsExecuted):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
 
-          return checkIfCalledIsExecuted(function_name,smart_contract);
+          return checkFunctionIsExecuted(function_name,smart_contract);
         } 
 
         case(SequentialCall):{
@@ -1173,13 +1173,13 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
           return checkIsSequentialCall(function_name, smart_contract, rival_function, rival_contract);
         }
 
-        case(SequentialExec):{
+        case(SequentialExecution):{
           std::string function_name = inputs.at("selected_function");
           std::string smart_contract = inputs.at("smart_contract");
           std::string rival_function = inputs.at("rival_function");
           std::string rival_contract = inputs.at("rival_contract");
 
-          return checkIsSequentialExec(function_name, smart_contract, rival_function, rival_contract);
+          return checkIsSequentialExecution(function_name, smart_contract, rival_function, rival_contract);
         }
 
         case(CallFollowedByExec):{

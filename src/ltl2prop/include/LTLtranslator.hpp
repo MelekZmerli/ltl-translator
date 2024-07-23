@@ -90,14 +90,14 @@ class LTLTranslator {
   };
 
   enum propertyTemplates {
-    AlwaysLessThan,
-    AlwaysMoreThan,
-    AlwaysEqual,
-    IsAlwaysCalled,
-    IsNeverCalled,
-    IfCalledIsExecuted,
+    VariableAlwaysLessThan,
+    VariableAlwaysMoreThan,
+    VariableAlwaysEqualTo,
+    FunctionIsEventuallyCalled,
+    FunctionIsNeverCalled,
+    FunctionIsExecuted,
     SequentialCall,
-    SequentialExec,
+    SequentialExecution,
     CallFollowedByExec,
     ExecFollowedByCall
   };
@@ -227,7 +227,7 @@ class LTLTranslator {
     * @param max_threshold 
     * @return Helena code
     */
-  std::map<std::string, std::string> checkAlwaysLessThan(std::string variable, std::string rival_variable, std::string max_threshold);
+  std::map<std::string, std::string> checkVariableAlwaysLessThan(std::string variable, std::string rival_variable, std::string max_threshold);
 
   /**
     * @brief Return the helena code that checks that a variable's value is always more than another variable/constant
@@ -237,7 +237,7 @@ class LTLTranslator {
     * @param min_threshold 
     * @return Helena code of property to be verified and its propositions 
     */
-  std::map<std::string, std::string> checkAlwaysMoreThan(std::string variable, std::string rival_variable, std::string min_threshold);
+  std::map<std::string, std::string> checkVariableAlwaysMoreThan(std::string variable, std::string rival_variable, std::string min_threshold);
 
   /**
     * @brief Return the helena code that checks that a variable's value is always equal another variable/constant
@@ -247,7 +247,7 @@ class LTLTranslator {
     * @param constant 
     * @return Helena code of property to be verified and its propositions 
     */
-  std::map<std::string, std::string> checkAlwaysEqual(std::string variable, std::string rival_variable, std::string constant);
+  std::map<std::string, std::string> checkVariableAlwaysEqualTo(std::string variable, std::string rival_variable, std::string constant);
 
   /**
     * @brief 
@@ -256,7 +256,7 @@ class LTLTranslator {
     * @param smart_contract
     * @return Return the helena code that checks if a function is always called
     */
-  std::map<std::string, std::string> checkIsAlwaysCalled(std::string function_name, std::string smart_contract);
+  std::map<std::string, std::string> checkFunctionIsEventuallyCalled(std::string function_name, std::string smart_contract);
 
   /**
     * @brief
@@ -265,7 +265,7 @@ class LTLTranslator {
     * @param smart_contract
     * @return Return the helena code that checks if a function is never called within a given context
     */
-  std::map<std::string, std::string> checkIsNeverCalled(std::string function_name, std::string smart_contract);
+  std::map<std::string, std::string> checkFunctionIsNeverCalled(std::string function_name, std::string smart_contract);
 
   /**
     * @brief
@@ -274,7 +274,7 @@ class LTLTranslator {
     * @param smart_contract
     * @return Return the helena code that checks if a function finshed execution within a given context
     */
-  std::map<std::string, std::string> checkIfCalledIsExecuted(std::string function_name, std::string smart_contract);
+  std::map<std::string, std::string> checkFunctionIsExecuted(std::string function_name, std::string smart_contract);
 
   /**
     * @brief 
@@ -296,7 +296,7 @@ class LTLTranslator {
     * @param rival_contract
     * @return Return the helena code that checks if a function B finishes execution after function A finished its execution within a given context
     */
-  std::map<std::string, std::string> checkIsSequentialExec(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
+  std::map<std::string, std::string> checkIsSequentialExecution(std::string function_name, std::string smart_contract, std::string rival_function, std::string rival_contract);
 
   /**
     * @brief 
