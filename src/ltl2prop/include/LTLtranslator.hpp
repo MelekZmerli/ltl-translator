@@ -175,13 +175,12 @@ class LTLTranslator {
    * if contract is totally free:     
         @param variable: variable being tested
         @param function: function used for sending
-   * if rival contract is available:
-        @param variable: variable being tested
-        @param rival_contract: rival contract for second formula   
+        @param smart_contract: smart contract that contains function
+
    * @return Helena code
    */
     std::map<std::string, std::string> detectReentrancy(
-    std::string variable, std::string function);
+    std::string variable, std::string function, std::string smart_contract);
 
     
 
@@ -203,11 +202,13 @@ class LTLTranslator {
 
   /**
    * Return the Helena code for the "Uninitialized Storage Variable" vulnerability
-   * @param inputs a json file that holds the following params:
+   * @param function name of the function whose params are going to be checked
+   * @param smart_contract name of smart contract that contains 'function'
+   *  
    * @return Helena code
    */
     std::map<std::string, std::string> detectUninitializedStorageVariable(
-    std::string variable, std::string function);
+    std::string variable, std::string function, std::string smart_contract);
 
   /**
    * Return the Helena code for the "Self Destruction" vulnerability
@@ -325,10 +326,12 @@ class LTLTranslator {
     * @brief 
     * 
     * @param function parent function of sending statements
+    * @param smart_contract smart contract that contains 'function'
+    * 
     * 
     * @return Return output places of sending statements called in 'function' 
   */   
-  std::list<std::string> get_sending_output_places(std::string function);
+  std::list<std::string> get_sending_output_places(std::string function, std::string smart_contract);
 
   /**
     * @brief 
@@ -419,20 +422,23 @@ class LTLTranslator {
     * 
     * @param variable 
     * @param function
+    * @param smart_contract
+    * 
     * 
     * @return output places of statements that read 'variable' value inside 'function'
   */    
-  std::list<std::string> get_read_output_places(std::string variable,std::string function);
+  std::list<std::string> get_read_output_places(std::string variable,std::string function, std::string smart_contract);
 
   /**
     * @brief  
     * 
     * @param variable 
     * @param function
+    * @param smart_contract
     * 
     * @return output places of statements that assign value to 'variable'
   */    
-  std::list<std::string> get_write_output_places(std::string variable,std::string function);
+  std::list<std::string> get_write_output_places(std::string variable,std::string function, std::string smart_contract);
 
   /**
     * @brief  
@@ -462,7 +468,7 @@ class LTLTranslator {
     * 
     * @return output places of statements that assign values to variables representing the balance inside 'function'
   */   
-  std::list<std::string> get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function);
+  std::list<std::string> get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function, std::string smart_contract);
     
 
 };

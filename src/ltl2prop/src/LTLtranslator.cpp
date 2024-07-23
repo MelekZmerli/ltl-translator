@@ -95,10 +95,10 @@ namespace LTL2PROP {
     return is_local_variable(_name) ? local_variables[_name] : "";
   }
 
-  std::list<std::string> LTLTranslator::get_sending_output_places(std::string function){
+  std::list<std::string> LTLTranslator::get_sending_output_places(std::string function, std::string smart_contract){
     std::list<std::string> sending_output_places;
     for (const auto& sending: sendings) {
-      if (sending.parent == function && !sending.output_place.empty()){
+      if (sending.parent == function && sending.smart_contract == smart_contract && !sending.output_place.empty()){
            sending_output_places.push_back(sending.output_place);
         }
       } 
@@ -131,6 +131,7 @@ namespace LTL2PROP {
   }
 
   // get all variables that were affected address(this).balance value
+  // inside 'function'
   // we look in assignment and variable declaration statements
   std::list<std::string> LTLTranslator::get_balance_variables(std::string function, std::string smart_contract=""){
     std::list<std::string> balance_variables = {"address(this).balance"};
@@ -307,10 +308,10 @@ namespace LTL2PROP {
   // returns output places for following statements (variable x)
   // int x = y;
   // x = y;
-  std::list<std::string> LTLTranslator::get_write_output_places(std::string variable, std::string function){
+  std::list<std::string> LTLTranslator::get_write_output_places(std::string variable, std::string function, std::string smart_contract){
     std::list<std::string> write_places;
     for(auto &assignment : assignments) {
-      if (assignment.variable == variable && !assignment.output_place.empty()) {
+      if (assignment.variable == variable && assignment.function_name == function && assignment.smart_contract == smart_contract && !assignment.output_place.empty()) {
         write_places.push_back(assignment.output_place);
       }
     }
@@ -325,11 +326,11 @@ namespace LTL2PROP {
   // returns cases for variable x
   // int x = y;
   // x = y;
-  std::list<std::string> LTLTranslator::get_read_output_places(std::string variable, std::string function){
+  std::list<std::string> LTLTranslator::get_read_output_places(std::string variable, std::string function, std::string smart_contract){
     std::list<std::string> read_places;
     for (const auto& assignment: assignments) {
       for (const auto& RHVariable: assignment.RHV){
-        if (RHVariable == variable && !assignment.output_place.empty()){
+        if (RHVariable == variable && assignment.smart_contract == smart_contract && !assignment.output_place.empty()){
           read_places.push_back(assignment.output_place);
         } 
       }
@@ -426,10 +427,10 @@ namespace LTL2PROP {
   }
 
   // get assignment (assignment and variable declaration statements) output places for all variables that are affected  
-  std::list<std::string> LTLTranslator::get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function){
+  std::list<std::string> LTLTranslator::get_balance_variables_write_statements(std::list<std::string> balance_variables, std::string function, std::string smart_contract){
     std::list<std::string> assignment_output_places;
     for (auto &balance_variable : balance_variables){
-      assignment_output_places.merge(get_write_output_places(balance_variable, function));
+      assignment_output_places.merge(get_write_output_places(balance_variable, function, smart_contract));
     }
     assignment_output_places.unique();
     return assignment_output_places;
@@ -521,10 +522,10 @@ namespace LTL2PROP {
 
 
   // ltl property reentrancy: [ ] not (( not assignment ) until (sending))
-  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function) {
-    std::list<std::string> balance_variables = get_balance_variables(function);
-    std::list<std::string> sending_output_places = get_sending_output_places(function);
-    std::list<std::string> assignment_output_places = get_balance_variables_write_statements(balance_variables, function);
+  std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function, std::string smart_contract) {
+    std::list<std::string> balance_variables = get_balance_variables(function, smart_contract);
+    std::list<std::string> sending_output_places = get_sending_output_places(function, smart_contract);
+    std::list<std::string> assignment_output_places = get_balance_variables_write_statements(balance_variables, function, smart_contract);
     result["property"] = "ltl property reentrancy: [] not (not (";
 
 
@@ -599,9 +600,9 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
   return result;
   }
 
-  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable,std::string function) {
-    std::list<std::string> write_output_places = get_write_output_places(variable, function);
-    std::list<std::string> read_output_places = get_read_output_places(variable, function);
+  std::map<std::string, std::string> LTLTranslator::detectUninitializedStorageVariable(std::string variable,std::string function, std::string smart_contract) {
+    std::list<std::string> write_output_places = get_write_output_places(variable, function, smart_contract);
+    std::list<std::string> read_output_places = get_read_output_places(variable, function, smart_contract);
 
     //remove duplicates from both lists
     write_output_places.unique();
@@ -1076,8 +1077,10 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
         case(Reentrancy):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
+
   
-          return  detectReentrancy(variable,function);
+          return  detectReentrancy(variable, function, smart_contract);
         }
 
         case(TimestampDependence):{
@@ -1097,8 +1100,9 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
         case(UninitializedStorageVariable):{
           std::string variable = inputs.at("selected_variable");
           std::string function = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
 
-          return detectUninitializedStorageVariable(variable, function);
+          return detectUninitializedStorageVariable(variable, function, smart_contract);
         }
       }
     }
