@@ -193,11 +193,13 @@ class LTLTranslator {
 
   /**
    * Return the Helena code for the "Skip Empty String Literal" vulnerability
-   * @param function name of the function whose params are going to be checked 
+   * @param function name of the function whose params are going to be checked
+   * @param smart_contract name of smart contract that contains 'function'
+   *  
    * @return Helena code
    */
     std::map<std::string, std::string> detectSkipEmptyStringLiteral(
-    std::string function);
+    std::string function, std::string smart_contract);
 
   /**
    * Return the Helena code for the "Uninitialized Storage Variable" vulnerability
@@ -439,7 +441,7 @@ class LTLTranslator {
     * 
     * @return param places of all functions called inside 'function'
   */   
-  std::list<std::string> get_function_call_param_places(std::string function);
+  std::list<std::string> get_function_call_param_places(std::string function, std::string smart_contract);
 
   /**
     * @brief  

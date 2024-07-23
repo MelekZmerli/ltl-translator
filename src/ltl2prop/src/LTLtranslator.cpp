@@ -395,10 +395,10 @@ namespace LTL2PROP {
     return read_places;  
   }
 
-  std::list<std::string> LTLTranslator::get_function_call_param_places(std::string function){
+  std::list<std::string> LTLTranslator::get_function_call_param_places(std::string function, std::string smart_contract){
     std::list<std::string> function_call_param_places;
     for (auto &function_call : function_calls) {
-      if(function_call.parent == function){
+      if(function_call.parent == function && function_call.smart_contract == smart_contract){
         function_call_param_places.push_back(function_call.param_place);
       }
     }
@@ -670,9 +670,9 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
   }
   // look for empty function calls INSIDE function variable
-  std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(std::string function){
+  std::map<std::string, std::string> LTLTranslator::detectSkipEmptyStringLiteral(std::string function, std::string smart_contract){
     
-    std::list<std::string> function_call_inside_function_param_places = get_function_call_param_places(function);
+    std::list<std::string> function_call_inside_function_param_places = get_function_call_param_places(function, smart_contract);
     if (function_call_inside_function_param_places.empty()) {
       result["property"] = "ltl property skipempty: true";
     }
@@ -1089,8 +1089,9 @@ std::map<std::string, std::string> LTLTranslator::detectTimestampDependance(std:
 
         case(SkipEmptyStringLiteral):{
           std::string function = inputs.at("selected_function");
+          std::string smart_contract = inputs.at("smart_contract");
 
-          return detectSkipEmptyStringLiteral(function);
+          return detectSkipEmptyStringLiteral(function, smart_contract);
         }
 
         case(UninitializedStorageVariable):{
