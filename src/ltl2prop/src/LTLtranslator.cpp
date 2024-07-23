@@ -521,12 +521,12 @@ namespace LTL2PROP {
   }
 
 
-  // ltl property reentrancy: [ ] not (( not assignment ) until (sending))
+  // ltl property reentrancy: ([ ] not (( not assignment ) until (sending))) or ([ ] not (sending))
   std::map<std::string, std::string> LTLTranslator::detectReentrancy(std::string variable, std::string function, std::string smart_contract) {
     std::list<std::string> balance_variables = get_balance_variables(function, smart_contract);
     std::list<std::string> sending_output_places = get_sending_output_places(function, smart_contract);
     std::list<std::string> assignment_output_places = get_balance_variables_write_statements(balance_variables, function, smart_contract);
-    result["property"] = "ltl property reentrancy: [] not (not (";
+    result["property"] = "ltl property reentrancy: ([] not (not (";
 
 
     // in case there aren't any sending statements in context, smart contract isn't vulnerable to reentrancy attacks.
@@ -571,9 +571,20 @@ namespace LTL2PROP {
           result["property"].append("sending"+sending_output_place +" or ");
         }
         else {
-          result["property"].append("sending"+sending_output_place +"));");
+          result["property"].append("sending"+sending_output_place +"))) or ( [] not (");
         }          
       } 
+
+      // get second sending propositions
+      for (auto &sending_output_place : sending_output_places){
+        result["propositions"].append("proposition sending" + sending_output_place + " : (" + sending_output_place + "'card > 0);\n");
+        if(sending_output_place != sending_output_places.back()){
+          result["property"].append("sending"+sending_output_place +" or ");
+        }
+        else {
+          result["property"].append("sending"+sending_output_place +"));");
+        }          
+      }     
     }
     return result;       
 }
